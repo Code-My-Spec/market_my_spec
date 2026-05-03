@@ -1,0 +1,41 @@
+account_id: 0f27281c-240b-4d6d-8e52-9c5972329522
+client_api_url: "https://www.codemyspec.com/api"
+code_repo: ""
+description: "# Market My Spec — Marketing-strategy skill for solo founders, exposed over MCP"
+docs_repo: ""
+module_name: MarketMySpec
+name: Market My Spec
+project_id: 49d80233-5e7f-4590-8fff-e6af922ce70d
+infrastructure_paths:
+  # Standard Phoenix-generated infrastructure
+  - lib/market_my_spec.ex
+  - lib/market_my_spec_web.ex
+  - lib/market_my_spec/repo.ex
+  - lib/market_my_spec/mailer.ex
+  - lib/market_my_spec/release.ex
+  - lib/market_my_spec/vault.ex
+  - lib/market_my_spec_web.ex
+  - lib/market_my_spec_web/application.ex
+  - lib/market_my_spec_web/endpoint.ex
+  - lib/market_my_spec_web/router.ex
+  - lib/market_my_spec_web/telemetry.ex
+  - lib/market_my_spec_web/gettext.ex
+  - lib/market_my_spec_web/components/core_components.ex
+  - lib/market_my_spec_web/components/layouts.ex
+  - lib/market_my_spec_web/controllers/error_*
+  - lib/market_my_spec_web/controllers/page_*
+  - lib/market_my_spec_web/channels/user_socket.ex
+  - lib/market_my_spec_web/channels/presence.ex
+  # phx.gen.auth-generated web-side scaffolding (Users domain stays as domain)
+  - lib/market_my_spec_web/user_auth.ex
+  - lib/market_my_spec_web/controllers/user_session_controller.ex
+  - lib/market_my_spec_web/live/user_live/login.ex
+  - lib/market_my_spec_web/live/user_live/registration.ex
+  - lib/market_my_spec_web/live/user_live/settings.ex
+  - lib/market_my_spec_web/live/user_live/confirmation.ex
+  - lib/market_my_spec_web/live/user_live/check_email.ex
+  # cms_gen.integrations-generated infrastructure (domain stays in market_my_spec/integrations)
+  - lib/market_my_spec/integrations/o_auth_state_store.ex
+  - lib/market_my_spec/encrypted/binary.ex
+  - lib/market_my_spec_web/controllers/integrations_controller.ex
+  - lib/market_my_spec_web/live/integration_live/index.ex

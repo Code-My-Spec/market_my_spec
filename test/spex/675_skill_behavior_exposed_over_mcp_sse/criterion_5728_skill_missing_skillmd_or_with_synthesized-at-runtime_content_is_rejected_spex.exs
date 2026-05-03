@@ -1,0 +1,43 @@
+defmodule MarketMySpecSpex.Story675.Criterion5728Spex do
+  @moduledoc """
+  Story 675 — Skill Behavior Exposed Over MCP (SSE)
+  Criterion 5728 — Skill missing SKILL.md or with synthesized-at-runtime content is rejected
+
+  Quality gate: SKILL.md must be a real on-disk file with substantive content.
+  An implementation that synthesizes the orientation prompt at runtime or omits
+  SKILL.md entirely fails this spec.
+  """
+
+  use MarketMySpecSpex.Case
+
+  @skill_root "skills/marketing-strategy"
+
+  spex "SKILL.md must be a real on-disk file, not synthesized at runtime" do
+    scenario "the SKILL.md file exists and contains canonical skill content", context do
+      given_ "the marketing-strategy SKILL.md", context do
+        skill_md =
+          Application.app_dir(:market_my_spec, @skill_root)
+          |> Path.join("SKILL.md")
+          |> File.read!()
+
+        {:ok, Map.put(context, :skill_md, skill_md)}
+      end
+
+      then_ "the SKILL.md file is non-empty", context do
+        assert byte_size(context.skill_md) > 0
+        :ok
+      end
+
+      then_ "the SKILL.md contains the canonical skill name", context do
+        assert context.skill_md =~ "name: marketing-strategy"
+        :ok
+      end
+
+      then_ "the SKILL.md references step files, confirming it is not placeholder content", context do
+        assert context.skill_md =~ "steps/01_current_state.md"
+        assert context.skill_md =~ "steps/08_plan.md"
+        :ok
+      end
+    end
+  end
+end
