@@ -20,7 +20,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5776Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "agency account unlocks agency features" do
-    scenario "operating inside an admin-provisioned agency account exposes the agency dashboard nav link", context do
+    scenario "operating inside an admin-provisioned agency account exposes the agency dashboard nav link" do
       given_ "a user who has been admin-provisioned an agency account", context do
         user = Fixtures.user_fixture()
         # Future fixture: agency_account_fixture(user) creates an
@@ -43,7 +43,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5776Spex do
         refute has_element?(view, "[data-test='nav-agency-dashboard'][hidden]"),
                "expected agency dashboard nav link to be visible, not hidden"
 
-        :ok
+        {:ok, context}
       end
     end
   end

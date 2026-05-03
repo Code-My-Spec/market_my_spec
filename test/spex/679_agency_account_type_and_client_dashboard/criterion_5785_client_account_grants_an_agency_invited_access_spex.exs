@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5785Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "client account grants an agency invited access" do
-    scenario "client owner grants an agency access at level account_manager and the client surfaces on the agency dashboard", context do
+    scenario "client owner grants an agency access at level account_manager and the client surfaces on the agency dashboard" do
       given_ "a client-account owner", context do
         client_owner = Fixtures.user_fixture()
         {client_token, _raw} = Fixtures.generate_user_magic_link_token(client_owner)
@@ -74,7 +74,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5785Spex do
         assert has_element?(view, "[data-test='client-row-invited'][data-access-level='account_manager']"),
                "expected an invited row at access_level=account_manager"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5769Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "invited user receives exactly one role in the account" do
-    scenario "after acceptance, the invitee appears exactly once in the members list with role 'member'", context do
+    scenario "after acceptance, the invitee appears exactly once in the members list with role 'member'" do
       given_ "a registered owner user", context do
         owner = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(owner)
@@ -65,7 +65,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5769Spex do
         assert members_html =~ ~r/\bmember\b/i,
                "expected the 'member' role label to appear in the members list"
 
-        :ok
+        {:ok, context}
       end
     end
   end

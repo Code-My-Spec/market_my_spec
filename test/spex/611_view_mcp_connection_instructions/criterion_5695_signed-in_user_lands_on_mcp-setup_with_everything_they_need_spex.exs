@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5695Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "MCP setup page for authenticated user" do
-    scenario "signed-in user sees the server URL on the setup page", context do
+    scenario "signed-in user sees the server URL on the setup page" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -29,11 +29,11 @@ defmodule MarketMySpecSpex.Story611.Criterion5695Spex do
       then_ "the server URL is shown so they know where to point Claude Code", context do
         assert has_element?(context.view, "[data-test='server-url']")
         assert render(context.view) =~ "/mcp"
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "signed-in user sees the install command on the setup page", context do
+    scenario "signed-in user sees the install command on the setup page" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -53,11 +53,11 @@ defmodule MarketMySpecSpex.Story611.Criterion5695Spex do
       then_ "a ready-to-run install command is shown", context do
         assert has_element?(context.view, "[data-test='install-command']")
         assert render(context.view) =~ "claude mcp add"
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "signed-in user sees the OAuth flow explained on the setup page", context do
+    scenario "signed-in user sees the OAuth flow explained on the setup page" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -76,7 +76,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5695Spex do
 
       then_ "instructions about the OAuth authorization step are present", context do
         assert has_element?(context.view, "[data-test='oauth-instructions']")
-        :ok
+        {:ok, context}
       end
     end
   end

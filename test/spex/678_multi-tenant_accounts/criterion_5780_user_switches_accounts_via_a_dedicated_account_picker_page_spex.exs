@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5780Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "user switches accounts via a dedicated account picker page" do
-    scenario "the picker lists every account the user belongs to and selecting one switches context", context do
+    scenario "the picker lists every account the user belongs to and selecting one switches context" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -54,7 +54,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5780Spex do
         assert has_element?(context.picker_view, "[data-test='account-picker']"),
                "expected the dedicated account picker container to be present"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5774Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "duplicate slug is rejected at creation" do
-    scenario "second account form submission with a colliding slug renders a uniqueness error", context do
+    scenario "second account form submission with a colliding slug renders a uniqueness error" do
       given_ "two registered users (so each can create an account independently)", context do
         owner_a = Fixtures.user_fixture()
         owner_b = Fixtures.user_fixture()
@@ -58,7 +58,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5774Spex do
         assert context.second_form_result =~ ~r/already (taken|exists)|not unique|must be unique/i,
                "expected a uniqueness error in the rendered form"
 
-        :ok
+        {:ok, context}
       end
     end
   end

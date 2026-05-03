@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5689Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "full OAuth PKCE flow produces a bearer token" do
-    scenario "Claude Code registers, the user approves, and the client receives an access token", context do
+    scenario "Claude Code registers, the user approves, and the client receives an access token" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -87,12 +87,12 @@ defmodule MarketMySpecSpex.Story612.Criterion5689Spex do
       then_ "the response contains an access token", context do
         assert Map.has_key?(context.token_response, "access_token")
         refute context.token_response["access_token"] =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "the token type is Bearer", context do
         assert context.token_response["token_type"] =~ ~r/bearer/i
-        :ok
+        {:ok, context}
       end
     end
   end

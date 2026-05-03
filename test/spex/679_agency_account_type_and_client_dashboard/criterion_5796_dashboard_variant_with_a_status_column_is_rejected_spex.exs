@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5796Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "dashboard variant with a status column is rejected by the column audit" do
-    scenario "the rendered agency dashboard contains no Status header and no client-status cell", context do
+    scenario "the rendered agency dashboard contains no Status header and no client-status cell" do
       given_ "an agency with at least one client", context do
         agency_owner = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(agency_owner)
@@ -40,7 +40,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5796Spex do
         refute has_element?(context.view, "[data-test='status-column']"),
                "expected no status column container on the dashboard"
 
-        :ok
+        {:ok, context}
       end
     end
   end

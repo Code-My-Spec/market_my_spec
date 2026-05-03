@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5727Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "marketing-strategy skill mirrors the canonical plugin file tree" do
-    scenario "the priv/skills/marketing-strategy directory contains all required files", context do
+    scenario "the priv/skills/marketing-strategy directory contains all required files" do
       given_ "the marketing-strategy skill root directory", context do
         skill_dir = Application.app_dir(:market_my_spec, @skill_root)
         {:ok, Map.put(context, :skill_dir, skill_dir)}
@@ -17,7 +17,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5727Spex do
 
       then_ "the SKILL.md orientation file is present", context do
         assert File.exists?(Path.join(context.skill_dir, "SKILL.md"))
-        :ok
+        {:ok, context}
       end
 
       then_ "all eight step files are present under steps/", context do
@@ -29,7 +29,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5727Spex do
         assert File.exists?(Path.join(context.skill_dir, "steps/06_messaging.md"))
         assert File.exists?(Path.join(context.skill_dir, "steps/07_channels.md"))
         assert File.exists?(Path.join(context.skill_dir, "steps/08_plan.md"))
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5788Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "agency owner enters a client account from the dashboard" do
-    scenario "clicking a client row switches context and renders the inside-client indicator", context do
+    scenario "clicking a client row switches context and renders the inside-client indicator" do
       given_ "an agency with a client 'Click Through Client'", context do
         agency_owner = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(agency_owner)
@@ -58,7 +58,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5788Spex do
         assert html =~ ~r/Click Through Client/,
                "expected the current client name to be visible in the indicator"
 
-        :ok
+        {:ok, context}
       end
     end
   end

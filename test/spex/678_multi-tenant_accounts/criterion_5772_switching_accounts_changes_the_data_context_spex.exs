@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5772Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "switching accounts changes the data context" do
-    scenario "user with two accounts switches via the picker and the visible data context changes", context do
+    scenario "user with two accounts switches via the picker and the visible data context changes" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -59,7 +59,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5772Spex do
         assert context.picker_html =~ ~r/Workspace B/,
                "expected Workspace B to be visible in the picker"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "after switching, the dashboard is scoped to Workspace B", context do
@@ -71,7 +71,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5772Spex do
         assert dashboard_html =~ ~r/data-test=['"]current-account['"][^>]*>[^<]*Workspace B/i,
                "expected current-account marker to identify Workspace B"
 
-        :ok
+        {:ok, context}
       end
     end
   end

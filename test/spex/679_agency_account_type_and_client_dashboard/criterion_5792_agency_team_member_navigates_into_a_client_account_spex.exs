@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5792Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "agency team member navigates into a client account" do
-    scenario "a non-owner agency member clicks a client row and the context switches", context do
+    scenario "a non-owner agency member clicks a client row and the context switches" do
       given_ "an agency, a non-owner team member, and a client", context do
         agency_owner = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(agency_owner)
@@ -54,7 +54,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5792Spex do
         assert html =~ ~r/Team Nav Client/,
                "expected the inside-client indicator to name the client account"
 
-        :ok
+        {:ok, context}
       end
     end
   end

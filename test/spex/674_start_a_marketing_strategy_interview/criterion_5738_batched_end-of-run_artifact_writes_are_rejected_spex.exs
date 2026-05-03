@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story674.Criterion5738Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "batched artifact writes quality gate" do
-    scenario "the SKILL.md explicitly forbids batching artifact writes", context do
+    scenario "the SKILL.md explicitly forbids batching artifact writes" do
       given_ "the marketing strategy SKILL.md", context do
         skill_md =
           Application.app_dir(:market_my_spec, @skill_root)
@@ -24,13 +24,13 @@ defmodule MarketMySpecSpex.Story674.Criterion5738Spex do
 
       then_ "the skill explicitly says do not batch writes", context do
         assert context.skill_md =~ "Don't batch"
-        :ok
+        {:ok, context}
       end
 
       then_ "the no-batch rule includes the rationale about bailing users", context do
         assert context.skill_md =~ "Don't batch"
         assert context.skill_md =~ "three usable files"
-        :ok
+        {:ok, context}
       end
     end
   end

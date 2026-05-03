@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5790Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "duplicate grant for an already-granted agency-client pair is rejected" do
-    scenario "the second grant submission returns a conflict error in the form", context do
+    scenario "the second grant submission returns a conflict error in the form" do
       given_ "an existing invited grant between an agency and a client", context do
         agency_owner = Fixtures.user_fixture()
         client_owner = Fixtures.user_fixture()
@@ -54,7 +54,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5790Spex do
                  ~r/already (granted|exists)|duplicate|conflict|already has access/i,
                "expected a conflict error in the form re-render"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5773Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "account name produces a URL-safe slug on creation" do
-    scenario "creating an account with a mixed-case spaced name yields a lowercase hyphenated slug visible in the UI", context do
+    scenario "creating an account with a mixed-case spaced name yields a lowercase hyphenated slug visible in the UI" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5773Spex do
         assert accounts_html =~ ~r/my-marketing-workspace/,
                "expected URL-safe lowercase-hyphenated slug 'my-marketing-workspace'"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the rendered slug contains no uppercase or whitespace characters", context do
@@ -64,7 +64,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5773Spex do
         refute accounts_html =~ ~r/my marketing workspace/,
                "expected slug not to preserve whitespace"
 
-        :ok
+        {:ok, context}
       end
     end
   end

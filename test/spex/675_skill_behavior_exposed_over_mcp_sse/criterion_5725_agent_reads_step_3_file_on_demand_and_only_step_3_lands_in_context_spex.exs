@@ -11,7 +11,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5725Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "agent reads step 3 file on demand and only step 3 content is returned" do
-    scenario "connected agent calls read_skill_file for step 3 and receives only that step's content", context do
+    scenario "connected agent calls read_skill_file for step 3 and receives only that step's content" do
       given_ "a registered user and the canonical step 3 content", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -113,7 +113,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5725Spex do
         content_text = get_in(body, ["result", "content", Access.at(0), "text"]) || ""
         assert byte_size(content_text) > 0, "expected non-empty step 3 content"
         assert content_text == context.step3_content
-        :ok
+        {:ok, context}
       end
 
       then_ "the response does not include SKILL.md step-list content from other files", context do
@@ -121,7 +121,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5725Spex do
         content_text = get_in(body, ["result", "content", Access.at(0), "text"]) || ""
         assert content_text =~ ~r/persona|research/i
         refute content_text =~ "steps/01_current_state.md"
-        :ok
+        {:ok, context}
       end
     end
   end

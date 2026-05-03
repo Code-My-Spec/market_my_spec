@@ -10,7 +10,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5672Spex do
   use MarketMySpecSpex.Case
 
   spex "banned-phrase quality gate" do
-    scenario "the deployed page contains none of the prohibited marketing phrases", context do
+    scenario "the deployed page contains none of the prohibited marketing phrases" do
       given_ "the landing page at its canonical route", context do
         {:ok, context}
       end
@@ -27,7 +27,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5672Spex do
         refute context.html =~ ~r/AI-powered marketing/i
         refute context.html =~ ~r/next-gen/i
         refute context.html =~ ~r/revolutionize/i
-        :ok
+        {:ok, context}
       end
 
       then_ "no internal or niche-tech jargon from the banned list is present", context do
@@ -35,13 +35,13 @@ defmodule MarketMySpecSpex.Story633.Criterion5672Spex do
         refute context.html =~ ~r/lights out software factory/i
         refute context.html =~ ~r/Elixir-first/i
         refute context.html =~ ~r/specification-driven/i
-        :ok
+        {:ok, context}
       end
 
       then_ "no enterprise framing is present on the primary surface", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/enterprise/i
-        :ok
+        {:ok, context}
       end
     end
   end

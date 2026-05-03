@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5703Spex do
   use MarketMySpecSpex.Case
 
   spex "MCP endpoint auth server discovery" do
-    scenario "unauthenticated request to the MCP endpoint returns a 401 with an auth server pointer", context do
+    scenario "unauthenticated request to the MCP endpoint returns a 401 with an auth server pointer" do
       given_ "an MCP client without a bearer token", context do
         {:ok, context}
       end
@@ -23,14 +23,14 @@ defmodule MarketMySpecSpex.Story612.Criterion5703Spex do
 
       then_ "the server responds with 401", context do
         assert response(context.conn, 401)
-        :ok
+        {:ok, context}
       end
 
       then_ "the WWW-Authenticate header points toward the authorization server", context do
         www_auth = get_resp_header(context.conn, "www-authenticate")
         assert www_auth != []
         assert Enum.any?(www_auth, fn v -> v =~ "Bearer" end)
-        :ok
+        {:ok, context}
       end
     end
   end

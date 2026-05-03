@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5783Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "agency creates a client account and becomes the originator" do
-    scenario "agency owner creates 'Bright Ideas Co' through the dashboard and the client appears with originator marker", context do
+    scenario "agency owner creates 'Bright Ideas Co' through the dashboard and the client appears with originator marker" do
       given_ "a user with an admin-provisioned agency account", context do
         user = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(user)
@@ -42,7 +42,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5783Spex do
         assert has_element?(view, "[data-test='client-row-originator']"),
                "expected an originator-marked row in the agency dashboard"
 
-        :ok
+        {:ok, context}
       end
     end
   end

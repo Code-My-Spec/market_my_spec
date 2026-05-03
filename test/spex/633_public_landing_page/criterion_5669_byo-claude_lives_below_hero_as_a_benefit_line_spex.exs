@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5669Spex do
   use MarketMySpecSpex.Case
 
   spex "BYO-Claude benefit line is present below the hero" do
-    scenario "visitor sees the BYO-Claude benefit line after the hero section", context do
+    scenario "visitor sees the BYO-Claude benefit line after the hero section" do
       given_ "a visitor loading the landing page", context do
         {:ok, context}
       end
@@ -19,7 +19,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5669Spex do
 
       then_ "the BYO-Claude benefit element is present on the page", context do
         assert has_element?(context.view, "[data-test='byo-claude-benefit']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the BYO-Claude benefit contains copy about token ownership", context do
@@ -27,13 +27,13 @@ defmodule MarketMySpecSpex.Story633.Criterion5669Spex do
         benefit_html = context.view |> element("[data-test='byo-claude-benefit']") |> render()
         assert benefit_html =~ ~r/bring your own claude/i
         assert benefit_html =~ ~r/don.t markup your tokens/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the install command is also present on the same page", context do
         assert has_element?(context.view, "[data-test='install-command']")
         assert has_element?(context.view, "[data-test='byo-claude-benefit']")
-        :ok
+        {:ok, context}
       end
     end
   end

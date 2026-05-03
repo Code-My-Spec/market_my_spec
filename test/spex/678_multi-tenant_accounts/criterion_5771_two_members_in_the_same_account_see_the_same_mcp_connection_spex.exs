@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5771Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "two members in the same account see the same MCP connection" do
-    scenario "owner and a second member both see the same MCP server URL on /mcp-setup", context do
+    scenario "owner and a second member both see the same MCP server URL on /mcp-setup" do
       given_ "a registered owner user", context do
         owner = Fixtures.user_fixture()
         {owner_token, _raw} = Fixtures.generate_user_magic_link_token(owner)
@@ -85,7 +85,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5771Spex do
         assert owner_url == member_url,
                "expected owner and member of the same account to see the same MCP server URL, got owner=#{inspect(owner_url)} member=#{inspect(member_url)}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

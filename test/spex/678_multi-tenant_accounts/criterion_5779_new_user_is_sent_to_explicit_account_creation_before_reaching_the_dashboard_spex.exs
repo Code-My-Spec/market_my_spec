@@ -17,7 +17,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5779Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "new user is sent to explicit account creation before the dashboard" do
-    scenario "a fresh user with no accounts is redirected to /accounts/new on any authenticated route", context do
+    scenario "a fresh user with no accounts is redirected to /accounts/new on any authenticated route" do
       given_ "a freshly confirmed user with no account memberships", context do
         user = Fixtures.user_fixture(%{skip_default_account: true})
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -33,7 +33,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5779Spex do
         assert {:error, {:live_redirect, %{to: "/accounts/new"}}} =
                  live(context.conn, "/users/settings")
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the account-creation page exposes a name field but no type selector", context do
@@ -45,7 +45,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5779Spex do
         refute has_element?(view, "[data-test='account-form'] [name='account[type]']"),
                "expected no account[type] selector on the self-service account-creation form"
 
-        :ok
+        {:ok, context}
       end
     end
   end

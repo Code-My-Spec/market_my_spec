@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5701Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "revoked token is rejected by the MCP endpoint" do
-    scenario "a bearer token stops working after the user revokes it", context do
+    scenario "a bearer token stops working after the user revokes it" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -101,7 +101,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5701Spex do
 
       then_ "the MCP endpoint rejects the revoked token with 401", context do
         assert response(context.mcp_conn, 401)
-        :ok
+        {:ok, context}
       end
     end
   end

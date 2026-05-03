@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5777Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "self-service account creation always produces an individual account" do
-    scenario "the new-account form has no agency selector and ignores a smuggled-in type=agency", context do
+    scenario "the new-account form has no agency selector and ignores a smuggled-in type=agency" do
       given_ "a registered (non-admin) user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -72,7 +72,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5777Spex do
         assert Enum.all?(types, &(&1 == "individual")),
                "expected every self-service account to be type=individual, got: #{inspect(types)}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

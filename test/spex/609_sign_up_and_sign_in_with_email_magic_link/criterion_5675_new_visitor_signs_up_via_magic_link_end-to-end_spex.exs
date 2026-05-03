@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5675Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "new visitor signs up via magic link" do
-    scenario "registration sends a magic link email and redirects to the login page", context do
+    scenario "registration sends a magic link email and redirects to the login page" do
       given_ "a new visitor on the registration page", context do
         {:ok, view, _html} = live(context.conn, "/users/register")
         {:ok, Map.put(context, :view, view)}
@@ -30,16 +30,16 @@ defmodule MarketMySpecSpex.Story609.Criterion5675Spex do
       then_ "they see a message about checking their email", context do
         assert context.redirect_html =~
                  ~r/An email was sent to .*, please access it to confirm your account/
-        :ok
+        {:ok, context}
       end
 
       then_ "they are on the login page where they can wait for the link to arrive", context do
         assert context.redirect_html =~ "Log in"
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "new unconfirmed user sees the confirmation form when opening their magic link", context do
+    scenario "new unconfirmed user sees the confirmation form when opening their magic link" do
       given_ "a new unconfirmed user with a fresh magic link token", context do
         user = Fixtures.unconfirmed_user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -53,22 +53,22 @@ defmodule MarketMySpecSpex.Story609.Criterion5675Spex do
 
       then_ "the page greets them with their email address", context do
         assert render(context.view) =~ context.user.email
-        :ok
+        {:ok, context}
       end
 
       then_ "the first-time confirmation form is shown, not a returning-user login form", context do
         assert has_element?(context.view, "#confirmation_form")
         refute has_element?(context.view, "#login_form")
-        :ok
+        {:ok, context}
       end
 
       then_ "a confirm-and-stay-logged-in button is visible", context do
         assert has_element?(context.view, "button", "Confirm and stay logged in")
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "new user completes sign-up by submitting the confirmation form", context do
+    scenario "new user completes sign-up by submitting the confirmation form" do
       given_ "a new unconfirmed user with a fresh magic link token", context do
         user = Fixtures.unconfirmed_user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -87,18 +87,18 @@ defmodule MarketMySpecSpex.Story609.Criterion5675Spex do
 
       then_ "they are signed in and redirected to the app", context do
         assert redirected_to(context.conn) == "/"
-        :ok
+        {:ok, context}
       end
 
       then_ "a success flash confirms their account was set up", context do
         assert Phoenix.Flash.get(context.conn.assigns.flash, :info) =~
                  "User confirmed successfully"
-        :ok
+        {:ok, context}
       end
 
       then_ "a session token is established for the new account", context do
         assert get_session(context.conn, :user_token)
-        :ok
+        {:ok, context}
       end
     end
   end

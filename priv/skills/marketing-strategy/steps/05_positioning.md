@@ -120,7 +120,7 @@ Before finalizing, fetch 2-3 direct competitors' homepages. For each, via WebFet
 - Category they claim
 - Emphasized attributes
 
-Save to `marketing/research/competitor_positioning.md`:
+Persist by calling the `write_file` MCP tool with `path: "marketing/research/competitor_positioning.md"` and `content` matching the template below:
 
 ```markdown
 # Competitor positioning
@@ -170,9 +170,9 @@ Run every test. If any fail, revise.
 - Force-fitting a trend that doesn't carry the argument
 - Defining best-fit customer too broadly — lets bad-fit deals skew the team's sense of product-market fit
 
-## Write the artifact
+## Persist the artifact via write_file
 
-Write `marketing/05_positioning.md`:
+Call the `write_file` MCP tool with `path: "marketing/05_positioning.md"` and `content` matching the template below:
 
 ```markdown
 # Positioning — [Business name]

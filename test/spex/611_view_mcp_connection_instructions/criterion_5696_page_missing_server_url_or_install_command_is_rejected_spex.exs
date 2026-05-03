@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5696Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "MCP setup page quality gate" do
-    scenario "the server URL element is present and non-empty", context do
+    scenario "the server URL element is present and non-empty" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -33,7 +33,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5696Spex do
 
       then_ "a server-url element is rendered", context do
         assert has_element?(context.view, "[data-test='server-url']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the server-url element is not blank", context do
@@ -44,11 +44,11 @@ defmodule MarketMySpecSpex.Story611.Criterion5696Spex do
 
         assert has_element?(context.view, "[data-test='server-url']")
         refute server_url_text =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "the install command element is present and non-empty", context do
+    scenario "the install command element is present and non-empty" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -67,7 +67,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5696Spex do
 
       then_ "an install-command element is rendered", context do
         assert has_element?(context.view, "[data-test='install-command']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the install-command element is not blank", context do
@@ -78,7 +78,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5696Spex do
 
         assert has_element?(context.view, "[data-test='install-command']")
         refute install_cmd_text =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
     end
   end

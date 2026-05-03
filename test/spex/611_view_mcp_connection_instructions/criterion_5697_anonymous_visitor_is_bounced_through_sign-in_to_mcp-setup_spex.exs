@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5697Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "anonymous visitor redirect flow" do
-    scenario "unauthenticated visitor is redirected to the login page", context do
+    scenario "unauthenticated visitor is redirected to the login page" do
       given_ "an unauthenticated visitor", context do
         {:ok, context}
       end
@@ -21,11 +21,11 @@ defmodule MarketMySpecSpex.Story611.Criterion5697Spex do
 
       then_ "they are sent to the login page instead of seeing the setup instructions", context do
         assert {:error, {:live_redirect, %{to: "/users/log-in"}}} = context.result
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "after signing in the visitor is returned to /mcp-setup", context do
+    scenario "after signing in the visitor is returned to /mcp-setup" do
       given_ "an unauthenticated visitor", context do
         {:ok, context}
       end
@@ -48,7 +48,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5697Spex do
 
       then_ "they are returned to the MCP setup page", context do
         assert redirected_to(context.conn) == "/mcp-setup"
-        :ok
+        {:ok, context}
       end
     end
   end

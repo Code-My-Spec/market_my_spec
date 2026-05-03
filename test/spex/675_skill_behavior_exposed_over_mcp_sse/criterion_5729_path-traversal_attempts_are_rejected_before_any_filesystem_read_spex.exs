@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5729Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "path-traversal attempts are rejected before any filesystem read" do
-    scenario "agent supplying a path with traversal sequences receives a rejection, not file content", context do
+    scenario "agent supplying a path with traversal sequences receives a rejection, not file content" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -104,14 +104,14 @@ defmodule MarketMySpecSpex.Story675.Criterion5729Spex do
         body = json_response(context.mcp_conn, 200)
         assert body["jsonrpc"] == "2.0"
         assert Map.has_key?(body, "error"), "expected a JSON-RPC error for path traversal"
-        :ok
+        {:ok, context}
       end
 
       then_ "no host filesystem content is returned", context do
         body = json_response(context.mcp_conn, 200)
         assert body["jsonrpc"] == "2.0"
         assert is_nil(body["result"]), "expected no result field in an error response"
-        :ok
+        {:ok, context}
       end
     end
   end

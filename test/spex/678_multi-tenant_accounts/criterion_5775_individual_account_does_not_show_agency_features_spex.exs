@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5775Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "individual account does not show agency features" do
-    scenario "user in an individual account does not see agency-only navigation or surfaces", context do
+    scenario "user in an individual account does not see agency-only navigation or surfaces" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5775Spex do
         assert context.accounts_html =~ ~r/Solo Workspace/i,
                "expected individual account name in the accounts list"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the individual-account UI does not expose agency-only feature affordances", context do
@@ -59,7 +59,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5775Spex do
         refute context.accounts_html =~ ~r/agency dashboard/i,
                "expected no 'agency dashboard' link in individual UI"
 
-        :ok
+        {:ok, context}
       end
     end
   end

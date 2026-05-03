@@ -99,7 +99,7 @@ Investigate:
 Return under 500 words. Be honest: is this channel oversaturated, underused, or unproven for this business type?
 ```
 
-Save to `marketing/research/channel_<name>.md`.
+Persist each report by calling the `write_file` MCP tool with `path: "marketing/research/channel_<name>.md"` and `content` set to the report body.
 
 ## Step 3 — Rank to middle ring (pick 3)
 
@@ -177,9 +177,9 @@ Use these as starting points. Adjust to context.
 - **Confusing traction channel with tactic** — SEO is the channel; "publish comparison pages" is the tactic.
 - **Channel-stacking before product-market fit** — paid spend amplifies whatever's on the landing page, including a weak offer.
 
-## Write the artifact
+## Persist the artifact via write_file
 
-Write `marketing/07_channels.md`:
+Call the `write_file` MCP tool with `path: "marketing/07_channels.md"` and `content` matching the template below:
 
 ```markdown
 # Channels — [Business name]

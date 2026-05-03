@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story674.Criterion5736Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "SaaS-default examples quality gate" do
-    scenario "the SKILL.md explicitly prohibits defaulting to SaaS or dev-tool framing", context do
+    scenario "the SKILL.md explicitly prohibits defaulting to SaaS or dev-tool framing" do
       given_ "the marketing strategy SKILL.md", context do
         skill_md =
           Application.app_dir(:market_my_spec, @skill_root)
@@ -24,13 +24,13 @@ defmodule MarketMySpecSpex.Story674.Criterion5736Spex do
 
       then_ "the skill explicitly prohibits defaulting to dev-tool or SaaS examples", context do
         assert context.skill_md =~ "Do not default to dev-tool, SaaS, or tech examples"
-        :ok
+        {:ok, context}
       end
 
       then_ "the prohibition includes a condition for when SaaS examples ARE appropriate", context do
         assert context.skill_md =~ "Do not default to dev-tool, SaaS, or tech examples"
         assert context.skill_md =~ "unless the user's business is"
-        :ok
+        {:ok, context}
       end
     end
   end

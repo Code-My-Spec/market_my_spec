@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story674.Criterion5742Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "40-slide deck and analytics setup quality gate" do
-    scenario "the SKILL.md explicitly prohibits deck production and analytics setup", context do
+    scenario "the SKILL.md explicitly prohibits deck production and analytics setup" do
       given_ "the marketing strategy SKILL.md", context do
         skill_md =
           Application.app_dir(:market_my_spec, @skill_root)
@@ -26,13 +26,13 @@ defmodule MarketMySpecSpex.Story674.Criterion5742Spex do
       then_ "the skill explicitly rules out producing a slide deck", context do
         assert context.skill_md =~ "What this skill does NOT do"
         assert context.skill_md =~ "40-slide"
-        :ok
+        {:ok, context}
       end
 
       then_ "the skill explicitly rules out analytics and tooling setup", context do
         assert context.skill_md =~ "What this skill does NOT do"
         assert context.skill_md =~ "analytics"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5699Spex do
   use MarketMySpecSpex.Case
 
   spex "dynamic OAuth client registration" do
-    scenario "MCP client registers with valid metadata and receives a client_id", context do
+    scenario "MCP client registers with valid metadata and receives a client_id" do
       given_ "an MCP client with valid registration metadata", context do
         registration_params = %{
           "redirect_uris" => ["https://localhost:3000/callback"],
@@ -28,12 +28,12 @@ defmodule MarketMySpecSpex.Story612.Criterion5699Spex do
       then_ "the response includes a client_id", context do
         assert Map.has_key?(context.registration, "client_id")
         refute context.registration["client_id"] =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "the response echoes back the redirect_uris", context do
         assert context.registration["redirect_uris"] == ["https://localhost:3000/callback"]
-        :ok
+        {:ok, context}
       end
     end
   end

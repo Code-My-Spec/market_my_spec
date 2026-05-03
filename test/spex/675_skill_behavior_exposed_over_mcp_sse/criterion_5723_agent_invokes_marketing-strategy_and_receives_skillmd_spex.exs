@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5723Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "agent invokes marketing-strategy and receives SKILL.md" do
-    scenario "connected agent calls invoke_skill and receives the orientation document", context do
+    scenario "connected agent calls invoke_skill and receives the orientation document" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -104,7 +104,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5723Spex do
         body = json_response(context.mcp_conn, 200)
         content_text = get_in(body, ["result", "content", Access.at(0), "text"]) || ""
         assert content_text =~ "name: marketing-strategy"
-        :ok
+        {:ok, context}
       end
 
       then_ "the orientation content references the eight step files", context do
@@ -112,7 +112,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5723Spex do
         content_text = get_in(body, ["result", "content", Access.at(0), "text"]) || ""
         assert content_text =~ "steps/01_current_state.md"
         assert content_text =~ "steps/08_plan.md"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -15,7 +15,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5781Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "agency user sees the client management dashboard" do
-    scenario "user operating in an agency-typed account context renders the agency dashboard", context do
+    scenario "user operating in an agency-typed account context renders the agency dashboard" do
       given_ "a user with an admin-provisioned agency account", context do
         user = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(user)
@@ -33,7 +33,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5781Spex do
         assert has_element?(view, "[data-test='agency-client-dashboard']"),
                "expected the agency client dashboard container at /agency"
 
-        :ok
+        {:ok, context}
       end
     end
   end

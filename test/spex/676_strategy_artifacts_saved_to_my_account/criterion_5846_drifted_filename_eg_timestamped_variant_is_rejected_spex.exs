@@ -1,12 +1,12 @@
-defmodule MarketMySpecSpex.Story676.Criterion5746Spex do
+defmodule MarketMySpecSpex.Story676.Criterion5846Spex do
   @moduledoc """
-  Story 676 — Strategy Artifacts Saved To My Project
-  Criterion 5746 — Drifted filename (e.g., timestamped variant) is rejected
+  Story 676 — Strategy Artifacts Saved To My Account
+  Criterion 5846 — Drifted filename (timestamped, versioned, or absolute) is rejected
   """
 
   use MarketMySpecSpex.Case
 
-  @skill_root "skills/marketing-strategy"
+  @skill_root "priv/skills/marketing-strategy"
 
   @canonical_artifacts [
     {"steps/01_current_state.md", "marketing/01_current_state.md"},
@@ -20,7 +20,7 @@ defmodule MarketMySpecSpex.Story676.Criterion5746Spex do
   ]
 
   spex "drifted filename variants are rejected by the audit" do
-    scenario "no step file's write instructions reference timestamped or versioned filename variants", context do
+    scenario "no step file references timestamped, versioned, or absolute filename variants" do
       given_ "all eight step files", context do
         skill_dir = Application.app_dir(:market_my_spec, @skill_root)
 
@@ -39,7 +39,7 @@ defmodule MarketMySpecSpex.Story676.Criterion5746Spex do
                  "Expected canonical #{artifact_path} in #{step_file}"
         end)
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no step file contains a timestamped filename variant", context do
@@ -54,7 +54,7 @@ defmodule MarketMySpecSpex.Story676.Criterion5746Spex do
                  "Expected no ISO-date-suffixed filename in #{step_file}"
         end)
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no step file contains a versioned filename variant", context do
@@ -69,7 +69,19 @@ defmodule MarketMySpecSpex.Story676.Criterion5746Spex do
                  "Expected no copy/final/new/old-suffixed filename in #{step_file}"
         end)
 
-        :ok
+        {:ok, context}
+      end
+
+      then_ "no step file contains an absolute /marketing path or an accounts/ prefix", context do
+        Enum.each(context.step_data, fn {step_file, _artifact_path, content} ->
+          refute content =~ ~r/\/marketing\/[0-9]{2}_[a-z_]+\.md/,
+                 "Found absolute /marketing/ path in #{step_file} — agent must pass relative paths only"
+
+          refute content =~ ~r/accounts\/[^\/\s]+\/marketing\//,
+                 "Found accounts/ prefix in #{step_file} — server adds the prefix; the agent should not"
+        end)
+
+        {:ok, context}
       end
     end
   end

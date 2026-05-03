@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5786Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "either party can revoke an invited access grant" do
-    scenario "agency owner clicks 'Revoke' on the invited row and the client disappears from the dashboard", context do
+    scenario "agency owner clicks 'Revoke' on the invited row and the client disappears from the dashboard" do
       given_ "an invited access grant between an agency and a client account", context do
         client_owner = Fixtures.user_fixture()
         agency_owner = Fixtures.user_fixture()
@@ -52,7 +52,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5786Spex do
         refute dashboard_html =~ ~r/Revoke Test Client/,
                "expected the revoked client to be absent from the agency dashboard"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5795Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "dashboard shows all client accounts with name and access level" do
-    scenario "an agency with two originated and one invited client sees all three rows with access-level cells", context do
+    scenario "an agency with two originated and one invited client sees all three rows with access-level cells" do
       given_ "an agency with two originated clients and one invited client", context do
         agency_owner = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(agency_owner)
@@ -51,7 +51,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5795Spex do
                  "expected each row to expose access-level"
         end)
 
-        :ok
+        {:ok, context}
       end
     end
   end

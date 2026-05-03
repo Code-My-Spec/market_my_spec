@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story672.Criterion5682Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "callback missing sub claim is rejected" do
-    scenario "OAuth callback with no sub claim results in an error, not a linked account", context do
+    scenario "OAuth callback with no sub claim results in an error, not a linked account" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -62,7 +62,7 @@ defmodule MarketMySpecSpex.Story672.Criterion5682Spex do
         error_flash = get_flash(context.callback_conn, :error)
         assert error_flash, "expected an error flash to be set"
         assert error_flash =~ ~r/failed|error/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the user is not redirected to a success destination", context do
@@ -71,7 +71,7 @@ defmodule MarketMySpecSpex.Story672.Criterion5682Spex do
         assert error_flash, "anchor: error flash should be present"
         assert error_flash =~ ~r/failed|error/i
         refute info_flash && info_flash =~ ~r/connected/i
-        :ok
+        {:ok, context}
       end
     end
   end

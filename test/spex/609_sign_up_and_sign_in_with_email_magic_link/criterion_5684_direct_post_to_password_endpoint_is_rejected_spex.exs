@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5684Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "direct password POST to /users/log-in is not authenticated" do
-    scenario "submitting password with a valid email does not establish a session", context do
+    scenario "submitting password with a valid email does not establish a session" do
       given_ "a registered user with a known email", context do
         user = Fixtures.user_fixture()
         {:ok, Map.put(context, :user, user)}
@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5684Spex do
 
       then_ "no session token is set — the password did not authenticate", context do
         refute get_session(context.conn, :user_token)
-        :ok
+        {:ok, context}
       end
 
       then_ "the response is not a redirect to a signed-in destination", context do
@@ -51,7 +51,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5684Spex do
         end
 
         refute get_session(context.conn, :user_token)
-        :ok
+        {:ok, context}
       end
     end
   end

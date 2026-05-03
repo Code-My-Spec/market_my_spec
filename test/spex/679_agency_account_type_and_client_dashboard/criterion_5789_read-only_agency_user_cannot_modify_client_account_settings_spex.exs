@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5789Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "read-only agency user cannot modify client account settings" do
-    scenario "operating inside a read_only client context, edit/delete controls are absent and the manage form is disabled", context do
+    scenario "operating inside a read_only client context, edit/delete controls are absent and the manage form is disabled" do
       given_ "an agency with read_only access to a client account", context do
         agency_owner = Fixtures.user_fixture()
         client_owner = Fixtures.user_fixture()
@@ -54,7 +54,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5789Spex do
         refute has_element?(view, "[data-test='delete-account']"),
                "expected no delete-account control under read_only access"
 
-        :ok
+        {:ok, context}
       end
     end
   end

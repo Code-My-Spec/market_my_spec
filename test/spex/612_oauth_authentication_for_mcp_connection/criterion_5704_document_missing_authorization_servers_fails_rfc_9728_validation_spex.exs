@@ -11,7 +11,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5704Spex do
   use MarketMySpecSpex.Case
 
   spex "OAuth protected resource metadata completeness" do
-    scenario "the well-known protected resource document contains required RFC 9728 fields", context do
+    scenario "the well-known protected resource document contains required RFC 9728 fields" do
       given_ "the OAuth protected resource metadata endpoint", context do
         {:ok, context}
       end
@@ -25,21 +25,21 @@ defmodule MarketMySpecSpex.Story612.Criterion5704Spex do
       then_ "the resource field identifies the MCP endpoint", context do
         assert Map.has_key?(context.metadata, "resource")
         refute context.metadata["resource"] =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "the authorization_servers field is present and non-empty", context do
         servers = context.metadata["authorization_servers"]
         assert is_list(servers)
         assert length(servers) > 0
-        :ok
+        {:ok, context}
       end
 
       then_ "each authorization server entry is a non-empty URL", context do
         assert Enum.all?(context.metadata["authorization_servers"], fn s ->
           is_binary(s) and String.length(s) > 0
         end)
-        :ok
+        {:ok, context}
       end
     end
   end

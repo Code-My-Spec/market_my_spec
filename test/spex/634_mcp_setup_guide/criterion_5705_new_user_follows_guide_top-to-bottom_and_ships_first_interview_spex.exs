@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story634.Criterion5705Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "new user follows guide top-to-bottom and ships first interview" do
-    scenario "signed-in user sees all three setup steps in sequence", context do
+    scenario "signed-in user sees all three setup steps in sequence" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -28,23 +28,23 @@ defmodule MarketMySpecSpex.Story634.Criterion5705Spex do
 
       then_ "the install step is present", context do
         assert has_element?(context.view, "[data-test='install-step']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the OAuth sign-in step is present", context do
         assert has_element?(context.view, "[data-test='oauth-step']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the first interview step is present", context do
         assert has_element?(context.view, "[data-test='interview-step']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the install command is present in the guide", context do
         assert has_element?(context.view, "[data-test='install-command']")
         assert context.html =~ "claude mcp add"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5782Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "individual account user cannot access the agency dashboard" do
-    scenario "/agency is not reachable for a user whose active account is individual", context do
+    scenario "/agency is not reachable for a user whose active account is individual" do
       given_ "a registered user with an individual account", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -41,7 +41,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5782Spex do
             flunk("expected /agency to redirect for an individual-account user, got a render")
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

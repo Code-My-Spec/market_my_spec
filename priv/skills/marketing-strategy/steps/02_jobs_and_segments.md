@@ -94,9 +94,9 @@ Before step 3, each segment must pass this checklist. If it fails, keep intervie
 
 A segment that fails any of these is too fuzzy to research productively.
 
-## Write the artifact
+## Persist the artifact via write_file
 
-Write `marketing/02_jobs_and_segments.md`:
+Call the `write_file` MCP tool with `path: "marketing/02_jobs_and_segments.md"` and `content` matching the template below:
 
 ```markdown
 # Jobs and Segments — [Business name]

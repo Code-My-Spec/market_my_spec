@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story634.Criterion5706Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "expected-result verification step quality gate" do
-    scenario "the deployed guide contains an expected-result verification element", context do
+    scenario "the deployed guide contains an expected-result verification element" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -31,14 +31,14 @@ defmodule MarketMySpecSpex.Story634.Criterion5706Spex do
 
       then_ "an expected-result verification element is present", context do
         assert has_element?(context.view, "[data-test='expected-result']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the expected-result element contains meaningful verification content", context do
         result_html = context.view |> element("[data-test='expected-result']") |> render()
         assert result_html =~ ~r/(connected|success|working|installed)/i
         refute result_html =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
     end
   end

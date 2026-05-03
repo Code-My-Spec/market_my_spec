@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5716Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "plain HTTP client is rejected when attempting to read resource bodies" do
-    scenario "MCP client using POST-only transport receives an error for resources/read", context do
+    scenario "MCP client using POST-only transport receives an error for resources/read" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -104,14 +104,14 @@ defmodule MarketMySpecSpex.Story675.Criterion5716Spex do
         body = json_response(context.mcp_conn, 200)
         assert body["jsonrpc"] == "2.0"
         assert Map.has_key?(body, "error"), "expected JSON-RPC error for resources/read over plain HTTP"
-        :ok
+        {:ok, context}
       end
 
       then_ "the response does not contain the SKILL.md content", context do
         body = json_response(context.mcp_conn, 200)
         assert body["jsonrpc"] == "2.0"
         assert is_nil(body["result"]), "expected no result field in an error response"
-        :ok
+        {:ok, context}
       end
     end
   end

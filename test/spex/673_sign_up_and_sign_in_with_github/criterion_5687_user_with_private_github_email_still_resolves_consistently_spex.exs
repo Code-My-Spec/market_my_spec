@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story673.Criterion5687Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "account resolves by GitHub id even when email is private" do
-    scenario "user whose GitHub email is private still successfully connects", context do
+    scenario "user whose GitHub email is private still successfully connects" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -64,14 +64,14 @@ defmodule MarketMySpecSpex.Story673.Criterion5687Spex do
       then_ "the integration is accepted despite the nil email", context do
         assert redirected_to(context.callback_conn, 302) =~ "/integrations"
         refute get_flash(context.callback_conn, :error)
-        :ok
+        {:ok, context}
       end
 
       then_ "a success flash confirms the GitHub connection", context do
         info_flash = get_flash(context.callback_conn, :info)
         assert info_flash, "expected an info flash confirming the connection"
         assert info_flash =~ ~r/connected|GitHub/i
-        :ok
+        {:ok, context}
       end
     end
   end

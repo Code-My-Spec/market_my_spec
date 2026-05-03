@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story673.Criterion5688Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "callback missing GitHub user id is rejected" do
-    scenario "OAuth callback with no user id results in an error, not a linked account", context do
+    scenario "OAuth callback with no user id results in an error, not a linked account" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -62,12 +62,12 @@ defmodule MarketMySpecSpex.Story673.Criterion5688Spex do
 
       then_ "the callback is rejected with an error flash", context do
         assert get_flash(context.callback_conn, :error) =~ ~r/failed|error/i
-        :ok
+        {:ok, context}
       end
 
       then_ "no success connection flash is shown", context do
         assert is_nil(get_flash(context.callback_conn, :info))
-        :ok
+        {:ok, context}
       end
     end
   end

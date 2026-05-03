@@ -11,7 +11,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5668Spex do
   use MarketMySpecSpex.Case
 
   spex "no auth gate before the install command" do
-    scenario "the deployed page exposes the install command without requiring sign-up", context do
+    scenario "the deployed page exposes the install command without requiring sign-up" do
       given_ "the landing page", context do
         {:ok, context}
       end
@@ -24,20 +24,20 @@ defmodule MarketMySpecSpex.Story633.Criterion5668Spex do
       then_ "the install command is present and not hidden behind an auth gate", context do
         assert has_element?(context.view, "[data-test='install-command']")
         refute has_element?(context.view, "[data-test='auth-gate']")
-        :ok
+        {:ok, context}
       end
 
       then_ "no email-capture form appears before the install command", context do
         assert has_element?(context.view, "[data-test='install-command']")
         refute context.html =~ ~r/sign.?up to (get|see|access) the install/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the primary CTA is the install command, not a sign-up button", context do
         assert context.html =~ "claude mcp add"
         assert has_element?(context.view, "[data-test='install-command']")
         refute has_element?(context.view, "[data-test='signup-primary-cta']")
-        :ok
+        {:ok, context}
       end
     end
   end

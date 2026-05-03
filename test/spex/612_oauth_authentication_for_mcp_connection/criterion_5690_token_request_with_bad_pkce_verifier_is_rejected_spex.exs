@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5690Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "PKCE code_verifier is validated on token exchange" do
-    scenario "token exchange with a wrong code_verifier is rejected with invalid_grant", context do
+    scenario "token exchange with a wrong code_verifier is rejected with invalid_grant" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -87,13 +87,13 @@ defmodule MarketMySpecSpex.Story612.Criterion5690Spex do
 
       then_ "the token request is rejected", context do
         assert response(context.token_conn, 400)
-        :ok
+        {:ok, context}
       end
 
       then_ "the error is invalid_grant", context do
         body = json_response(context.token_conn, 400)
         assert body["error"] in ["invalid_grant", "invalid_request"]
-        :ok
+        {:ok, context}
       end
     end
   end

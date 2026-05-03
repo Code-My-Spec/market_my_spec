@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5770Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "adding an existing member a second time is rejected" do
-    scenario "the second invite for the same email surfaces a conflict error", context do
+    scenario "the second invite for the same email surfaces a conflict error" do
       given_ "a registered owner user", context do
         owner = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(owner)
@@ -66,7 +66,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5770Spex do
         refute context.second_invite_html =~ ~r/invitation sent/i,
                "expected no success confirmation for the duplicate invite"
 
-        :ok
+        {:ok, context}
       end
     end
   end

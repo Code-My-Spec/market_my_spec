@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5702Spex do
   use MarketMySpecSpex.Case
 
   spex "token revocation validation" do
-    scenario "revocation request with a syntactically invalid token is rejected", context do
+    scenario "revocation request with a syntactically invalid token is rejected" do
       given_ "an MCP client with a malformed token", context do
         {:ok, context}
       end
@@ -21,13 +21,13 @@ defmodule MarketMySpecSpex.Story612.Criterion5702Spex do
 
       then_ "the server rejects the request with 400", context do
         assert response(context.conn, 400)
-        :ok
+        {:ok, context}
       end
 
       then_ "the error body contains an invalid_request error code", context do
         body = json_response(context.conn, 400)
         assert body["error"] == "invalid_request"
-        :ok
+        {:ok, context}
       end
     end
   end

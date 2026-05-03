@@ -160,12 +160,12 @@ Return under 800 words. Flag the 2-3 alternatives that look most dangerous to th
 
 Don't poll. Don't narrate. Just wait.
 
-## Synthesis — write `marketing/03_personas.md`
+## Persist the artifact via write_file
 
 When all reports return:
 
-1. Save each raw report to `marketing/research/persona_<segment>.md` and `marketing/research/alternatives.md`.
-2. Synthesize into `marketing/03_personas.md`:
+1. Persist each raw report by calling the `write_file` MCP tool with `path: "marketing/research/persona_<segment>.md"` (one call per segment) and `path: "marketing/research/alternatives.md"`. The `content` is the raw report body.
+2. Synthesize into `marketing/03_personas.md` and persist by calling the `write_file` MCP tool with `path: "marketing/03_personas.md"` and `content` matching the template below:
 
 ```markdown
 # Personas — [Business name]

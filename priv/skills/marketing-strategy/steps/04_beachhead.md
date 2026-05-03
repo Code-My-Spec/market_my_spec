@@ -103,9 +103,9 @@ Without a graduation criterion, founders switch beachheads every 90 days and nev
 - **Picking the segment that answers your calls** — responsiveness isn't fit, it's often just lonely buyers
 - **"A and B" beachheads** — pick one. "We'll target both empty-nesters and contractors" = zero positioning clarity. Hold the line.
 
-## Write the artifact
+## Persist the artifact via write_file
 
-Write `marketing/04_beachhead.md`:
+Call the `write_file` MCP tool with `path: "marketing/04_beachhead.md"` and `content` matching the template below:
 
 ```markdown
 # Beachhead — [Business name]

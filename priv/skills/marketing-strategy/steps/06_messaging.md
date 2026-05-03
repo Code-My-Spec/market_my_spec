@@ -145,9 +145,9 @@ Some founders default to marketing-speak when they write. Unstick them:
 - **Andy Raskin's strategic narrative** — use only if the user is in an emerging category or has a strong POV. Five beats: name a shift → stakes of losing → promised land → magic gifts (product) → proof. Overkill for commodity trades.
 - **Osterwalder's Value Proposition Canvas** — Jobs / Pains / Gains + Pain Relievers / Gain Creators. Useful upstream as raw-material generator; don't use as the messaging scaffold itself.
 
-## Write the artifact
+## Persist the artifact via write_file
 
-Write `marketing/06_messaging.md`:
+Call the `write_file` MCP tool with `path: "marketing/06_messaging.md"` and `content` matching the template below:
 
 ```markdown
 # Messaging — [Business name]

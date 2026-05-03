@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5671Spex do
   use MarketMySpecSpex.Case
 
   spex "page passes the messaging-guide phrase audit" do
-    scenario "the rendered page contains no banned phrases and includes the canonical positioning line", context do
+    scenario "the rendered page contains no banned phrases and includes the canonical positioning line" do
       given_ "the landing page", context do
         {:ok, context}
       end
@@ -20,54 +20,54 @@ defmodule MarketMySpecSpex.Story633.Criterion5671Spex do
       then_ "the page does not contain the banned phrase '10x'", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/\b10x\b/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain the banned phrase 'go viral'", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/go viral/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain the banned phrase 'AI-powered marketing'", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/AI-powered marketing/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain the banned phrase 'next-gen'", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/next-gen/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain the banned phrase 'revolutionize'", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/revolutionize/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain the banned phrase 'Lights out software factory'", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/lights out software factory/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain 'Elixir-first' positioning", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/Elixir-first/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain 'specification-driven' framing", context do
         assert context.html =~ "Marketing for founders"
         refute context.html =~ ~r/specification-driven/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the canonical positioning line is present", context do
         assert context.html =~ "Marketing for founders, in Claude Code"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -1,12 +1,12 @@
-defmodule MarketMySpecSpex.Story676.Criterion5749Spex do
+defmodule MarketMySpecSpex.Story676.Criterion5847Spex do
   @moduledoc """
-  Story 676 — Strategy Artifacts Saved To My Project
-  Criterion 5749 — Skill content sweep finds no hosted-doc language
+  Story 676 — Strategy Artifacts Saved To My Account
+  Criterion 5847 — Skill content sweep finds no local-filesystem language
   """
 
   use MarketMySpecSpex.Case
 
-  @skill_root "skills/marketing-strategy"
+  @skill_root "priv/skills/marketing-strategy"
 
   @step_files [
     "steps/01_current_state.md",
@@ -19,25 +19,18 @@ defmodule MarketMySpecSpex.Story676.Criterion5749Spex do
     "steps/08_plan.md"
   ]
 
-  @hosted_doc_phrases [
-    "we'll save",
-    "we will save",
-    "we'll store",
-    "we will store",
-    "stored for you",
-    "saved to your dashboard",
-    "your dashboard",
-    "download your strategy",
-    "download your plan",
-    "hosted at",
-    "hosted on our",
-    "stored on our servers",
-    "uploaded to your account",
-    "saved on the server"
+  @banned_phrases [
+    "write tool",
+    "./marketing/",
+    "your local marketing",
+    "in your working directory",
+    "commit to git locally",
+    "on the user's machine",
+    "local filesystem"
   ]
 
-  spex "skill content sweep finds no hosted-doc language" do
-    scenario "all skill files use local-write language, not hosted/dashboard language", context do
+  spex "skill content sweep finds no local-filesystem language" do
+    scenario "all skill files use hosted-via-MCP language, not local-filesystem language" do
       given_ "all skill files (SKILL.md and the eight steps)", context do
         skill_dir = Application.app_dir(:market_my_spec, @skill_root)
 
@@ -57,32 +50,35 @@ defmodule MarketMySpecSpex.Story676.Criterion5749Spex do
           assert byte_size(content) > 0, "Expected #{rel} to have non-empty content"
         end)
 
-        :ok
+        {:ok, context}
       end
 
-      then_ "no skill file contains any hosted-doc phrase", context do
+      then_ "no skill file contains any local-filesystem phrase", context do
         Enum.each(context.file_data, fn {rel, content_lc} ->
           assert byte_size(content_lc) > 0,
                  "anchor: expected #{rel} to be non-empty for the sweep to be meaningful"
 
-          Enum.each(@hosted_doc_phrases, fn phrase ->
+          Enum.each(@banned_phrases, fn phrase ->
             refute String.contains?(content_lc, phrase),
-                   "Found hosted-doc phrase \"#{phrase}\" in #{rel}"
+                   "Found local-filesystem phrase \"#{phrase}\" in #{rel}"
           end)
         end)
 
-        :ok
+        {:ok, context}
       end
 
-      then_ "every step file uses local-write language pointing to marketing/", context do
+      then_ "every step file references the write_file MCP tool and the canonical marketing/ path", context do
         Enum.each(context.file_data, fn {rel, content_lc} ->
           if rel != "SKILL.md" do
+            assert content_lc =~ "write_file",
+                   "Expected write_file MCP tool reference in #{rel}"
+
             assert content_lc =~ "marketing/",
-                   "Expected local marketing/ path reference in #{rel}"
+                   "Expected canonical marketing/ path reference in #{rel}"
           end
         end)
 
-        :ok
+        {:ok, context}
       end
     end
   end

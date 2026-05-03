@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story634.Criterion5708Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "three required troubleshooting blocks quality gate" do
-    scenario "the deployed guide contains all three required troubleshooting blocks", context do
+    scenario "the deployed guide contains all three required troubleshooting blocks" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -31,17 +31,17 @@ defmodule MarketMySpecSpex.Story634.Criterion5708Spex do
 
       then_ "the port conflict troubleshooting block is present", context do
         assert has_element?(context.view, "[data-test='port-conflict-troubleshooting']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the OAuth troubleshooting block is present", context do
         assert has_element?(context.view, "[data-test='oauth-troubleshooting']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the MCP connection troubleshooting block is present", context do
         assert has_element?(context.view, "[data-test='mcp-connection-troubleshooting']")
-        :ok
+        {:ok, context}
       end
     end
   end

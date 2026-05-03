@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5791Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "dashboard rows show only name and access level" do
-    scenario "the rendered dashboard row exposes name + access-level cells but no extra columns", context do
+    scenario "the rendered dashboard row exposes name + access-level cells but no extra columns" do
       given_ "an agency with at least one client", context do
         agency_owner = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(agency_owner)
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5791Spex do
         refute has_element?(context.view, "[data-test='client-row'] [data-test='client-last-activity']"),
                "expected no last-activity cell"
 
-        :ok
+        {:ok, context}
       end
     end
   end

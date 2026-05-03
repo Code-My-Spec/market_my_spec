@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5728Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "SKILL.md must be a real on-disk file, not synthesized at runtime" do
-    scenario "the SKILL.md file exists and contains canonical skill content", context do
+    scenario "the SKILL.md file exists and contains canonical skill content" do
       given_ "the marketing-strategy SKILL.md", context do
         skill_md =
           Application.app_dir(:market_my_spec, @skill_root)
@@ -25,18 +25,18 @@ defmodule MarketMySpecSpex.Story675.Criterion5728Spex do
 
       then_ "the SKILL.md file is non-empty", context do
         assert byte_size(context.skill_md) > 0
-        :ok
+        {:ok, context}
       end
 
       then_ "the SKILL.md contains the canonical skill name", context do
         assert context.skill_md =~ "name: marketing-strategy"
-        :ok
+        {:ok, context}
       end
 
       then_ "the SKILL.md references step files, confirming it is not placeholder content", context do
         assert context.skill_md =~ "steps/01_current_state.md"
         assert context.skill_md =~ "steps/08_plan.md"
-        :ok
+        {:ok, context}
       end
     end
   end

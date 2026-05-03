@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5666Spex do
   use MarketMySpecSpex.Case
 
   spex "artifact-in-hero quality gate" do
-    scenario "the deployed hero contains a visible strategy artifact", context do
+    scenario "the deployed hero contains a visible strategy artifact" do
       given_ "the landing page at its canonical route", context do
         {:ok, context}
       end
@@ -24,21 +24,21 @@ defmodule MarketMySpecSpex.Story633.Criterion5666Spex do
 
       then_ "the artifact-preview element is present in the hero", context do
         assert has_element?(context.view, "[data-test='artifact-preview']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the artifact-preview element is not blank", context do
         artifact_html = context.view |> element("[data-test='artifact-preview']") |> render()
         assert has_element?(context.view, "[data-test='artifact-preview']")
         refute artifact_html =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "the artifact content reads as a real strategy document excerpt, not placeholder copy", context do
         artifact_html = context.view |> element("[data-test='artifact-preview']") |> render()
         assert artifact_html =~ ~r/(positioning|ICP|channel|strategy|founder)/i
         refute artifact_html =~ ~r/Lorem ipsum/i
-        :ok
+        {:ok, context}
       end
     end
   end

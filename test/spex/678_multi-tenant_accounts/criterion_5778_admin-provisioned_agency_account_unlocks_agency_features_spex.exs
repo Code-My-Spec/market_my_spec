@@ -18,7 +18,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5778Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "admin-provisioned agency account unlocks agency features" do
-    scenario "operating in an admin-provisioned agency account exposes the agency dashboard nav link and white label settings", context do
+    scenario "operating in an admin-provisioned agency account exposes the agency dashboard nav link and white label settings" do
       given_ "a user with an admin-provisioned agency account", context do
         user = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(user)
@@ -37,7 +37,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5778Spex do
         assert has_element?(view, "[data-test='nav-agency-dashboard']"),
                "expected agency dashboard nav link in admin-provisioned agency account"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "white label settings are accessible in account settings", context do
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5778Spex do
         assert has_element?(view, "[data-test='white-label-settings']"),
                "expected white-label settings to be accessible in agency account settings"
 
-        :ok
+        {:ok, context}
       end
     end
   end

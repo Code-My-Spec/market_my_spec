@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5724Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "invoking an unknown skill returns a clear MCP error" do
-    scenario "agent calling invoke_skill with an unregistered skill name receives an error", context do
+    scenario "agent calling invoke_skill with an unregistered skill name receives an error" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -104,14 +104,14 @@ defmodule MarketMySpecSpex.Story675.Criterion5724Spex do
         body = json_response(context.mcp_conn, 200)
         assert body["jsonrpc"] == "2.0"
         assert Map.has_key?(body, "error"), "expected a JSON-RPC error for unknown skill"
-        :ok
+        {:ok, context}
       end
 
       then_ "the error response does not contain skill content", context do
         body = json_response(context.mcp_conn, 200)
         assert body["jsonrpc"] == "2.0"
         assert is_nil(body["result"]), "expected no result field in an error response"
-        :ok
+        {:ok, context}
       end
     end
   end

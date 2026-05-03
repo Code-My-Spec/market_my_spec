@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story674.Criterion5734Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "orient step quality gate" do
-    scenario "the SKILL.md contains the orient step gating the interview questions", context do
+    scenario "the SKILL.md contains the orient step gating the interview questions" do
       given_ "the marketing strategy SKILL.md", context do
         skill_md =
           Application.app_dir(:market_my_spec, @skill_root)
@@ -31,12 +31,12 @@ defmodule MarketMySpecSpex.Story674.Criterion5734Spex do
         {orient_offset, _} = orient_pos
         {steps_offset, _} = steps_pos
         assert orient_offset < steps_offset
-        :ok
+        {:ok, context}
       end
 
       then_ "the orient step instructs the agent to check context before asking anything", context do
         assert context.skill_md =~ "Before touching anything"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5667Spex do
   use MarketMySpecSpex.Case
 
   spex "install command is immediately accessible with no auth gate" do
-    scenario "visitor sees the install command and copy affordance before any sign-up prompt", context do
+    scenario "visitor sees the install command and copy affordance before any sign-up prompt" do
       given_ "an anonymous visitor on the landing page", context do
         {:ok, context}
       end
@@ -20,12 +20,12 @@ defmodule MarketMySpecSpex.Story633.Criterion5667Spex do
       then_ "the install command is rendered in a monospace block", context do
         assert has_element?(context.view, "[data-test='install-command']")
         assert context.html =~ "claude mcp add"
-        :ok
+        {:ok, context}
       end
 
       then_ "a copy affordance is present alongside the install command", context do
         assert has_element?(context.view, "[data-test='copy-button']")
-        :ok
+        {:ok, context}
       end
 
       when_ "they click the copy button", context do
@@ -36,7 +36,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5667Spex do
       then_ "no sign-up modal or auth gate is presented", context do
         assert has_element?(context.view, "[data-test='install-command']")
         refute has_element?(context.view, "[data-test='auth-gate']")
-        :ok
+        {:ok, context}
       end
     end
   end

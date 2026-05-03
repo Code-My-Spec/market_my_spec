@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5678Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "magic link expiry and consumption" do
-    scenario "visiting an invalid magic link redirects to login with an error message", context do
+    scenario "visiting an invalid magic link redirects to login with an error message" do
       given_ "a visitor with an invalid magic link URL", context do
         {:ok, context}
       end
@@ -23,17 +23,17 @@ defmodule MarketMySpecSpex.Story609.Criterion5678Spex do
 
       then_ "they are redirected to the login page rather than crashing", context do
         assert {:error, {:live_redirect, %{to: "/users/log-in"}}} = context.result
-        :ok
+        {:ok, context}
       end
 
       then_ "the login page explains the link is invalid so they can request a new one", context do
         assert context.login_html =~ "Magic link is invalid or it has expired"
         assert context.login_html =~ "Log in"
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "a consumed magic link is rejected and the user can request a fresh one", context do
+    scenario "a consumed magic link is rejected and the user can request a fresh one" do
       given_ "a confirmed user with a magic link token", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -52,7 +52,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5678Spex do
 
       then_ "they are redirected to the login page to request a fresh link", context do
         assert {:error, {:live_redirect, %{to: "/users/log-in"}}} = context.result
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -11,7 +11,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5692Spex do
   use MarketMySpecSpex.Case
 
   spex "OAuth metadata document completeness" do
-    scenario "the well-known metadata document contains all required fields", context do
+    scenario "the well-known metadata document contains all required fields" do
       given_ "the OAuth authorization server metadata endpoint", context do
         {:ok, context}
       end
@@ -25,32 +25,32 @@ defmodule MarketMySpecSpex.Story612.Criterion5692Spex do
       then_ "the issuer field is present and non-empty", context do
         assert Map.has_key?(context.metadata, "issuer")
         refute context.metadata["issuer"] =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "the authorization_endpoint field is present and non-empty", context do
         assert Map.has_key?(context.metadata, "authorization_endpoint")
         refute context.metadata["authorization_endpoint"] =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "the token_endpoint field is present and non-empty", context do
         assert Map.has_key?(context.metadata, "token_endpoint")
         refute context.metadata["token_endpoint"] =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "the registration_endpoint field is present and non-empty", context do
         assert Map.has_key?(context.metadata, "registration_endpoint")
         refute context.metadata["registration_endpoint"] =~ ~r/^\s*$/
-        :ok
+        {:ok, context}
       end
 
       then_ "PKCE with S256 is listed in code_challenge_methods_supported", context do
         methods = context.metadata["code_challenge_methods_supported"]
         assert is_list(methods)
         assert "S256" in methods
-        :ok
+        {:ok, context}
       end
     end
   end

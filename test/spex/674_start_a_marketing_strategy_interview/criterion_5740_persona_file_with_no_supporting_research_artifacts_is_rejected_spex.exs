@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story674.Criterion5740Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "persona file requires supporting research artifacts quality gate" do
-    scenario "step 3 specifies research artifacts as a prerequisite to the persona file", context do
+    scenario "step 3 specifies research artifacts as a prerequisite to the persona file" do
       given_ "the step 3 persona research file", context do
         step_md =
           Application.app_dir(:market_my_spec, @skill_root)
@@ -26,7 +26,7 @@ defmodule MarketMySpecSpex.Story674.Criterion5740Spex do
       then_ "step 3 lists research artifacts as separate required outputs", context do
         assert context.step_md =~ "marketing/research/"
         assert context.step_md =~ "marketing/03_personas.md"
-        :ok
+        {:ok, context}
       end
 
       then_ "the research artifacts are specified before the synthesized persona file", context do
@@ -37,13 +37,13 @@ defmodule MarketMySpecSpex.Story674.Criterion5740Spex do
         {research_offset, _} = research_pos
         {persona_offset, _} = persona_pos
         assert research_offset < persona_offset
-        :ok
+        {:ok, context}
       end
 
       then_ "step 3 explicitly requires synthesizing from research, not inventing personas", context do
         assert context.step_md =~ "synthesize"
         assert context.step_md =~ "research"
-        :ok
+        {:ok, context}
       end
     end
   end

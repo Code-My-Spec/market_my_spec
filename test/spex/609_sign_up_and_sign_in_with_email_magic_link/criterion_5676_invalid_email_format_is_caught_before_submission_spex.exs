@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5676Spex do
   use MarketMySpecSpex.Case
 
   spex "sign up flow - email validation" do
-    scenario "email without an @ sign shows a format error before the form submits", context do
+    scenario "email without an @ sign shows a format error before the form submits" do
       given_ "a visitor on the registration page", context do
         {:ok, view, _html} = live(context.conn, "/users/register")
         {:ok, Map.put(context, :view, view)}
@@ -24,16 +24,16 @@ defmodule MarketMySpecSpex.Story609.Criterion5676Spex do
 
       then_ "an inline format error is shown on the email field", context do
         assert context.html =~ "must have the @ sign and no spaces"
-        :ok
+        {:ok, context}
       end
 
       then_ "the registration form is still visible so they can correct the input", context do
         assert has_element?(context.view, "#registration_form")
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "email with spaces shows a format error before the form submits", context do
+    scenario "email with spaces shows a format error before the form submits" do
       given_ "a visitor on the registration page", context do
         {:ok, view, _html} = live(context.conn, "/users/register")
         {:ok, Map.put(context, :view, view)}
@@ -50,7 +50,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5676Spex do
 
       then_ "an inline format error is shown on the email field", context do
         assert context.html =~ "must have the @ sign and no spaces"
-        :ok
+        {:ok, context}
       end
     end
   end

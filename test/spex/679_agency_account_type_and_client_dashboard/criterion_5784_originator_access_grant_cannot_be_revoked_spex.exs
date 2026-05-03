@@ -14,7 +14,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5784Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "originator access grant cannot be revoked" do
-    scenario "the agency dashboard exposes no revoke control on originator rows", context do
+    scenario "the agency dashboard exposes no revoke control on originator rows" do
       given_ "an agency that has originated a client account", context do
         user = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(user)
@@ -45,7 +45,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5784Spex do
                ),
                "expected no revoke control on an originator-marked row"
 
-        :ok
+        {:ok, context}
       end
     end
   end

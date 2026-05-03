@@ -33,7 +33,7 @@ skills/marketing-strategy/
 
 Before touching anything, do these in parallel:
 
-1. Check whether `marketing/` already exists in the user's working directory. If it does, list its contents and read any step artifacts already written. This tells you whether you're running the first-time flow or **iteration mode** (see bottom of this doc).
+1. Check whether `marketing/` already exists in the user's MMS account workspace by calling the `list_files` MCP tool with `prefix: "marketing/"`. If keys come back, use `read_file` on each step artifact already written. This tells you whether you're running the first-time flow or **iteration mode** (see bottom of this doc).
 2. Skim obvious project context: `README.md`, `package.json`, `mix.exs`, `Gemfile`, a landing page HTML file, or whatever signals the business type. For a contractor, this might just be a one-page site or a Google Business Profile — that's fine.
 3. If the user gave you a URL or product name in arguments, fetch it with WebFetch before asking a single question. Don't make the user type things you can read.
 
@@ -56,7 +56,7 @@ For each step:
 
 1. Read `steps/NN_*.md` when you reach it — not before.
 2. Follow the instructions in that doc (interview questions, research agent prompts, or synthesis guidance).
-3. Write the artifact to `marketing/` as the step completes. Don't batch — if the user bails after step 3, they should still have three usable files.
+3. Persist the artifact by calling the `write_file` MCP tool with `path: "marketing/NN_*.md"` (the canonical filename for that step) and `content` set to the artifact body. Do this as the step completes — don't batch. If the user bails after step 3, they should still have three usable files in their account workspace.
 4. Between steps, give the user a one-sentence transition: what's done, what's next.
 
 ## Operating principles
@@ -71,15 +71,15 @@ For each step:
 
 ## Iteration mode
 
-If `marketing/` already exists with prior artifacts:
+If `marketing/` already exists with prior artifacts in the account workspace:
 
-1. Read what's there.
+1. Use `list_files` with `prefix: "marketing/"` to enumerate prior artifacts, then `read_file` each one to load what's there.
 2. Ask: "What's changed since last time? What worked, what didn't, what surprised you?"
 3. Identify which step(s) need updating — often one or two, not all eight. Common patterns:
    - New customer data → revisit steps 2, 3, 4 (jobs, personas, beachhead)
    - A channel isn't working → revisit step 7, possibly 5 (positioning might be off)
    - Revenue plateau → revisit step 4 (wrong beachhead) before blaming execution
-4. Update the relevant step artifacts in place. At the bottom of each updated file, add a short `## Revision — YYYY-MM-DD` section noting what changed and why.
+4. Update the relevant step artifacts in place. After `read_file` returns the prior body, use `edit_file` for surgical changes (the read-before-edit gate is satisfied) or `write_file` to overwrite the whole artifact (the read-before-overwrite gate is satisfied). At the bottom of each updated artifact, add a short `## Revision — YYYY-MM-DD` section noting what changed and why.
 
 ## What this skill does NOT do
 

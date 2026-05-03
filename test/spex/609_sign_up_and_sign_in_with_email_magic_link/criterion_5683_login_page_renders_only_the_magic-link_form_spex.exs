@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story609.Criterion5683Spex do
   use MarketMySpecSpex.Case
 
   spex "login page" do
-    scenario "magic-link email form is the only authentication option shown", context do
+    scenario "magic-link email form is the only authentication option shown" do
       given_ "an unauthenticated visitor", context do
         {:ok, context}
       end
@@ -20,14 +20,14 @@ defmodule MarketMySpecSpex.Story609.Criterion5683Spex do
       then_ "the magic-link email form is rendered with an email input", context do
         assert has_element?(context.view, "#login_form_magic")
         assert has_element?(context.view, "#login_form_magic input[type=email]")
-        :ok
+        {:ok, context}
       end
 
       then_ "no password sign-in form is shown alongside it", context do
         # Anchor: confirm the page actually rendered its main content
         assert has_element?(context.view, "#login_form_magic")
         refute has_element?(context.view, "#login_form_password")
-        :ok
+        {:ok, context}
       end
     end
   end

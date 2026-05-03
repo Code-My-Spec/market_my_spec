@@ -12,7 +12,7 @@ defmodule MarketMySpecSpex.Story672.Criterion5681Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "account resolves by Google sub even when email changes" do
-    scenario "user whose Google email changed still resolves to their MMS account", context do
+    scenario "user whose Google email changed still resolves to their MMS account" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -64,14 +64,14 @@ defmodule MarketMySpecSpex.Story672.Criterion5681Spex do
         assert redirected_to(context.callback_conn, 302) =~ "/integrations"
         error_flash = get_flash(context.callback_conn, :error)
         refute error_flash && error_flash =~ ~r/failed|error/i
-        :ok
+        {:ok, context}
       end
 
       then_ "a success flash confirms the Google connection", context do
         info_flash = get_flash(context.callback_conn, :info)
         assert info_flash, "expected an info flash confirming the connection"
         assert info_flash =~ ~r/connected|Google/i
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5715Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "MCP session initializes over SSE and serves resources" do
-    scenario "authenticated MCP client connects to the SSE endpoint and receives a valid session", context do
+    scenario "authenticated MCP client connects to the SSE endpoint and receives a valid session" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -99,14 +99,14 @@ defmodule MarketMySpecSpex.Story675.Criterion5715Spex do
 
       then_ "the SSE endpoint returns a 200 status", context do
         assert context.sse_conn.status == 200
-        :ok
+        {:ok, context}
       end
 
       then_ "the response content-type is text/event-stream", context do
         assert context.sse_conn.status == 200
         [content_type | _] = get_resp_header(context.sse_conn, "content-type")
         assert content_type =~ "text/event-stream"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -76,7 +76,7 @@ defmodule MarketMySpec.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1"},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:sexy_spex, "~> 0.1"},
+      {:sexy_spex, github: "Code-My-Spec/spex", branch: "feature/reusable-givens"},
       {:boundary, "~> 0.10", runtime: false},
       {:assent, "~> 0.3"},
       {:cloak, "~> 1.1"},

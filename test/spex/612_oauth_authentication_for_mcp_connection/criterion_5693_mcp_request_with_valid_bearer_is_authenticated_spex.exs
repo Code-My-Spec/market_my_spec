@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5693Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "valid bearer token grants access to the MCP endpoint" do
-    scenario "MCP client with a freshly-issued bearer receives a non-401 response", context do
+    scenario "MCP client with a freshly-issued bearer receives a non-401 response" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -97,7 +97,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5693Spex do
       then_ "the MCP endpoint accepts the request — it does not return 401", context do
         assert context.mcp_conn.status in [200, 201, 202, 400]
         refute context.mcp_conn.status == 401
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5766Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "new user gets a default individual account on sign-up" do
-    scenario "the user lands on the accounts list with exactly one individual account visible", context do
+    scenario "the user lands on the accounts list with exactly one individual account visible" do
       given_ "a freshly registered user with a magic-link token", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -37,7 +37,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5766Spex do
         refute context.accounts_html =~ ~r/no accounts/i,
                "expected the user not to see the empty-accounts message"
 
-        :ok
+        {:ok, context}
       end
     end
   end

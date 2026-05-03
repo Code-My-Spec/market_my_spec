@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5673Spex do
   use MarketMySpecSpex.Case
 
   spex "agency CTA is present below the install command" do
-    scenario "agency visitor sees a Talk-to-John link on the landing page", context do
+    scenario "agency visitor sees a Talk-to-John link on the landing page" do
       given_ "a visitor loading the landing page", context do
         {:ok, context}
       end
@@ -19,7 +19,7 @@ defmodule MarketMySpecSpex.Story633.Criterion5673Spex do
 
       then_ "the agency CTA element is present on the page", context do
         assert has_element?(context.view, "[data-test='agency-cta']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the agency CTA contains copy directed at agencies", context do
@@ -27,13 +27,13 @@ defmodule MarketMySpecSpex.Story633.Criterion5673Spex do
         agency_html = context.view |> element("[data-test='agency-cta']") |> render()
         assert agency_html =~ ~r/run an agency/i
         assert agency_html =~ ~r/talk to john/i
-        :ok
+        {:ok, context}
       end
 
       then_ "the install command is also present on the same page", context do
         assert has_element?(context.view, "[data-test='install-command']")
         assert has_element?(context.view, "[data-test='agency-cta']")
-        :ok
+        {:ok, context}
       end
     end
   end

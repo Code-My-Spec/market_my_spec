@@ -96,9 +96,9 @@ Most of the interview is universal. Adjust these:
 - **Consulting / professional services:** Add "What's the smallest engagement you'll take, and the biggest you've delivered?" — sizes the offer ladder.
 - **Software / SaaS:** Add "What's the activation path — what has to happen in the first session for a user to stick?" Useful if you later discover retention is the bottleneck.
 
-## Write the artifact
+## Persist the artifact via write_file
 
-Write `marketing/01_current_state.md`:
+Call the `write_file` MCP tool with `path: "marketing/01_current_state.md"` and `content` matching the template below:
 
 ```markdown
 # Current State — [Business name]

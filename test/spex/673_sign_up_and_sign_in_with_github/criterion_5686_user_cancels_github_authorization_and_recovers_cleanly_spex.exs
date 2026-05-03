@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story673.Criterion5686Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "user cancels GitHub authorization and recovers cleanly" do
-    scenario "user who cancels GitHub authorization sees a clear error and can try again", context do
+    scenario "user who cancels GitHub authorization sees a clear error and can try again" do
       given_ "a registered user", context do
         user = Fixtures.user_fixture()
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -28,14 +28,14 @@ defmodule MarketMySpecSpex.Story673.Criterion5686Spex do
 
       then_ "the user is redirected away from the callback", context do
         assert redirected_to(context.callback_conn, 302) =~ "/integrations"
-        :ok
+        {:ok, context}
       end
 
       then_ "an error flash message is shown explaining the cancellation", context do
         error_flash = get_flash(context.callback_conn, :error)
         assert error_flash, "expected an error flash to be set"
         assert error_flash =~ ~r/denied|access/i
-        :ok
+        {:ok, context}
       end
     end
   end

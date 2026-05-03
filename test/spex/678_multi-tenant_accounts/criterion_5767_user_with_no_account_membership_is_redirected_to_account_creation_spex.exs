@@ -19,7 +19,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5767Spex do
   alias MarketMySpecSpex.Fixtures
 
   spex "user with no account membership is redirected to account creation" do
-    scenario "a logged-in user with zero accounts is redirected away from a protected route", context do
+    scenario "a logged-in user with zero accounts is redirected away from a protected route" do
       given_ "a registered user with no account memberships", context do
         user = Fixtures.user_fixture(%{skip_default_account: true})
         {token, _raw} = Fixtures.generate_user_magic_link_token(user)
@@ -35,7 +35,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5767Spex do
         assert {:error, {:live_redirect, %{to: "/accounts/new"}}} =
                  live(context.conn, "/users/settings")
 
-        :ok
+        {:ok, context}
       end
     end
   end

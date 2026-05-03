@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story674.Criterion5741Spex do
   @skill_root "skills/marketing-strategy"
 
   spex "skill deflects blog post requests to downstream content work" do
-    scenario "the SKILL.md explicitly excludes blog post and content production from scope", context do
+    scenario "the SKILL.md explicitly excludes blog post and content production from scope" do
       given_ "the marketing strategy SKILL.md", context do
         skill_md =
           Application.app_dir(:market_my_spec, @skill_root)
@@ -22,12 +22,12 @@ defmodule MarketMySpecSpex.Story674.Criterion5741Spex do
       then_ "the skill defines a scope boundary excluding blog post creation", context do
         assert context.skill_md =~ "What this skill does NOT do"
         assert context.skill_md =~ "blog posts"
-        :ok
+        {:ok, context}
       end
 
       then_ "the exclusion frames blog posts as downstream content work", context do
         assert context.skill_md =~ "downstream content"
-        :ok
+        {:ok, context}
       end
     end
   end

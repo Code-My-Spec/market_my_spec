@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5691Spex do
   use MarketMySpecSpex.Case
 
   spex "OAuth well-known metadata discovery" do
-    scenario "MCP client fetches the well-known metadata document", context do
+    scenario "MCP client fetches the well-known metadata document" do
       given_ "an MCP client about to connect", context do
         {:ok, context}
       end
@@ -20,22 +20,22 @@ defmodule MarketMySpecSpex.Story612.Criterion5691Spex do
 
       then_ "the response is a JSON document", context do
         assert is_map(context.metadata)
-        :ok
+        {:ok, context}
       end
 
       then_ "the document contains an authorization_endpoint", context do
         assert Map.has_key?(context.metadata, "authorization_endpoint")
-        :ok
+        {:ok, context}
       end
 
       then_ "the document contains a token_endpoint", context do
         assert Map.has_key?(context.metadata, "token_endpoint")
-        :ok
+        {:ok, context}
       end
 
       then_ "the document contains a registration_endpoint for dynamic client registration", context do
         assert Map.has_key?(context.metadata, "registration_endpoint")
-        :ok
+        {:ok, context}
       end
     end
   end

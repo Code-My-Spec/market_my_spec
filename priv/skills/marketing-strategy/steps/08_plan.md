@@ -219,9 +219,9 @@ If the strategy doesn't survive contact with tomorrow morning, it won't survive 
 - **Aggregating across channels** — hides failing ones
 - **No defined trigger for revisiting the plan** — set the 6-week cycle boundary as non-negotiable
 
-## Write the artifact
+## Persist the artifact via write_file
 
-Write `marketing/08_plan.md`:
+Call the `write_file` MCP tool with `path: "marketing/08_plan.md"` and `content` matching the template below:
 
 ```markdown
 # 90-Day Plan — [Business name]
@@ -287,11 +287,11 @@ Write `marketing/08_plan.md`:
 
 ## Closing message
 
-After writing all artifacts, summarize briefly:
+After persisting all artifacts via `write_file`, summarize briefly:
 
-> "Strategy written. You have 8 files in `marketing/` plus raw research in `marketing/research/`. Your beachhead is [persona]. Your inner-ring channel is [channel]. Your 90-day goal is [goal]. Tomorrow morning: [action]. Re-run this skill in 6 weeks (end of cycle 1) or sooner if something's clearly broken."
+> "Strategy written. You have 8 artifacts under `marketing/` in your MMS account workspace plus raw research under `marketing/research/`. Your beachhead is [persona]. Your inner-ring channel is [channel]. Your 90-day goal is [goal]. Tomorrow morning: [action]. Re-run this skill in 6 weeks (end of cycle 1) or sooner if something's clearly broken. Browse the artifacts in the MMS web UI, or read them back into a future agent session via `read_file`."
 
-Don't re-paste the full plan. Point them at the files.
+Don't re-paste the full plan. Point them at the artifacts.
 
 ## End of flow
 

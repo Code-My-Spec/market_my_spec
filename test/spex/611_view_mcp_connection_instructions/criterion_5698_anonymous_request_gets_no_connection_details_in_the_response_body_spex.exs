@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
   use MarketMySpecSpex.Case
 
   spex "MCP connection details are not leaked to unauthenticated requests" do
-    scenario "anonymous HTTP GET to /mcp-setup returns a redirect with no connection details", context do
+    scenario "anonymous HTTP GET to /mcp-setup returns a redirect with no connection details" do
       given_ "an unauthenticated visitor", context do
         {:ok, context}
       end
@@ -19,7 +19,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
 
       then_ "the response redirects to the login page", context do
         assert redirected_to(context.conn) == "/users/log-in"
-        :ok
+        {:ok, context}
       end
 
       then_ "the response body contains no MCP server URL", context do
@@ -27,7 +27,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
         # Anchor: confirm we actually got a redirect response
         assert redirected_to(context.conn) == "/users/log-in"
         refute body =~ "/mcp"
-        :ok
+        {:ok, context}
       end
 
       then_ "the response body contains no install command", context do
@@ -35,11 +35,11 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
         # Anchor: confirm we got a redirect, not an empty page
         assert redirected_to(context.conn) == "/users/log-in"
         refute body =~ "claude mcp add"
-        :ok
+        {:ok, context}
       end
     end
 
-    scenario "anonymous LiveView request to /mcp-setup is rejected before the page mounts", context do
+    scenario "anonymous LiveView request to /mcp-setup is rejected before the page mounts" do
       given_ "an unauthenticated visitor", context do
         {:ok, context}
       end
@@ -51,7 +51,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
 
       then_ "the LiveView is rejected — no setup content is delivered", context do
         assert {:error, {:live_redirect, %{to: "/users/log-in"}}} = context.result
-        :ok
+        {:ok, context}
       end
     end
   end

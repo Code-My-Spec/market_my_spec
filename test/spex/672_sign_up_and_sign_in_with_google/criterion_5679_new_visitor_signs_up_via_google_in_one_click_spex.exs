@@ -7,9 +7,9 @@ defmodule MarketMySpecSpex.Story672.Criterion5679Spex do
   use MarketMySpecSpex.Case
 
   spex "new visitor signs up via Google in one click" do
-    scenario "anonymous visitor sees Google sign-in on the login page and is redirected to Google", context do
+    scenario "anonymous visitor sees Google sign-in on the login page and is redirected to Google" do
       given_ "an anonymous visitor", context do
-        :ok
+        {:ok, context}
       end
 
       when_ "they visit the login page", context do
@@ -19,7 +19,7 @@ defmodule MarketMySpecSpex.Story672.Criterion5679Spex do
 
       then_ "a Google sign-in option is present on the login page", context do
         assert has_element?(context.view, "[data-test='google-sign-in']")
-        :ok
+        {:ok, context}
       end
 
       when_ "they initiate the Google OAuth flow", context do
@@ -30,7 +30,7 @@ defmodule MarketMySpecSpex.Story672.Criterion5679Spex do
       then_ "they are redirected to Google's authorization endpoint", context do
         redirect_url = redirected_to(context.oauth_req_conn, 302)
         assert redirect_url =~ "accounts.google.com"
-        :ok
+        {:ok, context}
       end
     end
   end
