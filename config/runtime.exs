@@ -30,8 +30,15 @@ if System.get_env("PHX_SERVER") do
   config :market_my_spec, MarketMySpecWeb.Endpoint, server: true
 end
 
+port = env!("PORT", :integer, 4000)
+
 config :market_my_spec, MarketMySpecWeb.Endpoint,
-  http: [port: env!("PORT", :integer, 4000)]
+  http: [port: port]
+
+# Base URL exposed to domain-layer modules (e.g. McpAuth.ConnectionInfo) that
+# can't reach into MarketMySpecWeb.Endpoint due to Boundary rules. Mirrors
+# the endpoint's actual bind. Prod overrides below with PHX_HOST.
+config :market_my_spec, :base_url, "http://localhost:#{port}"
 
 config :market_my_spec,
   google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),
@@ -84,9 +91,23 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  # Override the dev/test default with the prod host.
+  config :market_my_spec, :base_url, "https://#{host}"
+
   config :market_my_spec, MarketMySpec.Mailer,
     adapter: Swoosh.Adapters.Resend,
     api_key: env!("RESEND_API_KEY", :string, "")
+
+  # AWS / S3 configuration for file storage
+  config :ex_aws,
+    access_key_id: env!("AWS_ACCESS_KEY_ID", :string!),
+    secret_access_key: env!("AWS_SECRET_ACCESS_KEY", :string!),
+    region: env!("AWS_REGION", :string, "us-east-1")
+
+  config :market_my_spec, MarketMySpec.Files.S3,
+    bucket: env!("S3_BUCKET", :string!)
+
+  config :market_my_spec, :files_backend, MarketMySpec.Files.S3
 
   # ## SSL Support
   #
