@@ -2,7 +2,7 @@
 # Deploy MarketMySpec UAT to the UAT Hetzner host.
 set -euo pipefail
 
-SERVER="root@<HETZNER_UAT_IP>"
+SERVER="root@46.225.105.88"
 APP_DIR="/opt/market_my_spec/uat"
 ENV_FILE="/opt/market_my_spec/.env.uat"
 PROJECT="market-my-spec-uat"

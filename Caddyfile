@@ -2,13 +2,17 @@
 # at /opt/<deploy>/Caddyfile (or wherever the Caddy container's volume mount
 # points). Caddy auto-obtains TLS certs via Let's Encrypt when DNS resolves
 # to this host.
+#
+# DNS (Cloudflare zone marketmyspec.com):
+#   marketmyspec.com      A 178.156.143.212  (proxied)  — prod host
+#   uat.marketmyspec.com  A 46.225.105.88    (proxied)  — uat host
 
-# Prod (lives on the prod host)
-app.marketmyspec.com {
+# Prod (append on the 178.156.143.212 host's Caddyfile)
+marketmyspec.com {
 	reverse_proxy market-my-spec-prod-app-1:4000
 }
 
-# UAT (lives on the UAT host)
+# UAT (append on the 46.225.105.88 host's Caddyfile)
 # uat.marketmyspec.com {
 # 	reverse_proxy market-my-spec-uat-app-1:4000
 # }

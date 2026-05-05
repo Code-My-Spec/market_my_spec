@@ -2,7 +2,7 @@
 # Deploy MarketMySpec prod to the prod Hetzner host.
 set -euo pipefail
 
-SERVER="root@<HETZNER_PROD_IP>"
+SERVER="root@178.156.143.212"
 APP_DIR="/opt/market_my_spec/app"
 ENV_FILE="/opt/market_my_spec/.env.prod"
 PROJECT="market-my-spec-prod"
@@ -30,4 +30,4 @@ echo "==> Running migrations..."
 ssh "$SERVER" "cd $APP_DIR && \
   docker compose -f $COMPOSE_FILE -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
 
-echo "==> Done: https://app.marketmyspec.com"
+echo "==> Done: https://marketmyspec.com"
