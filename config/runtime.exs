@@ -30,15 +30,8 @@ if System.get_env("PHX_SERVER") do
   config :market_my_spec, MarketMySpecWeb.Endpoint, server: true
 end
 
-port = env!("PORT", :integer, 4000)
-
 config :market_my_spec, MarketMySpecWeb.Endpoint,
-  http: [port: port]
-
-# Base URL exposed to domain-layer modules (e.g. McpAuth.ConnectionInfo) that
-# can't reach into MarketMySpecWeb.Endpoint due to Boundary rules. Mirrors
-# the endpoint's actual bind. Prod overrides below with PHX_HOST.
-config :market_my_spec, :base_url, "http://localhost:#{port}"
+  http: [port: env!("PORT", :integer, 4000)]
 
 config :market_my_spec,
   google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),
@@ -90,9 +83,6 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0}
     ],
     secret_key_base: secret_key_base
-
-  # Override the dev/test default with the prod host.
-  config :market_my_spec, :base_url, "https://#{host}"
 
   config :market_my_spec, MarketMySpec.Mailer,
     adapter: Swoosh.Adapters.Resend,

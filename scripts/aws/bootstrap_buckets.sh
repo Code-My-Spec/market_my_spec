@@ -28,13 +28,20 @@ for ENV in "${ENVS[@]}"; do
   echo ""
   echo "=== Configuring bucket: ${BUCKET} ==="
 
-  # 1. Create bucket (idempotent — BucketAlreadyOwnedByYou is not an error)
+  # 1. Create bucket (idempotent — BucketAlreadyOwnedByYou is not an error).
+  # us-east-1 is the one region where create-bucket must NOT receive a
+  # LocationConstraint; every other region requires it.
   echo "  Creating bucket..."
-  aws s3api create-bucket \
-    --bucket "${BUCKET}" \
-    --region "${REGION}" \
-    --create-bucket-configuration LocationConstraint="${REGION}" 2>&1 | \
-    grep -v "BucketAlreadyOwnedByYou" || true
+  if [[ "${REGION}" == "us-east-1" ]]; then
+    aws s3api create-bucket --bucket "${BUCKET}" --region "${REGION}" 2>&1 | \
+      grep -v "BucketAlreadyOwnedByYou" || true
+  else
+    aws s3api create-bucket \
+      --bucket "${BUCKET}" \
+      --region "${REGION}" \
+      --create-bucket-configuration LocationConstraint="${REGION}" 2>&1 | \
+      grep -v "BucketAlreadyOwnedByYou" || true
+  fi
 
   # 2. Block all public access
   echo "  Blocking public access..."
@@ -80,7 +87,9 @@ for ENV in "${ENVS[@]}"; do
           "NoncurrentVersionExpiration": {
             "NoncurrentDays": 30
           },
-          "ExpiredObjectDeleteMarker": true
+          "Expiration": {
+            "ExpiredObjectDeleteMarker": true
+          }
         }
       ]
     }'

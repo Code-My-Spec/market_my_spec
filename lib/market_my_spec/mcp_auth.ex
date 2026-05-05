@@ -2,23 +2,22 @@ defmodule MarketMySpec.McpAuth do
   @moduledoc """
   OAuth 2.0 authorization server boundary for MCP clients.
 
-  Delegates token grant/revoke/authentication, authorization-code flow, and
-  connection-info to the three focused sub-modules:
+  Delegates token grant/revoke/authentication and the PKCE authorization-code
+  flow to two focused sub-modules:
 
   - `MarketMySpec.McpAuth.Token` — bearer token grant, revocation, and validation
   - `MarketMySpec.McpAuth.Authorization` — PKCE auth-code flow (preauthorize/authorize/deny)
-  - `MarketMySpec.McpAuth.ConnectionInfo` — server URL, install command, setup guide
 
-  Well-known OAuth metadata (RFC 9728 / RFC 8414) is built at request time by
-  `MarketMySpecWeb.OauthController` using `MarketMySpecWeb.Endpoint.url()` so
-  the issuer and resource URLs reflect the correct runtime host.
+  Well-known OAuth metadata (RFC 9728 / RFC 8414) and the install command shown
+  on `/mcp-setup` and `/` are built at request time by web-layer modules using
+  `MarketMySpecWeb.Endpoint.url()` so the runtime host is reflected.
 
   This module is the single public surface for the MCP OAuth context. Callers
   (controllers, plugs, LiveViews) import only this module rather than reaching
   into sub-modules directly.
   """
 
-  alias MarketMySpec.McpAuth.{Authorization, ConnectionInfo, Token}
+  alias MarketMySpec.McpAuth.{Authorization, Token}
   alias MarketMySpec.Oauth.Application, as: OauthApplication
   alias MarketMySpec.Repo
 
@@ -88,34 +87,6 @@ defmodule MarketMySpec.McpAuth do
   @spec deny(struct(), map()) ::
           {:redirect, binary()} | {:error, map(), integer() | atom()}
   defdelegate deny(resource_owner, params), to: Authorization
-
-  # ---------------------------------------------------------------------------
-  # ConnectionInfo
-  # ---------------------------------------------------------------------------
-
-  @doc """
-  Returns the MCP server URL.
-
-  Delegates to `MarketMySpec.McpAuth.ConnectionInfo.server_url/0`.
-  """
-  @spec server_url() :: String.t()
-  defdelegate server_url(), to: ConnectionInfo
-
-  @doc """
-  Returns the Claude Code CLI command to install this server as an MCP plugin.
-
-  Delegates to `MarketMySpec.McpAuth.ConnectionInfo.install_command/0`.
-  """
-  @spec install_command() :: String.t()
-  defdelegate install_command(), to: ConnectionInfo
-
-  @doc """
-  Returns the setup-guide payload consumed by McpSetupLive.
-
-  Delegates to `MarketMySpec.McpAuth.ConnectionInfo.setup_info/0`.
-  """
-  @spec setup_info() :: ConnectionInfo.connection_info()
-  defdelegate setup_info(), to: ConnectionInfo
 
   # ---------------------------------------------------------------------------
   # Dynamic Client Registration

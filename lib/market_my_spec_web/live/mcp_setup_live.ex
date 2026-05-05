@@ -1,7 +1,7 @@
 defmodule MarketMySpecWeb.McpSetupLive do
   use MarketMySpecWeb, :live_view
 
-  alias MarketMySpec.McpAuth.ConnectionInfo
+  alias MarketMySpecWeb.Endpoint
 
   @impl true
   def render(assigns) do
@@ -120,11 +120,12 @@ defmodule MarketMySpecWeb.McpSetupLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    info = ConnectionInfo.setup_info()
+    server_url = Endpoint.url() <> "/mcp"
+    install_command = "claude mcp add market-my-spec #{server_url}"
 
     {:ok,
      socket
-     |> assign(:install_command, info.install_command)
-     |> assign(:server_url, info.server_url)}
+     |> assign(:install_command, install_command)
+     |> assign(:server_url, server_url)}
   end
 end
