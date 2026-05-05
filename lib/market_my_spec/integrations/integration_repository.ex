@@ -1,4 +1,8 @@
 defmodule MarketMySpec.Integrations.IntegrationRepository do
+  @moduledoc """
+  Repository for OAuth integration records, scoped to a user.
+  """
+
   import Ecto.Query
 
   alias MarketMySpec.Integrations.Integration
@@ -7,6 +11,7 @@ defmodule MarketMySpec.Integrations.IntegrationRepository do
 
   def get_integration(%Scope{user: user}, provider) do
     result = from(i in Integration, where: i.user_id == ^user.id and i.provider == ^provider) |> Repo.one()
+
     case result do
       nil -> {:error, :not_found}
       integration -> {:ok, integration}
@@ -20,6 +25,7 @@ defmodule MarketMySpec.Integrations.IntegrationRepository do
 
   def create_integration(%Scope{user: user}, attrs) do
     attrs_with_user = Map.put(attrs, :user_id, user.id)
+
     %Integration{}
     |> Integration.changeset(attrs_with_user)
     |> Repo.insert()

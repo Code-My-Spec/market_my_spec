@@ -3,35 +3,57 @@ defmodule MarketMySpecSpex.Story674.Criterion5738Spex do
   Story 674 — Start A Marketing Strategy Interview
   Criterion 5738 — Batched end-of-run artifact writes are rejected
 
-  Quality gate: the skill must explicitly prohibit batching artifact writes
-  to the end of the run. A playbook without this prohibition fails this spec.
+  Quality gate: the orientation delivered by start_interview must explicitly
+  forbid batching artifact writes to the end of the run, and include the
+  rationale about bailing users retaining three usable files.
+
+  Surface: `StartInterview.execute/2` tool module called directly with a Frame.
   """
 
   use MarketMySpecSpex.Case
 
-  @skill_root "skills/marketing-strategy"
+  alias Anubis.Server.Frame
+  alias MarketMySpec.McpServers.MarketingStrategy.Tools.StartInterview
 
   spex "batched artifact writes quality gate" do
-    scenario "the SKILL.md explicitly forbids batching artifact writes" do
-      given_ "the marketing strategy SKILL.md", context do
-        skill_md =
-          Application.app_dir(:market_my_spec, @skill_root)
-          |> Path.join("SKILL.md")
-          |> File.read!()
-
-        {:ok, Map.put(context, :skill_md, skill_md)}
+    scenario "start_interview orientation explicitly forbids batching artifact writes" do
+      given_ "no preconditions — the tool needs only a frame", context do
+        frame = %Frame{assigns: %{}}
+        {:ok, Map.put(context, :frame, frame)}
       end
 
-      then_ "the skill explicitly says do not batch writes", context do
-        assert context.skill_md =~ "Don't batch"
+      when_ "the agent calls start_interview", context do
+        {:reply, response, _frame} = StartInterview.execute(%{}, context.frame)
+        {:ok, Map.put(context, :orientation, response_text(response))}
+      end
+
+      then_ "the orientation explicitly says do not batch writes", context do
+        assert context.orientation =~ "don't batch",
+               "expected 'don't batch' in the orientation"
+
         {:ok, context}
       end
 
       then_ "the no-batch rule includes the rationale about bailing users", context do
-        assert context.skill_md =~ "Don't batch"
-        assert context.skill_md =~ "three usable files"
+        assert context.orientation =~ "don't batch",
+               "expected the no-batch rule to appear in the orientation"
+
+        assert context.orientation =~ "three usable files",
+               "expected the 'three usable files' rationale for the no-batch rule"
+
         {:ok, context}
       end
     end
   end
+
+  defp response_text(%{content: parts}) when is_list(parts) do
+    Enum.map_join(parts, "\n", fn
+      %{text: t} -> t
+      %{"text" => t} -> t
+      other -> inspect(other)
+    end)
+  end
+
+  defp response_text(%{text: text}), do: text
+  defp response_text(other), do: inspect(other)
 end

@@ -6,7 +6,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5727Spex do
 
   use MarketMySpecSpex.Case
 
-  @skill_root "skills/marketing-strategy"
+  @skill_root "priv/skills/marketing-strategy"
 
   spex "marketing-strategy skill mirrors the canonical plugin file tree" do
     scenario "the priv/skills/marketing-strategy directory contains all required files" do

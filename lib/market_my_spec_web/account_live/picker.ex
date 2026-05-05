@@ -14,13 +14,14 @@ defmodule MarketMySpecWeb.AccountLive.Picker do
           <:subtitle>Choose which account you'd like to work with</:subtitle>
         </.header>
 
-        <div class="mt-8">
+        <div class="mt-8" data-test="account-picker">
           <ul class="menu bg-base-200 rounded-box w-full">
             <li
               :for={account <- @accounts}
               class={if account.id == @current_account_id, do: "bordered", else: ""}
             >
               <a
+                data-test={"account-picker-item-#{account.slug}"}
                 phx-click="account-selected"
                 phx-value-account-id={account.id}
                 class={if account.id == @current_account_id, do: "active", else: ""}

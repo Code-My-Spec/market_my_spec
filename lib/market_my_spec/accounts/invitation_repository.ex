@@ -3,8 +3,8 @@ defmodule MarketMySpec.Accounts.InvitationRepository do
 
   import Ecto.Query, warn: false
 
-  alias MarketMySpec.Repo
   alias MarketMySpec.Accounts.Invitation
+  alias MarketMySpec.Repo
   alias MarketMySpec.Users.Scope
 
   def create_invitation(%Scope{} = _scope, attrs) do
@@ -55,6 +55,19 @@ defmodule MarketMySpec.Accounts.InvitationRepository do
   end
 
   def list_pending_invitations(_scope, nil), do: []
+
+  def pending_invitation_exists?(email, account_id) do
+    now = DateTime.utc_now()
+
+    Repo.exists?(
+      from i in Invitation,
+        where:
+          i.email == ^email and
+            i.account_id == ^account_id and
+            i.status == :pending and
+            i.expires_at > ^now
+    )
+  end
 
   def accept(%Scope{} = _scope, %Invitation{} = invitation) do
     invitation

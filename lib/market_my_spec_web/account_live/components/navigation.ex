@@ -1,4 +1,8 @@
 defmodule MarketMySpecWeb.AccountLive.Components.Navigation do
+  @moduledoc """
+  LiveComponent rendering the account settings navigation tabs.
+  """
+
   use MarketMySpecWeb, :live_component
 
   alias MarketMySpec.Authorization
@@ -32,6 +36,14 @@ defmodule MarketMySpecWeb.AccountLive.Components.Navigation do
           >
             Invitations
           </.link>
+          <.link
+            :if={agency_account?(@account)}
+            data-test="nav-agency-dashboard"
+            navigate={~p"/agency"}
+            class={["tab", if(@active_tab == :agency_dashboard, do: "tab-active")]}
+          >
+            Agency Dashboard
+          </.link>
         </div>
       </div>
     </div>
@@ -40,5 +52,9 @@ defmodule MarketMySpecWeb.AccountLive.Components.Navigation do
 
   defp can_manage_members?(scope, account) do
     Authorization.authorize(:manage_members, scope, account.id)
+  end
+
+  defp agency_account?(account) do
+    account.type == :agency
   end
 end

@@ -27,8 +27,8 @@ defmodule MarketMySpecSpex.Story612.Criterion5689Spex do
           "client_name" => "Claude Code",
           "token_endpoint_auth_method" => "none"
         })
-        %{"client_id" => client_id} = json_response(reg_conn, 201)
-        {:ok, Map.put(context, :client_id, client_id)}
+        %{"client_id" => client_id, "client_secret" => client_secret} = json_response(reg_conn, 201)
+        {:ok, Map.merge(context, %{client_id: client_id, client_secret: client_secret})}
       end
 
       when_ "PKCE values are prepared", context do
@@ -59,6 +59,8 @@ defmodule MarketMySpecSpex.Story612.Criterion5689Spex do
       end
 
       when_ "the user approves the authorization request", context do
+        # Phoenix.LiveView.redirect(external: url) produces {:error, {:redirect, %{to: url, status: 302}}}
+        # in tests (the LiveView test framework normalizes external redirects to the :to key).
         {:error, {:redirect, %{to: redirect_url}}} =
           context.view
           |> element("[data-test='approve-button']")
@@ -77,6 +79,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5689Spex do
             "code" => context.auth_code,
             "redirect_uri" => context.redirect_uri,
             "client_id" => context.client_id,
+            "client_secret" => context.client_secret,
             "code_verifier" => context.code_verifier
           })
 

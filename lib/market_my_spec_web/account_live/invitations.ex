@@ -5,8 +5,8 @@ defmodule MarketMySpecWeb.AccountLive.Invitations do
   alias MarketMySpec.Accounts.Invitation
   alias MarketMySpec.Authorization
   alias MarketMySpecWeb.AccountLive.Components.Navigation
-  alias MarketMySpecWeb.InvitationsLive.Form, as: InviteForm
   alias MarketMySpecWeb.InvitationsLive.Components.PendingInvitations
+  alias MarketMySpecWeb.InvitationsLive.Form, as: InviteForm
 
   @impl true
   def render(assigns) do
@@ -117,7 +117,21 @@ defmodule MarketMySpecWeb.AccountLive.Invitations do
           |> Invitation.changeset(invitation_params)
           |> Ecto.Changeset.add_error(:email, "User already has access to this account")
 
-        {:noreply, assign(socket, :invite_form, to_form(changeset))}
+        {:noreply,
+         socket
+         |> assign(:show_invite_form, true)
+         |> assign(:invite_form, to_form(changeset, action: :insert))}
+
+      {:error, :invitation_already_pending} ->
+        changeset =
+          %Invitation{}
+          |> Invitation.changeset(invitation_params)
+          |> Ecto.Changeset.add_error(:email, "An invitation is already pending for this email")
+
+        {:noreply,
+         socket
+         |> assign(:show_invite_form, true)
+         |> assign(:invite_form, to_form(changeset, action: :insert))}
 
       {:error, :not_authorized} ->
         {:noreply, put_flash(socket, :error, "You are not authorized to invite users")}

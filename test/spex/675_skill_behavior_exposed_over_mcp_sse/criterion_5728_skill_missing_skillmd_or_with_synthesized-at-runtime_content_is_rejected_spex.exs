@@ -10,7 +10,7 @@ defmodule MarketMySpecSpex.Story675.Criterion5728Spex do
 
   use MarketMySpecSpex.Case
 
-  @skill_root "skills/marketing-strategy"
+  @skill_root "priv/skills/marketing-strategy"
 
   spex "SKILL.md must be a real on-disk file, not synthesized at runtime" do
     scenario "the SKILL.md file exists and contains canonical skill content" do
@@ -34,8 +34,14 @@ defmodule MarketMySpecSpex.Story675.Criterion5728Spex do
       end
 
       then_ "the SKILL.md references step files, confirming it is not placeholder content", context do
-        assert context.skill_md =~ "steps/01_current_state.md"
-        assert context.skill_md =~ "steps/08_plan.md"
+        # The step files are referenced in the tree listing and in prose.
+        # The tree shows them as "01_current_state.md" under the steps/ directory.
+        assert context.skill_md =~ "01_current_state.md",
+               "expected SKILL.md to list step 1 in its file tree"
+
+        assert context.skill_md =~ "08_plan.md",
+               "expected SKILL.md to list step 8 in its file tree"
+
         {:ok, context}
       end
     end

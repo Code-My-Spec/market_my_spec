@@ -16,9 +16,8 @@ defmodule MarketMySpecSpex.Story609.Criterion5678Spex do
 
       when_ "they attempt to open the invalid magic link", context do
         result = live(context.conn, "/users/log-in/totallyinvalidtoken")
-        {:error, {:live_redirect, %{to: path}}} = result
-        {:ok, _view, login_html} = live(context.conn, path)
-        {:ok, Map.merge(context, %{result: result, login_html: login_html})}
+        {:error, {:live_redirect, %{to: _path, flash: flash}}} = result
+        {:ok, Map.merge(context, %{result: result, redirect_flash: flash})}
       end
 
       then_ "they are redirected to the login page rather than crashing", context do
@@ -27,8 +26,9 @@ defmodule MarketMySpecSpex.Story609.Criterion5678Spex do
       end
 
       then_ "the login page explains the link is invalid so they can request a new one", context do
-        assert context.login_html =~ "Magic link is invalid or it has expired"
-        assert context.login_html =~ "Log in"
+        # Flash is carried in the live_redirect metadata, not in a separate page load.
+        # The error message is set by UserLive.Confirmation when the token is invalid.
+        assert context.redirect_flash["error"] =~ "Magic link is invalid or it has expired"
         {:ok, context}
       end
     end

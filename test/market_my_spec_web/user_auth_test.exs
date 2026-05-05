@@ -1,10 +1,10 @@
 defmodule MarketMySpecWeb.UserAuthTest do
   use MarketMySpecTest.ConnCase, async: true
 
-  alias Phoenix.LiveView
   alias MarketMySpec.Users
   alias MarketMySpec.Users.Scope
   alias MarketMySpecWeb.UserAuth
+  alias Phoenix.LiveView
 
   import MarketMySpec.UsersFixtures
 

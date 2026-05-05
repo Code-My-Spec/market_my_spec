@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "pricing-strategy": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/pricing-strategy/SKILL.md",
+      "computedHash": "4312095789cc328883428b1f9bd61549ca44b376aeda8d62bb977efad017e594"
+    }
+  }
+}

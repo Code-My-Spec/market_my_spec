@@ -16,6 +16,8 @@ defmodule MarketMySpecTest.DataCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
       alias MarketMySpec.Repo
@@ -40,9 +42,9 @@ defmodule MarketMySpecTest.DataCase do
   the same sandbox semantics as `mix test`.
   """
   def setup_sandbox(tags) do
-    Ecto.Adapters.SQL.Sandbox.mode(MarketMySpec.Repo, :manual)
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(MarketMySpec.Repo, shared: not tags[:async])
-    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+    Sandbox.mode(MarketMySpec.Repo, :manual)
+    pid = Sandbox.start_owner!(MarketMySpec.Repo, shared: not tags[:async])
+    on_exit(fn -> Sandbox.stop_owner(pid) end)
   end
 
   @doc """

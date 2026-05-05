@@ -19,7 +19,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5786Spex do
         agency_owner = Fixtures.user_fixture()
         agency = Fixtures.agency_account_fixture(agency_owner)
         client_account = Fixtures.account_fixture(client_owner, %{name: "Revoke Test Client"})
-        Fixtures.invited_grant_fixture(agency, client_account, access_level: "account_manager")
+        grant = Fixtures.invited_grant_fixture(agency, client_account, access_level: "account_manager")
         {agency_token, _raw} = Fixtures.generate_user_magic_link_token(agency_owner)
 
         {:ok,
@@ -27,20 +27,19 @@ defmodule MarketMySpecSpex.Story679.Criterion5786Spex do
            agency_owner: agency_owner,
            agency_token: agency_token,
            agency: agency,
-           client_account: client_account
+           client_account: client_account,
+           grant: grant
          })}
       end
 
-      when_ "the agency owner signs in and clicks Revoke on the invited row", context do
+      when_ "the agency owner signs in and confirms revocation in the modal", context do
         agency_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.agency_token}})
 
         {:ok, view, _html} = live(agency_conn, "/agency")
 
         view
-        |> element(
-          "[data-test='client-row-invited'][data-client-id='#{context.client_account.id}'] [data-test='revoke-grant']"
-        )
+        |> element("[data-test='revoke-grant-modal-#{context.grant.id}-confirm']")
         |> render_click()
 
         {:ok, Map.put(context, :conn, agency_conn)}

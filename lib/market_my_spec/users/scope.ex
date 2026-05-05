@@ -16,6 +16,7 @@ defmodule MarketMySpec.Users.Scope do
   growing application requirements.
   """
 
+  alias MarketMySpec.Accounts.MembersRepository
   alias MarketMySpec.Users.User
 
   defstruct user: nil,
@@ -25,10 +26,21 @@ defmodule MarketMySpec.Users.Scope do
   @doc """
   Creates a scope for the given user.
 
+  Populates `active_account_id` with the user's first account membership
+  (ordered by creation time, newest first) so that Files context calls and
+  MCP tool executions have a non-nil account context without requiring
+  an explicit account-picker step.
+
   Returns nil if no user is given.
   """
   def for_user(%User{} = user) do
-    %__MODULE__{user: user}
+    active_account_id =
+      case MembersRepository.list_user_accounts(user.id) do
+        [account | _] -> account.id
+        [] -> nil
+      end
+
+    %__MODULE__{user: user, active_account_id: active_account_id}
   end
 
   def for_user(nil), do: nil

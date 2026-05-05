@@ -28,8 +28,17 @@ config :market_my_spec, :integration_providers, [:google, :github]
 
 config :market_my_spec, :oauth_providers, %{
   google: MarketMySpec.Integrations.Providers.Google,
-  github: MarketMySpec.Integrations.Providers.Github
+  github: MarketMySpec.Integrations.Providers.GitHub
 }
+
+config :market_my_spec, ExOauth2Provider,
+  repo: MarketMySpec.Repo,
+  access_token: MarketMySpec.Oauth.AccessToken,
+  application: MarketMySpec.Oauth.Application,
+  access_grant: MarketMySpec.Oauth.AccessGrant,
+  resource_owner: MarketMySpec.Users.User,
+  use_refresh_token: true,
+  force_ssl_in_redirect_uri: false
 
 config :market_my_spec, MarketMySpec.Vault,
   ciphers: [
@@ -61,6 +70,11 @@ config :market_my_spec, MarketMySpecWeb.Endpoint,
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
 config :market_my_spec, MarketMySpec.Mailer, adapter: Swoosh.Adapters.Local
+
+# Register the text/event-stream MIME type so the :mcp_authenticated pipeline's
+# `plug :accepts, ["json", "sse"]` accepts SSE clients that send
+# `Accept: text/event-stream` without returning 406 before auth runs.
+config :mime, :types, %{"text/event-stream" => ["sse"]}
 
 # Configure esbuild (the version is required)
 config :esbuild,

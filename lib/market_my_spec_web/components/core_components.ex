@@ -117,6 +117,105 @@ defmodule MarketMySpecWeb.CoreComponents do
   end
 
   @doc """
+  Renders a daisyUI `<dialog>`-based confirmation modal.
+
+  Replaces `data-confirm` native browser dialogs with a testable modal that
+  browser-automation tools (Wallaby, Playwright, Vibium) can interact with.
+
+  The caller places a trigger button that calls `showModal()` on the dialog
+  element, then includes this component to render the modal itself.
+
+  ## Assigns
+
+    * `:id` - DOM id for the dialog element; used by the trigger button's
+      `onclick` to call `document.getElementById(id).showModal()`.
+    * `:title` - Heading text shown inside the modal.
+    * `:body` - Description text explaining what the destructive action does.
+    * `:confirm_label` - Label for the confirm button (default: `"Delete"`).
+    * `:confirm_event` - The `phx-click` event dispatched on confirmation.
+    * `:confirm_value` - Map of values merged as `phx-value-*` params.
+    * `:confirm_class` - CSS classes for the confirm button (default: `"btn btn-error"`).
+    * `:phx_target` - Optional `phx-target` value (e.g. `@myself` in LiveComponents).
+
+  ## Data-test selectors
+
+    * `data-test="<id>"` on the dialog container
+    * `data-test="<id>-cancel"` on the cancel button
+    * `data-test="<id>-confirm"` on the confirm button
+
+  ## Example
+
+      <button
+        type="button"
+        class="btn btn-sm btn-error"
+        onclick={"document.getElementById('delete-account-modal').showModal()"}
+        data-test="open-delete-account-modal"
+      >
+        Delete account
+      </button>
+      <.confirm_modal
+        id="delete-account-modal"
+        title="Delete this account?"
+        body="This permanently deletes the account and all its data. You can't undo this."
+        confirm_label="Delete account"
+        confirm_event="delete_account"
+        confirm_value={%{id: @account.id}}
+      />
+  """
+  attr :id, :string, required: true
+  attr :title, :string, required: true
+  attr :body, :string, required: true
+  attr :confirm_label, :string, default: "Delete"
+  attr :confirm_event, :string, required: true
+  attr :confirm_value, :map, default: %{}
+  attr :confirm_class, :string, default: "btn btn-error"
+  attr :phx_target, :any, default: nil
+
+  def confirm_modal(assigns) do
+    ~H"""
+    <dialog id={@id} class="modal" data-test={@id}>
+      <div class="modal-box">
+        <h3 class="text-lg font-bold">{@title}</h3>
+        <p class="py-4 text-base-content/80">{@body}</p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button
+              type="submit"
+              class="btn btn-ghost"
+              data-test={"#{@id}-cancel"}
+            >
+              Cancel
+            </button>
+          </form>
+          <form method="dialog">
+            <button
+              type="submit"
+              class={@confirm_class}
+              phx-click={@confirm_event}
+              {build_phx_values(@confirm_value)}
+              phx-target={@phx_target}
+              data-test={"#{@id}-confirm"}
+            >
+              {@confirm_label}
+            </button>
+          </form>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button type="submit">close</button>
+      </form>
+    </dialog>
+    """
+  end
+
+  defp build_phx_values(value_map) when is_map(value_map) do
+    Enum.into(value_map, %{}, fn {k, v} ->
+      key = "phx-value-#{k}"
+      {key, v}
+    end)
+  end
+
+  @doc """
   Renders an input with label and error messages.
 
   A `Phoenix.HTML.FormField` may be passed as argument,

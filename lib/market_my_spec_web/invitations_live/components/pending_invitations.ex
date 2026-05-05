@@ -1,4 +1,8 @@
 defmodule MarketMySpecWeb.InvitationsLive.Components.PendingInvitations do
+  @moduledoc """
+  LiveComponent that renders the list of pending invitations for an account.
+  """
+
   use MarketMySpecWeb, :live_component
   import MarketMySpecWeb.CoreComponents
 
@@ -33,14 +37,21 @@ defmodule MarketMySpecWeb.InvitationsLive.Components.PendingInvitations do
               <%= if @can_manage and not expired?(invitation) do %>
                 <button
                   type="button"
-                  phx-click="cancel_invitation"
-                  phx-value-invitation-id={invitation.id}
-                  phx-target={@myself}
                   class="btn btn-error btn-sm"
-                  data-confirm="Are you sure you want to cancel this invitation?"
+                  onclick={"document.getElementById('cancel-invitation-modal-#{invitation.id}').showModal()"}
+                  data-test={"open-cancel-invitation-modal-#{invitation.id}"}
                 >
                   Cancel
                 </button>
+                <.confirm_modal
+                  id={"cancel-invitation-modal-#{invitation.id}"}
+                  title="Cancel invitation?"
+                  body="This will cancel the invitation. The recipient will no longer be able to use this invite link."
+                  confirm_label="Cancel Invitation"
+                  confirm_event="cancel_invitation"
+                  confirm_value={%{"invitation-id": invitation.id}}
+                  phx_target={@myself}
+                />
               <% end %>
             </:action>
           </.table>

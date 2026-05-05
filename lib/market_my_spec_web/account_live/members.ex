@@ -69,15 +69,24 @@ defmodule MarketMySpecWeb.AccountLive.Members do
                       {Calendar.strftime(member.inserted_at, "%B %d, %Y")}
                     </td>
                     <td :if={can_manage_members?(@current_scope, @account)}>
-                      <.button
-                        :if={member.user.id != @current_scope.user.id}
-                        phx-click="remove-member"
-                        phx-value-member-id={member.id}
-                        class="btn btn-sm btn-error"
-                        data-confirm="Are you sure you want to remove this member?"
-                      >
-                        Remove
-                      </.button>
+                      <div :if={member.user.id != @current_scope.user.id}>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-error"
+                          onclick={"document.getElementById('remove-member-modal-#{member.id}').showModal()"}
+                          data-test={"open-remove-member-modal-#{member.id}"}
+                        >
+                          Remove
+                        </button>
+                        <.confirm_modal
+                          id={"remove-member-modal-#{member.id}"}
+                          title="Remove member?"
+                          body="This will remove the member from the account. They will lose access immediately."
+                          confirm_label="Remove"
+                          confirm_event="remove-member"
+                          confirm_value={%{"member-id": member.id}}
+                        />
+                      </div>
                     </td>
                   </tr>
                 </tbody>

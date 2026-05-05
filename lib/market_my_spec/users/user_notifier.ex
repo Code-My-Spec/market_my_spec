@@ -1,4 +1,8 @@
 defmodule MarketMySpec.Users.UserNotifier do
+  @moduledoc """
+  Handles delivery of transactional emails to users.
+  """
+
   import Swoosh.Email
 
   alias MarketMySpec.Mailer

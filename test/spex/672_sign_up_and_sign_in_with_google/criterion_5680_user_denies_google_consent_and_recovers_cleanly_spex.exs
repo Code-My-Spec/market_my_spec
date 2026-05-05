@@ -32,7 +32,7 @@ defmodule MarketMySpecSpex.Story672.Criterion5680Spex do
       end
 
       then_ "an error flash message is shown explaining the denial", context do
-        error_flash = get_flash(context.callback_conn, :error)
+        error_flash = Phoenix.Flash.get(context.callback_conn.assigns.flash, :error)
         assert error_flash, "expected an error flash to be set"
         assert error_flash =~ ~r/denied|access/i
         {:ok, context}

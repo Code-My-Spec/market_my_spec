@@ -26,7 +26,9 @@ defmodule MarketMySpecSpex.Story633.Criterion5669Spex do
         assert has_element?(context.view, "[data-test='byo-claude-benefit']")
         benefit_html = context.view |> element("[data-test='byo-claude-benefit']") |> render()
         assert benefit_html =~ ~r/bring your own claude/i
-        assert benefit_html =~ ~r/don.t markup your tokens/i
+        # LiveView render() HTML-encodes apostrophes (e.g. "don't" → "don&#39;t"),
+        # so the dot wildcard must span 1–6 chars to cover the encoded entity.
+        assert benefit_html =~ ~r/don.{1,6}t markup your tokens/i
         {:ok, context}
       end
 

@@ -14,8 +14,8 @@ defmodule MarketMySpecWeb.Application do
       MarketMySpec.Integrations.OAuthStateStore,
       {DNSCluster, query: Application.get_env(:market_my_spec, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MarketMySpec.PubSub},
-      # Start a worker by calling: MarketMySpec.Worker.start_link(arg)
-      # {MarketMySpec.Worker, arg},
+      # MCP server — mounted via Anubis StreamableHTTP plug in the router
+      {MarketMySpec.McpServers.MarketingStrategyServer, transport: :streamable_http},
       # Start to serve requests, typically the last entry
       MarketMySpecWeb.Endpoint
     ]

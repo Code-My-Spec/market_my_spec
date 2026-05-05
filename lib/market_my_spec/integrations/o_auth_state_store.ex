@@ -1,4 +1,9 @@
 defmodule MarketMySpec.Integrations.OAuthStateStore do
+  @moduledoc """
+  ETS-backed store for short-lived OAuth state parameters.
+  Entries expire after #{300} seconds and are cleaned up periodically.
+  """
+
   use GenServer
 
   @table :oauth_state_store
@@ -18,6 +23,7 @@ defmodule MarketMySpec.Integrations.OAuthStateStore do
         if System.system_time(:second) - ts <= @ttl_seconds,
           do: {:ok, session_params},
           else: :error
+
       [] ->
         :error
     end

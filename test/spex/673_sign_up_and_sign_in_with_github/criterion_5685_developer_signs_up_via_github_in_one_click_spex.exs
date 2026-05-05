@@ -23,7 +23,10 @@ defmodule MarketMySpecSpex.Story673.Criterion5685Spex do
       end
 
       when_ "they initiate the GitHub OAuth flow", context do
-        req_conn = get(context.conn, "/integrations/oauth/github")
+        # /auth/github is the public sign-up/sign-in route (no authentication required).
+        # GitHub uses Assent.Strategy.OAuth2.Base which constructs the redirect URL
+        # without making real HTTP calls (unlike Google which uses OIDC discovery).
+        req_conn = get(context.conn, "/auth/github")
         {:ok, Map.put(context, :oauth_req_conn, req_conn)}
       end
 

@@ -27,8 +27,8 @@ defmodule MarketMySpecSpex.Story612.Criterion5701Spex do
           "client_name" => "Claude Code",
           "token_endpoint_auth_method" => "none"
         })
-        %{"client_id" => client_id} = json_response(reg_conn, 201)
-        {:ok, Map.put(context, :client_id, client_id)}
+        %{"client_id" => client_id, "client_secret" => client_secret} = json_response(reg_conn, 201)
+        {:ok, Map.merge(context, %{client_id: client_id, client_secret: client_secret})}
       end
 
       when_ "PKCE values are prepared", context do
@@ -59,6 +59,8 @@ defmodule MarketMySpecSpex.Story612.Criterion5701Spex do
       end
 
       when_ "the user approves the authorization request", context do
+        # Phoenix.LiveView.redirect(external: url) produces {:error, {:redirect, %{to: url, status: 302}}}
+        # in tests (the LiveView test framework normalizes external redirects to the :to key).
         {:error, {:redirect, %{to: redirect_url}}} =
           context.view
           |> element("[data-test='approve-button']")
@@ -77,6 +79,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5701Spex do
             "code" => context.auth_code,
             "redirect_uri" => context.redirect_uri,
             "client_id" => context.client_id,
+            "client_secret" => context.client_secret,
             "code_verifier" => context.code_verifier
           })
 
@@ -85,13 +88,25 @@ defmodule MarketMySpecSpex.Story612.Criterion5701Spex do
       end
 
       when_ "the user revokes the token", context do
-        post(context.conn, "/oauth/revoke", %{"token" => context.bearer_token})
+        # ExOauth2Provider.Token.Revoke validates ownership for confidential clients:
+        # when the access token has an application_id set (as it does here, because
+        # it was issued to a registered OAuth application), the revoke request MUST
+        # include client_id and client_secret to prove ownership.
+        revoke_conn =
+          post(context.conn, "/oauth/revoke", %{
+            "token" => context.bearer_token,
+            "client_id" => context.client_id,
+            "client_secret" => context.client_secret
+          })
+
+        assert revoke_conn.status == 200
         {:ok, context}
       end
 
       when_ "the MCP client tries to use the revoked token", context do
+        # Use a fresh conn — context.conn already had responses sent by prior steps.
         mcp_conn =
-          context.conn
+          build_conn()
           |> put_req_header("authorization", "Bearer #{context.bearer_token}")
           |> put_req_header("content-type", "application/json")
           |> post("/mcp", ~s({"jsonrpc":"2.0","method":"initialize","id":1,"params":{}}))

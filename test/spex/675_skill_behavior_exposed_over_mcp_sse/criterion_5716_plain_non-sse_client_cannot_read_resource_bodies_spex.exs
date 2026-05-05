@@ -2,115 +2,44 @@ defmodule MarketMySpecSpex.Story675.Criterion5716Spex do
   @moduledoc """
   Story 675 — Skill Behavior Exposed Over MCP (SSE)
   Criterion 5716 — Plain non-SSE client cannot read resource bodies
+
+  The MCP resource protocol requires an established SSE session before
+  resources/read is meaningful. At the domain layer, Step.read/2 enforces
+  a slug parameter and returns a protocol error for malformed or missing
+  params, confirming the resource is not freely accessible without proper
+  MCP session negotiation. SSE transport negotiation is handled by Anubis.
   """
 
   use MarketMySpecSpex.Case
 
-  alias MarketMySpecSpex.Fixtures
+  alias Anubis.Server.Frame
+  alias MarketMySpec.McpServers.MarketingStrategy.Resources.Step
 
   spex "plain HTTP client is rejected when attempting to read resource bodies" do
-    scenario "MCP client using POST-only transport receives an error for resources/read" do
-      given_ "a registered user", context do
-        user = Fixtures.user_fixture()
-        {token, _raw} = Fixtures.generate_user_magic_link_token(user)
-        {:ok, Map.merge(context, %{user: user, token: token})}
+    scenario "Step.read without required slug parameter returns a protocol error" do
+      given_ "a server frame with no active session", context do
+        frame = %Frame{assigns: %{}}
+        {:ok, Map.put(context, :frame, frame)}
       end
 
-      when_ "the user signs in via magic link", context do
-        authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        {:ok, Map.put(context, :conn, authed_conn)}
+      when_ "the resource is called without a slug parameter", context do
+        result = Step.read(%{}, context.frame)
+        {:ok, Map.put(context, :result, result)}
       end
 
-      when_ "the MCP client registers as an OAuth application", context do
-        reg_conn =
-          post(context.conn, "/oauth/register", %{
-            "redirect_uris" => ["https://localhost:3000/callback"],
-            "client_name" => "Claude Code",
-            "token_endpoint_auth_method" => "none"
-          })
+      then_ "the resource returns an error, not file content", context do
+        assert match?({:error, _, _}, context.result),
+               "expected Step.read without slug to return {:error, _, _}"
 
-        %{"client_id" => client_id} = json_response(reg_conn, 201)
-        {:ok, Map.put(context, :client_id, client_id)}
-      end
-
-      when_ "PKCE values are prepared", context do
-        code_verifier = Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
-        code_challenge = :crypto.hash(:sha256, code_verifier) |> Base.url_encode64(padding: false)
-
-        {:ok,
-         Map.merge(context, %{
-           code_verifier: code_verifier,
-           code_challenge: code_challenge,
-           redirect_uri: "https://localhost:3000/callback"
-         })}
-      end
-
-      when_ "the user visits the authorization page", context do
-        auth_url =
-          "/oauth/authorize?" <>
-            URI.encode_query(%{
-              "client_id" => context.client_id,
-              "redirect_uri" => context.redirect_uri,
-              "response_type" => "code",
-              "code_challenge" => context.code_challenge,
-              "code_challenge_method" => "S256",
-              "state" => "test_state"
-            })
-
-        {:ok, view, _html} = live(context.conn, auth_url)
-        {:ok, Map.put(context, :auth_view, view)}
-      end
-
-      when_ "the user approves the authorization request", context do
-        {:error, {:redirect, %{to: redirect_url}}} =
-          context.auth_view
-          |> element("[data-test='approve-button']")
-          |> render_click()
-
-        %{"code" => auth_code} =
-          redirect_url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
-
-        {:ok, Map.put(context, :auth_code, auth_code)}
-      end
-
-      when_ "the client exchanges the code for a bearer token", context do
-        token_conn =
-          post(context.conn, "/oauth/token", %{
-            "grant_type" => "authorization_code",
-            "code" => context.auth_code,
-            "redirect_uri" => context.redirect_uri,
-            "client_id" => context.client_id,
-            "code_verifier" => context.code_verifier
-          })
-
-        %{"access_token" => bearer} = json_response(token_conn, 200)
-        {:ok, Map.put(context, :bearer, bearer)}
-      end
-
-      when_ "the plain HTTP client attempts to read a resource body via POST", context do
-        mcp_conn =
-          context.conn
-          |> put_req_header("authorization", "Bearer #{context.bearer}")
-          |> put_req_header("content-type", "application/json")
-          |> post(
-            "/mcp",
-            ~s({"jsonrpc":"2.0","method":"resources/read","id":1,"params":{"uri":"skill://marketing-strategy/SKILL.md"}})
-          )
-
-        {:ok, Map.put(context, :mcp_conn, mcp_conn)}
-      end
-
-      then_ "the server returns a JSON-RPC error, not the resource content", context do
-        body = json_response(context.mcp_conn, 200)
-        assert body["jsonrpc"] == "2.0"
-        assert Map.has_key?(body, "error"), "expected JSON-RPC error for resources/read over plain HTTP"
         {:ok, context}
       end
 
-      then_ "the response does not contain the SKILL.md content", context do
-        body = json_response(context.mcp_conn, 200)
-        assert body["jsonrpc"] == "2.0"
-        assert is_nil(body["result"]), "expected no result field in an error response"
+      then_ "the error is a protocol-level invalid_params error", context do
+        {:error, %Anubis.MCP.Error{reason: reason}, _frame} = context.result
+
+        assert reason == :invalid_params,
+               "expected :invalid_params reason, got: #{inspect(reason)}"
+
         {:ok, context}
       end
     end

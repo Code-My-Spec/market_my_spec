@@ -1,5 +1,13 @@
 import Config
 
+# Use the local-disk Files backend in dev — keeps MCP file tools usable
+# without S3 / MinIO. Files land under `tmp/files/`. Production points to
+# the S3 backend; tests use the in-memory backend.
+config :market_my_spec, :files_backend, MarketMySpec.Files.Disk
+
+config :market_my_spec, MarketMySpec.Files.Disk,
+  root: Path.expand("tmp/files", File.cwd!())
+
 # Configure your database
 config :market_my_spec, MarketMySpec.Repo,
   username: "postgres",

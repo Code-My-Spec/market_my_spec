@@ -2,127 +2,74 @@ defmodule MarketMySpecSpex.Story675.Criterion5725Spex do
   @moduledoc """
   Story 675 — Skill Behavior Exposed Over MCP (SSE)
   Criterion 5725 — Agent reads step 3 file on demand and only step 3 lands in context
+
+  The Step resource must return exactly the content of the requested step
+  file — no more, no less. This test calls Step.read/2 directly with the
+  step 3 slug and asserts the returned content matches the on-disk file
+  and does not contain SKILL.md step-list cross-contamination.
   """
 
   use MarketMySpecSpex.Case
 
-  alias MarketMySpecSpex.Fixtures
+  alias Anubis.Server.Frame
+  alias MarketMySpec.McpServers.MarketingStrategy.Resources.Step
 
-  @skill_root "skills/marketing-strategy"
+  @skill_root "priv/skills/marketing-strategy"
 
   spex "agent reads step 3 file on demand and only step 3 content is returned" do
-    scenario "connected agent calls read_skill_file for step 3 and receives only that step's content" do
-      given_ "a registered user and the canonical step 3 content", context do
-        user = Fixtures.user_fixture()
-        {token, _raw} = Fixtures.generate_user_magic_link_token(user)
-
+    scenario "Step.read for step 3 returns exactly the step 3 file content" do
+      given_ "the canonical step 3 on-disk content", context do
         step3_content =
           Application.app_dir(:market_my_spec, @skill_root)
           |> Path.join("steps/03_persona_research.md")
           |> File.read!()
 
-        {:ok, Map.merge(context, %{user: user, token: token, step3_content: step3_content})}
+        frame = %Frame{assigns: %{}}
+        {:ok, Map.merge(context, %{step3_content: step3_content, frame: frame})}
       end
 
-      when_ "the user signs in via magic link", context do
-        authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        {:ok, Map.put(context, :conn, authed_conn)}
-      end
-
-      when_ "the MCP client registers as an OAuth application", context do
-        reg_conn =
-          post(context.conn, "/oauth/register", %{
-            "redirect_uris" => ["https://localhost:3000/callback"],
-            "client_name" => "Claude Code",
-            "token_endpoint_auth_method" => "none"
-          })
-
-        %{"client_id" => client_id} = json_response(reg_conn, 201)
-        {:ok, Map.put(context, :client_id, client_id)}
-      end
-
-      when_ "PKCE values are prepared", context do
-        code_verifier = Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
-        code_challenge = :crypto.hash(:sha256, code_verifier) |> Base.url_encode64(padding: false)
-
-        {:ok,
-         Map.merge(context, %{
-           code_verifier: code_verifier,
-           code_challenge: code_challenge,
-           redirect_uri: "https://localhost:3000/callback"
-         })}
-      end
-
-      when_ "the user visits the authorization page", context do
-        auth_url =
-          "/oauth/authorize?" <>
-            URI.encode_query(%{
-              "client_id" => context.client_id,
-              "redirect_uri" => context.redirect_uri,
-              "response_type" => "code",
-              "code_challenge" => context.code_challenge,
-              "code_challenge_method" => "S256",
-              "state" => "test_state"
-            })
-
-        {:ok, view, _html} = live(context.conn, auth_url)
-        {:ok, Map.put(context, :auth_view, view)}
-      end
-
-      when_ "the user approves the authorization request", context do
-        {:error, {:redirect, %{to: redirect_url}}} =
-          context.auth_view
-          |> element("[data-test='approve-button']")
-          |> render_click()
-
-        %{"code" => auth_code} =
-          redirect_url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
-
-        {:ok, Map.put(context, :auth_code, auth_code)}
-      end
-
-      when_ "the client exchanges the code for a bearer token", context do
-        token_conn =
-          post(context.conn, "/oauth/token", %{
-            "grant_type" => "authorization_code",
-            "code" => context.auth_code,
-            "redirect_uri" => context.redirect_uri,
-            "client_id" => context.client_id,
-            "code_verifier" => context.code_verifier
-          })
-
-        %{"access_token" => bearer} = json_response(token_conn, 200)
-        {:ok, Map.put(context, :bearer, bearer)}
-      end
-
-      when_ "the agent calls read_skill_file for step 3", context do
-        mcp_conn =
-          context.conn
-          |> put_req_header("authorization", "Bearer #{context.bearer}")
-          |> put_req_header("content-type", "application/json")
-          |> post(
-            "/mcp",
-            ~s({"jsonrpc":"2.0","method":"tools/call","id":1,"params":{"name":"read_skill_file","arguments":{"path":"steps/03_persona_research.md"}}})
+      when_ "the agent requests step 3 via Step.read", context do
+        result =
+          Step.read(
+            %{"params" => %{"slug" => "03_persona_research"}},
+            context.frame
           )
 
-        {:ok, Map.put(context, :mcp_conn, mcp_conn)}
+        {:ok, Map.put(context, :result, result)}
+      end
+
+      then_ "the response is successful", context do
+        assert match?({:reply, _, _}, context.result),
+               "expected {:reply, _, _}, got: #{inspect(context.result)}"
+
+        {:ok, context}
       end
 
       then_ "the response contains the step 3 file content", context do
-        body = json_response(context.mcp_conn, 200)
-        content_text = get_in(body, ["result", "content", Access.at(0), "text"]) || ""
-        assert byte_size(content_text) > 0, "expected non-empty step 3 content"
-        assert content_text == context.step3_content
+        {:reply, response, _frame} = context.result
+        text = resource_response_text(response)
+        assert text == context.step3_content,
+               "expected response to exactly match the on-disk step 3 content"
+
         {:ok, context}
       end
 
       then_ "the response does not include SKILL.md step-list content from other files", context do
-        body = json_response(context.mcp_conn, 200)
-        content_text = get_in(body, ["result", "content", Access.at(0), "text"]) || ""
-        assert content_text =~ ~r/persona|research/i
-        refute content_text =~ "steps/01_current_state.md"
+        {:reply, response, _frame} = context.result
+        text = resource_response_text(response)
+        assert text =~ ~r/persona|research/i,
+               "expected step 3 content to reference persona/research"
+
+        refute text =~ "steps/01_current_state.md",
+               "step 3 response must not contain SKILL.md step-list cross-contamination"
+
         {:ok, context}
       end
     end
   end
+
+  # Resource responses have contents: %{"text" => ...}
+  defp resource_response_text(%{contents: %{"text" => text}}), do: text
+  defp resource_response_text(%{contents: %{text: text}}), do: text
+  defp resource_response_text(other), do: inspect(other)
 end

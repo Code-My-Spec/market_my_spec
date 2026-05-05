@@ -48,28 +48,31 @@ defmodule MarketMySpec.Accounts.Member do
       _ ->
         user_id = get_field(changeset, :user_id)
         account_id = get_field(changeset, :account_id)
+        validate_not_last_owner(changeset, repo, user_id, account_id)
+    end
+  end
 
-        if user_id && account_id do
-          case repo.get_by(__MODULE__, user_id: user_id, account_id: account_id) do
-            %{role: :owner} ->
-              owner_count =
-                repo.aggregate(
-                  from(m in __MODULE__, where: m.account_id == ^account_id and m.role == :owner),
-                  :count
-                )
+  defp validate_not_last_owner(changeset, _repo, nil, _account_id), do: changeset
+  defp validate_not_last_owner(changeset, _repo, _user_id, nil), do: changeset
 
-              if owner_count <= 1 do
-                add_error(changeset, :role, "account must have at least one owner")
-              else
-                changeset
-              end
+  defp validate_not_last_owner(changeset, repo, user_id, account_id) do
+    case repo.get_by(__MODULE__, user_id: user_id, account_id: account_id) do
+      %{role: :owner} -> check_owner_count(changeset, repo, account_id)
+      _ -> changeset
+    end
+  end
 
-            _ ->
-              changeset
-          end
-        else
-          changeset
-        end
+  defp check_owner_count(changeset, repo, account_id) do
+    owner_count =
+      repo.aggregate(
+        from(m in __MODULE__, where: m.account_id == ^account_id and m.role == :owner),
+        :count
+      )
+
+    if owner_count <= 1 do
+      add_error(changeset, :role, "account must have at least one owner")
+    else
+      changeset
     end
   end
 

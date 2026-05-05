@@ -1,4 +1,8 @@
 defmodule MarketMySpecWeb.AccountLive.Components.AccountsBreadcrumb do
+  @moduledoc """
+  HTML component for rendering an account breadcrumb navigation element.
+  """
+
   use MarketMySpecWeb, :html
 
   @doc """

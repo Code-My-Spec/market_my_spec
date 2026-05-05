@@ -35,8 +35,10 @@ defmodule MarketMySpec.Integrations.Integration do
   end
 
   def changeset(integration, attrs) do
+    cast_fields = [:user_id, :provider, :access_token, :refresh_token, :expires_at, :granted_scopes, :provider_metadata]
+
     integration
-    |> cast(attrs, [:user_id, :provider, :access_token, :refresh_token, :expires_at, :granted_scopes, :provider_metadata])
+    |> cast(attrs, cast_fields)
     |> validate_required([:user_id, :provider, :access_token, :expires_at])
     |> assoc_constraint(:user)
     |> unique_constraint([:user_id, :provider], name: :integrations_user_id_provider_index)

@@ -16,12 +16,24 @@ config :market_my_spec, MarketMySpec.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
-# We don't run a server during test. If one is required,
-# you can enable the server option below.
+# Endpoint runs in test so Wallaby can drive a real browser against it.
+# Set :server back to `false` if you ever need plain unit-test mode without
+# Wallaby — but the standard `mix test` flow keeps it on.
 config :market_my_spec, MarketMySpecWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "j4Qw3mzj8ePAdijydTCyco5Jam2HdT6iwn3mKYcRGFmpl0TIIb0xVSk9KdHD0ESl",
-  server: false
+  server: true
+
+# Wallaby — drives Chrome via chromedriver. Requires `brew install chromedriver`
+# (or platform equivalent) on the dev machine. The sandbox flag below is
+# read by the Endpoint to mount Phoenix.Ecto.SQL.Sandbox in test only.
+config :market_my_spec, :sandbox, Ecto.Adapters.SQL.Sandbox
+
+config :wallaby,
+  driver: Wallaby.Chrome,
+  otp_app: :market_my_spec,
+  screenshot_on_failure: true,
+  screenshot_dir: "tmp/wallaby_screenshots"
 
 # In test we don't send emails
 config :market_my_spec, MarketMySpec.Mailer, adapter: Swoosh.Adapters.Test
@@ -42,3 +54,6 @@ config :phoenix_live_view,
 # Sort query params output of verified routes for robust url comparisons
 config :phoenix,
   sort_verified_routes_query_params: true
+
+# Use in-memory ETS backend for file storage in tests (avoids real S3 calls)
+config :market_my_spec, :files_backend, MarketMySpec.Files.Memory

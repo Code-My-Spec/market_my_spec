@@ -17,16 +17,34 @@ defmodule MarketMySpecWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", MarketMySpecWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
+  pipeline :mcp_authenticated do
+    plug :accepts, ["json", "sse"]
+    plug MarketMySpecWeb.Plugs.RequireMcpToken
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", MarketMySpecWeb do
-  #   pipe_through :api
-  # end
+  # Well-known OAuth metadata endpoints (public, no session required)
+  scope "/", MarketMySpecWeb do
+    pipe_through :api
+
+    get "/.well-known/oauth-protected-resource", OauthController, :protected_resource_metadata
+    get "/.well-known/oauth-authorization-server", OauthController, :authorization_server_metadata
+  end
+
+  # OAuth token/revoke/register endpoints (public API, bearer auth inside)
+  scope "/", MarketMySpecWeb do
+    pipe_through :api
+
+    post "/oauth/token", OauthController, :token
+    post "/oauth/revoke", OauthController, :revoke
+    post "/oauth/register", OauthController, :register
+  end
+
+  # MCP server — bearer-authenticated, delegates to Anubis via McpController
+  scope "/mcp", MarketMySpecWeb do
+    pipe_through :mcp_authenticated
+
+    match :*, "/", McpController, :handle
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:market_my_spec, :dev_routes) do
@@ -50,19 +68,47 @@ defmodule MarketMySpecWeb.Router do
   scope "/", MarketMySpecWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live_session :require_authenticated_user,
+    # Account creation route — requires authentication but NOT an existing account membership.
+    # Users land here immediately after first sign-up.
+    live_session :require_authenticated_user_no_account_check,
       on_mount: [{MarketMySpecWeb.UserAuth, :require_authenticated}] do
+      live "/accounts/new", AccountLive.Form, :new
+    end
+
+    # Agency routes — requires authentication, account membership, AND an agency-typed account.
+    live_session :require_agency_account,
+      on_mount: [
+        {MarketMySpecWeb.UserAuth, :require_authenticated},
+        {MarketMySpecWeb.UserAuth, :require_account_membership},
+        {MarketMySpecWeb.UserAuth, :require_agency_account}
+      ] do
+      live "/agency", AgencyLive.Dashboard, :index
+      live "/agency/clients/new", AgencyLive.ClientNew, :new
+    end
+
+    # All other authenticated routes — requires authentication AND at least one account membership.
+    live_session :require_authenticated_user,
+      on_mount: [
+        {MarketMySpecWeb.UserAuth, :require_authenticated},
+        {MarketMySpecWeb.UserAuth, :require_account_membership}
+      ] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
       live "/integrations", IntegrationLive.Index, :index
 
       live "/accounts", AccountLive.Index, :index
       live "/accounts/picker", AccountLive.Picker, :index
-      live "/accounts/new", AccountLive.Form, :new
       live "/accounts/:id", AccountLive.Manage, :show
       live "/accounts/:id/manage", AccountLive.Manage, :show
       live "/accounts/:id/members", AccountLive.Members, :show
       live "/accounts/:id/invitations", AccountLive.Invitations, :show
+
+      live "/files", FilesLive.Index, :index
+      live "/files/*key", FilesLive.Show, :show
+
+      live "/mcp-setup", McpSetupLive, :index
+
+      live "/oauth/authorize", McpAuthorizationLive, :index
     end
 
     post "/users/update-password", UserSessionController, :update_password
@@ -75,11 +121,20 @@ defmodule MarketMySpecWeb.Router do
     get "/callback/:provider", IntegrationsController, :callback
   end
 
+  # Public Google/GitHub sign-in routes (no authentication required)
+  scope "/auth", MarketMySpecWeb do
+    pipe_through :browser
+
+    get "/:provider", UserOAuthController, :request
+    get "/:provider/callback", UserOAuthController, :callback
+  end
+
   scope "/", MarketMySpecWeb do
     pipe_through [:browser]
 
     live_session :current_user,
       on_mount: [{MarketMySpecWeb.UserAuth, :mount_current_scope}] do
+      live "/", HomeLive, :index
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new

@@ -1,9 +1,14 @@
 defmodule MarketMySpecWeb.UserAuth do
+  @moduledoc """
+  Plug and LiveView hooks for authentication and session management.
+  """
+
   use MarketMySpecWeb, :verified_routes
 
   import Plug.Conn
   import Phoenix.Controller
 
+  alias MarketMySpec.Accounts
   alias MarketMySpec.Users
   alias MarketMySpec.Users.Scope
 
@@ -193,6 +198,16 @@ defmodule MarketMySpecWeb.UserAuth do
       on user_token.
       Redirects to login page if there's no logged user.
 
+    * `:require_account_membership` - After `:require_authenticated`, checks
+      that the authenticated user belongs to at least one account. If they
+      have zero memberships, navigates to `/accounts/new`. Apply this to all
+      protected live_sessions except the account-creation route itself.
+
+    * `:require_agency_account` - After `:require_authenticated`, checks that
+      the authenticated user belongs to at least one agency-typed account.
+      If not, redirects to `/accounts` with a flash. Apply this to the
+      agency dashboard live_session.
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -225,6 +240,36 @@ defmodule MarketMySpecWeb.UserAuth do
         socket
         |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
+
+      {:halt, socket}
+    end
+  end
+
+  def on_mount(:require_account_membership, _params, _session, socket) do
+    user = socket.assigns.current_scope && socket.assigns.current_scope.user
+
+    if user && !Accounts.user_has_any_account?(user) do
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:info, "Please create an account to get started.")
+        |> Phoenix.LiveView.push_navigate(to: ~p"/accounts/new")
+
+      {:halt, socket}
+    else
+      {:cont, socket}
+    end
+  end
+
+  def on_mount(:require_agency_account, _params, _session, socket) do
+    user = socket.assigns.current_scope && socket.assigns.current_scope.user
+
+    if user && Accounts.user_has_agency_account?(user) do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You need an agency account to access this page.")
+        |> Phoenix.LiveView.redirect(to: ~p"/accounts")
 
       {:halt, socket}
     end

@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="marketmyspec-dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="MarketMySpec" suffix=" · Phoenix Framework">
+    <.live_title default="MarketMySpec" suffix=" · MarketMySpec">
       {assigns[:page_title]}
     </.live_title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Mono:wght@700&display=swap"
+      rel="stylesheet"
+    />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
@@ -15,39 +21,39 @@
         const setTheme = (theme) => {
           if (theme === "system") {
             localStorage.removeItem("phx:theme");
-            document.documentElement.removeAttribute("data-theme");
+            document.documentElement.setAttribute("data-theme", "marketmyspec-dark");
           } else {
             localStorage.setItem("phx:theme", theme);
             document.documentElement.setAttribute("data-theme", theme);
           }
         };
-        if (!document.documentElement.hasAttribute("data-theme")) {
-          setTheme(localStorage.getItem("phx:theme") || "system");
+        const stored = localStorage.getItem("phx:theme");
+        if (stored && stored !== "system") {
+          document.documentElement.setAttribute("data-theme", stored);
         }
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>
   </head>
-  <body>
-    <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
+  <body class="min-h-screen bg-base-100 text-base-content">
+    <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end border-b border-base-300 bg-base-200">
       <%= if @current_scope do %>
-        <li>
+        <li class="font-mono text-xs text-base-content/60">
           {@current_scope.user.email}
         </li>
         <li>
-          <.link href={~p"/users/settings"}>Settings</.link>
+          <.link href={~p"/users/settings"} class="font-mono text-xs hover:text-primary">Settings</.link>
         </li>
         <li>
-          <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+          <.link href={~p"/users/log-out"} method="delete" class="font-mono text-xs hover:text-primary">Log out</.link>
         </li>
       <% else %>
         <li>
-          <.link href={~p"/users/register"}>Register</.link>
+          <.link href={~p"/users/register"} class="font-mono text-xs hover:text-primary">Register</.link>
         </li>
         <li>
-          <.link href={~p"/users/log-in"}>Log in</.link>
+          <.link href={~p"/users/log-in"} class="btn btn-sm btn-primary">Log in</.link>
         </li>
       <% end %>
     </ul>

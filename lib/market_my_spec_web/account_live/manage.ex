@@ -26,6 +26,7 @@ defmodule MarketMySpecWeb.AccountLive.Manage do
               <.form
                 for={@account_form}
                 id="account-form"
+                data-test="account-form"
                 phx-change="validate-account"
                 phx-submit="update-account"
               >
@@ -36,21 +37,59 @@ defmodule MarketMySpecWeb.AccountLive.Manage do
                     label="Account Name"
                     placeholder="Enter account name"
                   />
-                  <div class="flex justify-end gap-x-4">
-                    <.button
-                      phx-click="delete-account"
+                  <div :if={!@read_only_agency_access} class="flex justify-end gap-x-4">
+                    <button
+                      type="button"
                       class="btn btn-error"
-                      data-confirm="Are you sure you want to delete this account?"
+                      onclick="document.getElementById('delete-account-modal').showModal()"
+                      data-test="delete-account"
                       disabled={!can_delete_account?(@current_scope, @account)}
                     >
                       Delete Account
-                    </.button>
+                    </button>
+                    <.confirm_modal
+                      id="delete-account-modal"
+                      title="Delete this account?"
+                      body="This permanently deletes the account and all its data. You can't undo this."
+                      confirm_label="Delete Account"
+                      confirm_event="delete-account"
+                      confirm_value={%{}}
+                    />
                     <.button type="submit" phx-disable-with="Updating...">
                       Update Account
                     </.button>
                   </div>
                 </div>
               </.form>
+            </div>
+          </div>
+
+          <div
+            :if={@account.type == :agency}
+            data-test="white-label-settings"
+            class="card bg-base-100 border border-base-300"
+          >
+            <div class="card-body">
+              <h2 class="card-title">White Label Settings</h2>
+              <p class="text-sm text-base-content/70">
+                Customize the branding and appearance for your agency clients.
+              </p>
+              <div class="mt-4 space-y-4">
+                <.input
+                  name="white_label[logo_url]"
+                  type="text"
+                  label="Logo URL"
+                  placeholder="https://example.com/logo.png"
+                  value=""
+                />
+                <.input
+                  name="white_label[primary_color]"
+                  type="text"
+                  label="Primary Color"
+                  placeholder="#007bff"
+                  value=""
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -73,9 +112,14 @@ defmodule MarketMySpecWeb.AccountLive.Manage do
       account ->
         Phoenix.PubSub.subscribe(MarketMySpec.PubSub, "account:#{account.id}")
 
+        # Check if user is operating with read-only agency access (no edit/delete affordances)
+        agency_access_level = Authorization.get_agency_access_level(current_scope, account.id)
+        read_only_agency_access = agency_access_level == "read_only"
+
         {:ok,
          socket
          |> assign(:account, account)
+         |> assign(:read_only_agency_access, read_only_agency_access)
          |> assign(:account_form, to_form(Account.changeset(account, %{})))}
     end
   end

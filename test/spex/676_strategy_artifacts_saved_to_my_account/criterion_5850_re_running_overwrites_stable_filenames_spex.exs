@@ -29,8 +29,6 @@ defmodule MarketMySpecSpex.Story676.Criterion5850Spex do
       end
 
       given_ "an MCP session frame carrying the scope and a stable session id", context do
-        # Anubis exposes frame.context.session_id per MCP session; tests synthesize an
-        # equivalent shape — when anubis_mcp is added to deps, swap to %Anubis.Server.Frame{}.
         frame = %{
           assigns: %{current_scope: context.scope},
           context: %{session_id: "spec-#{System.unique_integer([:positive])}"}
@@ -76,7 +74,7 @@ defmodule MarketMySpecSpex.Story676.Criterion5850Spex do
       end
 
       then_ "the overwrite write_file call succeeds", context do
-        refute Map.get(context.overwrite_response, :is_error, false),
+        refute context.overwrite_response.isError,
                "Expected write_file overwrite to succeed after a prior read_file in the same session"
 
         {:ok, context}
@@ -125,20 +123,17 @@ defmodule MarketMySpecSpex.Story676.Criterion5850Spex do
     end
   end
 
-  defp response_text(%{content: parts}) when is_list(parts) do
+  defp response_text(%Anubis.Server.Response{content: parts}) when is_list(parts) do
     Enum.map_join(parts, "\n", fn
-      %{text: t} -> t
       %{"text" => t} -> t
       other -> inspect(other)
     end)
   end
 
-  defp response_text(%{text: text}), do: text
   defp response_text(other), do: inspect(other)
 
-  defp response_keys(%{content: parts}) when is_list(parts) do
+  defp response_keys(%Anubis.Server.Response{content: parts}) when is_list(parts) do
     Enum.flat_map(parts, fn
-      %{text: t} -> String.split(t, "\n", trim: true)
       %{"text" => t} -> String.split(t, "\n", trim: true)
       _ -> []
     end)

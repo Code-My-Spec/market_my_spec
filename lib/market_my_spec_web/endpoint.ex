@@ -50,6 +50,13 @@ defmodule MarketMySpecWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+
+  # Wallaby/Phoenix.Ecto.SQL.Sandbox: in test, share a DB connection between
+  # the test process and the Wallaby browser session.
+  if Application.compile_env(:market_my_spec, :sandbox, false) do
+    plug Phoenix.Ecto.SQL.Sandbox, sandbox: Ecto.Adapters.SQL.Sandbox
+  end
+
   plug Plug.Session, @session_options
   plug MarketMySpecWeb.Router
 end

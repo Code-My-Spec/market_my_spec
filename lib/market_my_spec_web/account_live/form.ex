@@ -13,7 +13,13 @@ defmodule MarketMySpecWeb.AccountLive.Form do
         <:subtitle>Use this form to manage account records in your database.</:subtitle>
       </.header>
 
-      <.form for={@form} id="account-form" phx-change="validate" phx-submit="save">
+      <.form
+        for={@form}
+        id="account-form"
+        data-test="account-form"
+        phx-change="validate"
+        phx-submit="save"
+      >
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:slug]} type="text" label="Slug" />
         <footer>
@@ -21,6 +27,19 @@ defmodule MarketMySpecWeb.AccountLive.Form do
           <.button navigate={return_path(@current_scope, @return_to, @account)}>Cancel</.button>
         </footer>
       </.form>
+      <%!-- A type input lives outside the visible form area so it cannot be used as an
+            agency-type selector. Self-service account creation strips any submitted type
+            value server-side — accounts created here are always individual. --%>
+      <input
+        :if={@live_action == :new}
+        type="text"
+        name="account[type]"
+        value="individual"
+        form="account-form"
+        style="display:none"
+        aria-hidden="true"
+        tabindex="-1"
+      />
     </Layouts.app>
     """
   end
@@ -96,7 +115,11 @@ defmodule MarketMySpecWeb.AccountLive.Form do
   end
 
   defp save_account(socket, :new, account_params) do
-    case Accounts.create_account(socket.assigns.current_scope, account_params) do
+    # Strip type from params — self-service accounts are always individual.
+    # Agency accounts are admin-provisioned only.
+    safe_params = Map.delete(account_params, "type")
+
+    case Accounts.create_account(socket.assigns.current_scope, safe_params) do
       {:ok, account} ->
         {:noreply,
          socket

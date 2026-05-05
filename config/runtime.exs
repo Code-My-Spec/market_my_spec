@@ -31,7 +31,7 @@ if System.get_env("PHX_SERVER") do
 end
 
 config :market_my_spec, MarketMySpecWeb.Endpoint,
-  http: [port: String.to_integer(System.get_env("PORT", "4000"))]
+  http: [port: env!("PORT", :integer, 4000)]
 
 config :market_my_spec,
   google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),

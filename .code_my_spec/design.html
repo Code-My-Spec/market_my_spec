@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en" data-theme="marketmyspec-dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MarketMySpec · brand_system v0.9</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+
+<!-- daisyUI v5 prebuilt CSS — components + utilities, no build step -->
+<link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+<!-- Tailwind v4 browser compiler — for Tailwind utility classes used in markup -->
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<style>
+/* ==========================================================================
+   THEME BLOCKS — the only brand-bearing CSS in this file.
+   To re-skin marketmyspec, edit the values below. Token names are standard
+   daisyUI; no custom variables anywhere in the document.
+   ========================================================================== */
+
+/* marketmyspec-dark — signal-on-void, sibling to a red-saturated harness */
+[data-theme="marketmyspec-dark"] {
+  color-scheme: dark;
+
+  /* base: near-black with a faint cool drift, not pure void — marketing surface, not log surface */
+  --color-base-100: oklch(16% 0.012 260);
+  --color-base-200: oklch(20% 0.012 260);
+  --color-base-300: oklch(26% 0.012 260);
+  --color-base-content: oklch(94% 0.01 100);
+
+  /* primary: chartreuse — punctuating like the sibling's red, but on the opposite side of
+     the wheel. Attention is the medium; this is the highlighter, not the alarm.
+     Deliberately not teal, not red, not SaaS-blue. */
+  --color-primary: oklch(89% 0.24 122);
+  --color-primary-content: oklch(18% 0.02 130);
+
+  /* secondary: deep magenta — the "audience" counterweight to the chartreuse "operator" */
+  --color-secondary: oklch(68% 0.22 348);
+  --color-secondary-content: oklch(98% 0.005 348);
+
+  /* accent: amber — third leg, pulled warm to keep family resemblance */
+  --color-accent: oklch(78% 0.18 64);
+  --color-accent-content: oklch(20% 0.03 64);
+
+  /* neutral: cool slate, slightly warmer than base, for chrome and divider work */
+  --color-neutral: oklch(32% 0.012 260);
+  --color-neutral-content: oklch(88% 0.01 260);
+
+  --color-info: oklch(72% 0.15 230);
+  --color-info-content: oklch(15% 0.02 230);
+  --color-success: oklch(78% 0.17 155);
+  --color-success-content: oklch(18% 0.03 155);
+  --color-warning: oklch(82% 0.16 85);
+  --color-warning-content: oklch(20% 0.03 85);
+  --color-error: oklch(67% 0.22 25);
+  --color-error-content: oklch(98% 0.01 25);
+
+  /* geometry: chamfered, not pillowed — hard-edge family discipline */
+  --radius-selector: 0.125rem;
+  --radius-field: 0.125rem;
+  --radius-box: 0.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* marketmyspec-light — same primary identity, inverted ground.
+   The signal does not change color when the lights come on. */
+[data-theme="marketmyspec-light"] {
+  color-scheme: light;
+
+  --color-base-100: oklch(98% 0.005 100);
+  --color-base-200: oklch(95% 0.006 100);
+  --color-base-300: oklch(90% 0.008 100);
+  --color-base-content: oklch(20% 0.012 260);
+
+  --color-primary: oklch(78% 0.22 122);
+  --color-primary-content: oklch(15% 0.02 130);
+
+  --color-secondary: oklch(58% 0.22 348);
+  --color-secondary-content: oklch(98% 0.005 348);
+
+  --color-accent: oklch(68% 0.18 64);
+  --color-accent-content: oklch(98% 0.01 64);
+
+  --color-neutral: oklch(28% 0.012 260);
+  --color-neutral-content: oklch(95% 0.005 260);
+
+  --color-info: oklch(58% 0.16 230);
+  --color-info-content: oklch(98% 0.01 230);
+  --color-success: oklch(62% 0.17 155);
+  --color-success-content: oklch(98% 0.01 155);
+  --color-warning: oklch(72% 0.16 85);
+  --color-warning-content: oklch(20% 0.03 85);
+  --color-error: oklch(58% 0.22 25);
+  --color-error-content: oklch(98% 0.01 25);
+
+  --radius-selector: 0.125rem;
+  --radius-field: 0.125rem;
+  --radius-box: 0.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* Three font-family assignments — the only typography wiring in this file. */
+body { font-family: "Inter", ui-sans-serif, system-ui, sans-serif; font-weight: 400; background-color: var(--color-base-100); color: var(--color-base-content); }
+h1, h2, h3, h4, h5, h6, .font-display { font-family: "Space Mono", ui-monospace, monospace; font-weight: 700; letter-spacing: -0.01em; }
+code, pre, kbd, samp, .font-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ============ HEADER ============ -->
+<header class="border-b border-base-300">
+  <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between gap-6">
+    <div class="flex items-baseline gap-4">
+      <span class="font-display text-xl tracking-tight">marketmyspec<span class="text-primary">.</span></span>
+      <span class="hidden sm:inline font-mono text-xs text-base-content/60">brand_system · v0.9</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="hidden md:inline font-mono text-xs text-base-content/50">marketing operations harness</span>
+      <label class="swap swap-rotate btn btn-ghost btn-sm" aria-label="Toggle theme">
+        <input id="theme-toggle" type="checkbox">
+        <span class="swap-on font-mono text-xs">LIGHT</span>
+        <span class="swap-off font-mono text-xs">DARK</span>
+      </label>
+    </div>
+  </div>
+  <div class="max-w-6xl mx-auto px-6 pb-10">
+    <h1 class="font-display text-4xl md:text-5xl leading-[1.05] max-w-3xl">A marketing harness for founders running their own GTM.</h1>
+    <p class="mt-4 max-w-2xl text-base-content/70">Same rigor as the coding sibling. Different audience. The brand lives where attention is the medium — channels, levers, loops — and every surface is wired to one re-skinnable token block.</p>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-16 space-y-24">
+
+  <!-- ============ INTENSITY ZONES ============ -->
+  <section>
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl">Intensity zones</h2>
+      <span class="font-mono text-xs text-base-content/50">01 · surface map</span>
+    </div>
+    <p class="max-w-2xl text-base-content/70 mb-8">Three zones, three jobs. The ground gets quieter as you move from outside to inside; the signal stays the same color throughout.</p>
+
+    <div class="overflow-x-auto rounded-box border border-base-300">
+      <table class="table">
+        <thead class="bg-base-200">
+          <tr>
+            <th class="font-mono text-xs uppercase tracking-wider">Zone</th>
+            <th class="font-mono text-xs uppercase tracking-wider">Surface</th>
+            <th class="font-mono text-xs uppercase tracking-wider">Job</th>
+            <th class="font-mono text-xs uppercase tracking-wider">Density</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-primary badge-sm">brand</span></td>
+            <td class="font-mono text-sm">/ · /manifesto</td>
+            <td>Earn the click. State the worldview. Punctuate, do not narrate.</td>
+            <td class="font-mono text-xs text-base-content/60">low</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-secondary badge-sm">product</span></td>
+            <td class="font-mono text-sm">launch · /product · /pricing · /playbooks</td>
+            <td>Show the lever. Name the loop. Convert the operator who reads carefully.</td>
+            <td class="font-mono text-xs text-base-content/60">medium</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-accent badge-sm">app</span></td>
+            <td class="font-mono text-sm">operator dashboard · campaigns · content · channels · leads</td>
+            <td>Run the work. High signal-to-chrome. No celebration of progress, just progress.</td>
+            <td class="font-mono text-xs text-base-content/60">high</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ COLOR ============ -->
+  <section>
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl">Color</h2>
+      <span class="font-mono text-xs text-base-content/50">02 · semantic tokens</span>
+    </div>
+    <p class="max-w-2xl text-base-content/70 mb-8">Six load-bearing roles plus four states. Every swatch is a daisyUI token; toggle the theme to see the same component reweighted, not redrawn.</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div class="card bg-primary text-primary-content border border-base-300">
+        <div class="card-body p-5">
+          <div class="flex items-center justify-between">
+            <span class="font-display text-lg">primary</span>
+            <span class="badge badge-outline font-mono text-[10px]">load-bearing</span>
+          </div>
+          <code class="font-mono text-xs opacity-80">--color-primary</code>
+          <code class="font-mono text-xs opacity-80">--color-primary-content</code>
+        </div>
+      </div>
+
+      <div class="card bg-secondary text-secondary-content border border-base-300">
+        <div class="card-body p-5">
+          <div class="flex items-center justify-between">
+            <span class="font-display text-lg">secondary</span>
+            <span class="badge badge-outline font-mono text-[10px]">audience</span>
+          </div>
+          <code class="font-mono text-xs opacity-80">--color-secondary</code>
+          <code class="font-mono text-xs opacity-80">--color-secondary-content</code>
+        </div>
+      </div>
+
+      <div class="card bg-accent text-accent-content border border-base-300">
+        <div class="card-body p-5">
+          <div class="flex items-center justify-between">
+            <span class="font-display text-lg">accent</span>
+            <span class="badge badge-outline font-mono text-[10px]">third leg</span>
+          </div>
+          <code class="font-mono text-xs opacity-80">--color-accent</code>
+          <code class="font-mono text-xs opacity-80">--color-accent-content</code>
+        </div>
+      </div>
+
+      <div class="card bg-neutral text-neutral-content border border-base-300">
+        <div class="card-body p-5">
+          <div class="flex items-center justify-between">
+            <span class="font-display text-lg">neutral</span>
+            <span class="badge badge-outline font-mono text-[10px]">chrome</span>
+          </div>
+          <code class="font-mono text-xs opacity-80">--color-neutral</code>
+          <code class="font-mono text-xs opacity-80">--color-neutral-content</code>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 text-base-content border border-base-300">
+        <div class="card-body p-5">
+          <div class="flex items-center justify-between">
+            <span class="font-display text-lg">base</span>
+            <span class="badge badge-outline font-mono text-[10px]">ground</span>
+          </div>
+          <div class="flex gap-2 mt-1">
+            <div class="flex-1 h-8 bg-base-100 border border-base-300"></div>
+            <div class="flex-1 h-8 bg-base-200 border border-base-300"></div>
+            <div class="flex-1 h-8 bg-base-300 border border-base-300"></div>
+          </div>
+          <code class="font-mono text-[10px] opacity-70">100 · 200 · 300</code>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 text-base-content border border-base-300">
+        <div class="card-body p-5">
+          <span class="font-display text-lg">states</span>
+          <div class="grid grid-cols-2 gap-2 mt-1">
+            <div class="px-2 py-1.5 bg-info text-info-content font-mono text-[11px]">info</div>
+            <div class="px-2 py-1.5 bg-success text-success-content font-mono text-[11px]">success</div>
+            <div class="px-2 py-1.5 bg-warning text-warning-content font-mono text-[11px]">warning</div>
+            <div class="px-2 py-1.5 bg-error text-error-content font-mono text-[11px]">error</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ ROLES ============ -->
+  <section>
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl">Roles</h2>
+      <span class="font-mono text-xs text-base-content/50">03 · operator surfaces</span>
+    </div>
+    <p class="max-w-2xl text-base-content/70 mb-8">Six surfaces, mapped to badge variants. The mapping is theme-driven — change a token, every role reweights in lockstep.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5">
+      <div class="flex items-start gap-4 py-3 border-b border-base-300">
+        <span class="badge badge-primary mt-0.5 shrink-0">research</span>
+        <p class="text-base-content/80">Read the room before you write to it. Audience, market, competitor truth.</p>
+      </div>
+      <div class="flex items-start gap-4 py-3 border-b border-base-300">
+        <span class="badge badge-secondary mt-0.5 shrink-0">strategy</span>
+        <p class="text-base-content/80">Pick the lever that moves the loop. Refuse the levers that do not.</p>
+      </div>
+      <div class="flex items-start gap-4 py-3 border-b border-base-300">
+        <span class="badge badge-accent mt-0.5 shrink-0">copy</span>
+        <p class="text-base-content/80">Say the thing in the fewest accurate words. Cut the rest.</p>
+      </div>
+      <div class="flex items-start gap-4 py-3 border-b border-base-300">
+        <span class="badge badge-info mt-0.5 shrink-0">content</span>
+        <p class="text-base-content/80">Ship the artifact. Pages, posts, sequences — durable, not disposable.</p>
+      </div>
+      <div class="flex items-start gap-4 py-3 border-b border-base-300">
+        <span class="badge badge-success mt-0.5 shrink-0">cro</span>
+        <p class="text-base-content/80">Tighten the funnel from the inside out. Measure before you decorate.</p>
+      </div>
+      <div class="flex items-start gap-4 py-3 border-b border-base-300">
+        <span class="badge badge-warning mt-0.5 shrink-0">channels</span>
+        <p class="text-base-content/80">Place the work where the audience already is. Pay for reach honestly.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TYPE ============ -->
+  <section>
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl">Type</h2>
+      <span class="font-mono text-xs text-base-content/50">04 · specimens</span>
+    </div>
+    <p class="max-w-2xl text-base-content/70 mb-8">Three families, fixed roles. Space Mono carries the display weight, JetBrains Mono carries data and code, Inter carries everything you actually have to read.</p>
+
+    <div class="space-y-8">
+      <div class="border-l-2 border-primary pl-6">
+        <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">display · Space Mono 700</span>
+        <div class="font-display text-5xl md:text-6xl mt-2 leading-[1.02]">Attention is the medium.</div>
+      </div>
+
+      <div class="border-l-2 border-base-300 pl-6">
+        <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">section · Space Mono 700</span>
+        <div class="font-display text-2xl mt-2">Pick the lever. Run the loop.</div>
+      </div>
+
+      <div class="border-l-2 border-base-300 pl-6">
+        <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">eyebrow · JetBrains Mono 500 · uppercase</span>
+        <div class="font-mono text-xs uppercase tracking-[0.18em] mt-2 text-base-content/70">campaign · 2026-q2 · launch</div>
+      </div>
+
+      <div class="border-l-2 border-base-300 pl-6">
+        <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">body · Inter 400</span>
+        <p class="mt-2 max-w-2xl text-base-content/85 leading-relaxed">A founder running their own GTM has one scarce resource and it is not budget. It is the patience to keep one experiment running long enough to read the result. The harness exists so the patience compounds.</p>
+      </div>
+
+      <div class="border-l-2 border-base-300 pl-6">
+        <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">mono · JetBrains Mono 400</span>
+        <pre class="mt-2 font-mono text-sm text-base-content/85">channel.email.sequence("operator_onboarding").touchpoint(3)</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPONENTS ============ -->
+  <section>
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl">Components</h2>
+      <span class="font-mono text-xs text-base-content/50">05 · daisyUI surfaces</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <h3 class="font-display text-sm uppercase tracking-wider text-base-content/60">Buttons</h3>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button class="btn btn-primary">▸ Generate strategy</button>
+            <button class="btn btn-secondary">Audience read</button>
+            <button class="btn btn-ghost">Skip</button>
+            <button class="btn btn-outline">Export brief</button>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button class="btn btn-primary btn-sm">Run loop</button>
+            <button class="btn btn-ghost btn-sm">Cancel</button>
+            <button class="btn btn-error btn-sm btn-outline">Kill experiment</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <h3 class="font-display text-sm uppercase tracking-wider text-base-content/60">Alert</h3>
+          <div class="alert alert-info mt-2">
+            <div>
+              <div class="font-mono text-xs uppercase tracking-wider opacity-80">touchpoint · published</div>
+              <div class="text-sm mt-0.5">Sequence <span class="font-mono">operator_onboarding</span> · step 3 of 7 · sent to 412 operators at 09:14 PT.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <h3 class="font-display text-sm uppercase tracking-wider text-base-content/60">Card</h3>
+          <div class="card bg-base-100 border border-base-300 mt-2">
+            <div class="card-body">
+              <div class="flex items-center justify-between">
+                <span class="badge badge-primary badge-sm">strategy</span>
+                <span class="font-mono text-[11px] text-base-content/50">edited 14m ago</span>
+              </div>
+              <h4 class="font-display text-lg mt-1">Cold-start lever for solo operators</h4>
+              <p class="text-sm text-base-content/75">One channel, one offer, one sequence. Review at 30 days, kill or compound.</p>
+              <div class="card-actions justify-end mt-2">
+                <button class="btn btn-primary btn-sm">Open</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <h3 class="font-display text-sm uppercase tracking-wider text-base-content/60">Code mockup</h3>
+          <div class="mockup-code mt-2 text-sm">
+            <pre data-prefix="$"><code>mms run --loop=onboarding</code></pre>
+            <pre data-prefix=">" class="text-success"><code>research · audience locked</code></pre>
+            <pre data-prefix=">" class="text-success"><code>strategy · 1 lever selected</code></pre>
+            <pre data-prefix=">" class="text-warning"><code>copy · 2 drafts pending review</code></pre>
+            <pre data-prefix=">"><code>channels · email, founder-list</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300 md:col-span-2">
+        <div class="card-body">
+          <h3 class="font-display text-sm uppercase tracking-wider text-base-content/60">Stat</h3>
+          <div class="stats stats-vertical sm:stats-horizontal bg-base-100 border border-base-300 mt-2 w-full">
+            <div class="stat">
+              <div class="stat-title font-mono text-xs uppercase tracking-wider">touchpoints / wk</div>
+              <div class="stat-value font-display text-3xl">14</div>
+              <div class="stat-desc text-success">↗ 3 vs prior week</div>
+            </div>
+            <div class="stat">
+              <div class="stat-title font-mono text-xs uppercase tracking-wider">qualified leads</div>
+              <div class="stat-value font-display text-3xl text-primary">42</div>
+              <div class="stat-desc">cohort 2026-w18</div>
+            </div>
+            <div class="stat">
+              <div class="stat-title font-mono text-xs uppercase tracking-wider">loop cycle</div>
+              <div class="stat-value font-display text-3xl">6.2d</div>
+              <div class="stat-desc text-base-content/60">target ≤ 7d</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300 md:col-span-2">
+        <div class="card-body">
+          <h3 class="font-display text-sm uppercase tracking-wider text-base-content/60">Keys &amp; badges</h3>
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <span class="text-sm text-base-content/70">Run loop:</span>
+            <kbd class="kbd kbd-sm">⌘</kbd><kbd class="kbd kbd-sm">⇧</kbd><kbd class="kbd kbd-sm">R</kbd>
+            <span class="text-sm text-base-content/70 ml-4">Open palette:</span>
+            <kbd class="kbd kbd-sm">⌘</kbd><kbd class="kbd kbd-sm">K</kbd>
+          </div>
+          <div class="divider my-2"></div>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge badge-primary">research</span>
+            <span class="badge badge-secondary">strategy</span>
+            <span class="badge badge-accent">copy</span>
+            <span class="badge badge-info">content</span>
+            <span class="badge badge-success">cro</span>
+            <span class="badge badge-warning">channels</span>
+            <span class="badge badge-outline font-mono text-[10px]">+ utility</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ GEOMETRY ============ -->
+  <section>
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl">Geometry</h2>
+      <span class="font-mono text-xs text-base-content/50">06 · radii · borders · sizes</span>
+    </div>
+    <p class="max-w-2xl text-base-content/70 mb-8">Hard edges, narrow radii. The family does not bevel. <code class="font-mono text-xs bg-base-200 px-1.5 py-0.5">--depth: 0</code> and <code class="font-mono text-xs bg-base-200 px-1.5 py-0.5">--noise: 0</code> are kept — depth and texture would soften the signal.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">--radius-selector</span>
+          <div class="font-display text-lg">0.125rem</div>
+          <div class="mt-2 flex gap-2">
+            <input type="checkbox" class="checkbox checkbox-primary" checked>
+            <input type="radio" name="r" class="radio radio-primary" checked>
+            <button class="btn btn-xs btn-primary">tag</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">--radius-field</span>
+          <div class="font-display text-lg">0.125rem</div>
+          <input type="text" placeholder="founder@operator.co" class="input input-bordered mt-2 w-full">
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">--radius-box</span>
+          <div class="font-display text-lg">0.25rem</div>
+          <div class="mt-2 p-4 bg-base-100 border border-base-300 rounded-box font-mono text-xs">box · rounded-box</div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">--border</span>
+          <div class="font-display text-lg">1px</div>
+          <div class="mt-2 grid grid-cols-3 gap-2">
+            <div class="aspect-square border border-base-300"></div>
+            <div class="aspect-square border border-primary"></div>
+            <div class="aspect-square border border-base-content/40"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">--depth · --noise</span>
+          <div class="font-display text-lg">0 · 0</div>
+          <p class="font-mono text-xs text-base-content/60 mt-1">depth and texture would soften the signal. kept flat.</p>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 border border-base-300">
+        <div class="card-body">
+          <span class="font-mono text-[11px] uppercase tracking-widest text-base-content/50">--size-field · --size-selector</span>
+          <div class="font-display text-lg">0.25rem · 0.25rem</div>
+          <p class="font-mono text-xs text-base-content/60 mt-1">tight density. operator surface, not consumer surface.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-base-300 mt-16">
+  <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+    <div class="font-mono text-xs text-base-content/60">© 2026 marketmyspec · brand_system v0.9</div>
+    <div class="font-mono text-xs text-base-content/40">attention is the medium</div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const root = document.documentElement;
+    const toggle = document.getElementById('theme-toggle');
+    const stored = localStorage.getItem('mms-theme');
+    if (stored === 'marketmyspec-light') {
+      root.setAttribute('data-theme', 'marketmyspec-light');
+      toggle.checked = true;
+    }
+    toggle.addEventListener('change', () => {
+      const next = toggle.checked ? 'marketmyspec-light' : 'marketmyspec-dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('mms-theme', next);
+    });
+  })();
+</script>
+
+</body>
+</html>

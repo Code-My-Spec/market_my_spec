@@ -10,7 +10,16 @@ defmodule MarketMySpecWeb.IntegrationsController do
     provider = String.to_existing_atom(provider_str)
     redirect_uri = redirect_uri(provider)
 
-    case Integrations.authorize_url(provider, redirect_uri) do
+    result =
+      try do
+        Integrations.authorize_url(provider, redirect_uri)
+      rescue
+        e ->
+          Logger.error("OAuth authorize_url failed for #{provider}: #{inspect(e)}")
+          {:error, :transport_error}
+      end
+
+    case result do
       {:ok, %{url: url, session_params: session_params}} ->
         state = Map.get(session_params, "state") || Map.get(session_params, :state)
         if state, do: OAuthStateStore.store(state, session_params)
@@ -21,9 +30,10 @@ defmodule MarketMySpecWeb.IntegrationsController do
 
       {:error, reason} ->
         Logger.error("Failed to generate OAuth URL for #{provider}: #{inspect(reason)}")
+
         conn
         |> put_flash(:error, "Failed to connect to #{format_provider(provider)}")
-        |> redirect(to: "/")
+        |> redirect(to: "/integrations")
     end
   end
 

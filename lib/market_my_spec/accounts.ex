@@ -1,9 +1,16 @@
 defmodule MarketMySpec.Accounts do
-  alias MarketMySpec.Accounts.{Account, AccountsRepository, MembersRepository}
-  alias MarketMySpec.Accounts.{InvitationRepository, InvitationNotifier}
+  @moduledoc """
+  Context module for account management, membership, agency-client grants,
+  and invitation workflows.
+  """
+
+  alias MarketMySpec.Accounts.{Account, AccountsRepository, AgencyClientGrantsRepository}
+  alias MarketMySpec.Accounts.{InvitationNotifier, InvitationRepository, MembersRepository}
   alias MarketMySpec.Authorization
+  alias MarketMySpec.Repo
   alias MarketMySpec.Users
   alias MarketMySpec.Users.Scope
+  alias MarketMySpec.Users.User
 
   def subscribe_account(%Scope{} = scope) do
     key = scope.user.id
@@ -25,8 +32,25 @@ defmodule MarketMySpec.Accounts do
     Phoenix.PubSub.broadcast(MarketMySpec.PubSub, "user:#{key}:member", message)
   end
 
+  @doc """
+  Creates a default individual account for a newly confirmed user.
+  The user is set as the owner. Used as part of the sign-up confirmation flow.
+  """
+  def create_default_individual_account(user) do
+    email_prefix =
+      user.email
+      |> String.split("@")
+      |> List.first()
+
+    account_name = "#{email_prefix}'s workspace"
+
+    attrs = %{name: account_name, type: :individual}
+
+    AccountsRepository.create_account_with_owner(attrs, user.id)
+  end
+
   def list_accounts(%Scope{} = scope) do
-    MembersRepository.list_user_accounts(scope.user.id)
+    MembersRepository.list_user_accounts_with_role(scope.user.id)
   end
 
   def get_account(%Scope{} = scope, id) do
@@ -119,6 +143,141 @@ defmodule MarketMySpec.Accounts do
     MembersRepository.user_has_account_access?(scope.user.id, account_id)
   end
 
+  def user_has_any_account?(%Users.User{} = user) do
+    MembersRepository.user_has_any_account?(user.id)
+  end
+
+  @doc """
+  Returns true if the user is a member of at least one agency-typed account.
+  Used by the agency route type guard.
+  """
+  def user_has_agency_account?(%Users.User{} = user) do
+    MembersRepository.user_has_agency_account?(user.id)
+  end
+
+  @doc """
+  Returns the first agency account for which the user is a member, or nil.
+  Used to populate the agency context on the dashboard.
+  """
+  def get_user_agency_account(%Users.User{} = user) do
+    MembersRepository.get_user_agency_account(user.id)
+  end
+
+  # ---------------------------------------------------------------------------
+  # Agency-Client Grants
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Lists all active agency-client grants for an agency account, with the client
+  account preloaded on each grant.
+  """
+  @spec list_grants_for_agency(binary()) :: list()
+  def list_grants_for_agency(agency_account_id) do
+    AgencyClientGrantsRepository.list_grants_for_agency(agency_account_id)
+  end
+
+  @doc """
+  Creates a new client account and an agency-originated grant in a single transaction.
+  Used when an agency owner creates a client from /agency/clients/new.
+
+  Returns {:ok, {client_account, grant}} on success.
+  """
+  @spec create_client_account_with_originated_grant(Account.t(), map(), integer()) ::
+          {:ok, {Account.t(), any()}} | {:error, any()}
+  def create_client_account_with_originated_grant(%Account{} = agency_account, client_attrs, created_by_user_id) do
+    Repo.transaction(fn ->
+      with {:ok, client_account} <- AccountsRepository.create_account_with_owner(client_attrs, created_by_user_id),
+           {:ok, grant} <-
+             AgencyClientGrantsRepository.create_originated_grant(%{
+               agency_account_id: agency_account.id,
+               client_account_id: client_account.id,
+               access_level: "account_manager",
+               created_by_user_id: created_by_user_id
+             }) do
+        {client_account, grant}
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
+  end
+
+  @doc """
+  Creates an invited agency-client grant. Called when a client owner uses the
+  grant-agency-access form on /accounts to invite an agency.
+
+  Resolves the agency by slug before creating the grant.
+  Returns {:ok, grant} or {:error, reason}.
+  """
+  @spec invite_agency_grant(Account.t(), String.t(), String.t(), integer()) ::
+          {:ok, any()} | {:error, any()}
+  def invite_agency_grant(%Account{} = client_account, agency_slug, access_level, created_by_user_id) do
+    case AgencyClientGrantsRepository.get_agency_by_slug(agency_slug) do
+      nil ->
+        {:error, :agency_not_found}
+
+      agency_account ->
+        if AgencyClientGrantsRepository.grant_exists?(agency_account.id, client_account.id) do
+          {:error, :already_granted}
+        else
+          AgencyClientGrantsRepository.create_invited_grant(%{
+            agency_account_id: agency_account.id,
+            client_account_id: client_account.id,
+            access_level: access_level,
+            created_by_user_id: created_by_user_id
+          })
+        end
+    end
+  end
+
+  @doc """
+  Revokes an existing invited agency-client grant. Only non-originator grants can be revoked.
+  Returns {:ok, grant} or {:error, reason}.
+  """
+  @spec revoke_grant(binary()) :: {:ok, any()} | {:error, any()}
+  def revoke_grant(grant_id) do
+    AgencyClientGrantsRepository.revoke_grant(grant_id)
+  end
+
+  # ---------------------------------------------------------------------------
+  # Client Context Switching
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Sets the active client account context for a user. This is used when an agency
+  user "enters" a client account from the agency dashboard. The context is stored
+  in the database so it persists across page navigations.
+
+  Returns {:ok, user} or {:error, changeset}.
+  """
+  @spec set_active_client_context(User.t(), binary() | nil) :: {:ok, User.t()} | {:error, any()}
+  def set_active_client_context(%User{} = user, account_id) do
+    user
+    |> User.client_context_changeset(account_id)
+    |> Repo.update()
+  end
+
+  @doc """
+  Returns the active client account for the given user, or nil if no context is set.
+  Loads the account from the database using the user's active_client_account_id field.
+  """
+  @spec get_active_client_account(User.t()) :: Account.t() | nil
+  def get_active_client_account(%User{active_client_account_id: nil}), do: nil
+
+  def get_active_client_account(%User{active_client_account_id: account_id}) do
+    AccountsRepository.get_account(account_id)
+  end
+
+  @doc """
+  Checks whether the given user has agency-granted access to the specified client account.
+  Used to validate context-switching authorization.
+
+  Returns true if any agency the user belongs to has an active grant for that client account.
+  """
+  @spec user_has_agency_access_to_client?(User.t(), binary()) :: boolean()
+  def user_has_agency_access_to_client?(%User{} = user, client_account_id) do
+    AgencyClientGrantsRepository.user_has_agency_access_to_client?(user.id, client_account_id)
+  end
+
   # ---------------------------------------------------------------------------
   # Invitations
   # ---------------------------------------------------------------------------
@@ -137,6 +296,7 @@ defmodule MarketMySpec.Accounts do
       when is_binary(email) and role in [:owner, :admin, :member] and not is_nil(account_id) do
     with :ok <- validate_manage_members_permission(scope, account_id),
          :ok <- validate_user_not_already_member(email, account_id),
+         :ok <- validate_no_pending_invitation(email, account_id),
          {:ok, invitation} <- create_invitation(scope, account_id, email, role),
          :ok <- send_invitation_email(invitation) do
       broadcast_invitation(scope, {:created, invitation})
@@ -202,6 +362,12 @@ defmodule MarketMySpec.Accounts do
           do: {:error, :user_already_member},
           else: :ok
     end
+  end
+
+  defp validate_no_pending_invitation(email, account_id) do
+    if InvitationRepository.pending_invitation_exists?(email, account_id),
+      do: {:error, :invitation_already_pending},
+      else: :ok
   end
 
   defp create_invitation(scope, account_id, email, role) do

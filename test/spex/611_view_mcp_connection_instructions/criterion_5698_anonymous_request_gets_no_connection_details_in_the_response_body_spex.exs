@@ -50,7 +50,9 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
       end
 
       then_ "the LiveView is rejected — no setup content is delivered", context do
-        assert {:error, {:live_redirect, %{to: "/users/log-in"}}} = context.result
+        # UserAuth.on_mount(:require_authenticated) uses Phoenix.LiveView.redirect/2 which
+        # produces {:error, {:redirect, ...}}, not {:error, {:live_redirect, ...}}.
+        assert {:error, {:redirect, %{to: "/users/log-in"}}} = context.result
         {:ok, context}
       end
     end

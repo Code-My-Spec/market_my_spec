@@ -1,4 +1,8 @@
 defmodule MarketMySpecWeb.AccountLive.Components.MembersList do
+  @moduledoc """
+  LiveComponent that renders the list of account members with inline role editing.
+  """
+
   use MarketMySpecWeb, :live_component
   import MarketMySpecWeb.CoreComponents
 

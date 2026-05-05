@@ -31,7 +31,7 @@ defmodule MarketMySpecSpex.Story612.Criterion5704Spex do
       then_ "the authorization_servers field is present and non-empty", context do
         servers = context.metadata["authorization_servers"]
         assert is_list(servers)
-        assert length(servers) > 0
+        assert servers != []
         {:ok, context}
       end
 

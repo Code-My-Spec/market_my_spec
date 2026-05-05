@@ -6,6 +6,10 @@ defmodule MarketMySpec.UsersFixtures do
 
   import Ecto.Query
 
+  alias MarketMySpec.Accounts
+  alias MarketMySpec.Accounts.AccountsRepository
+  alias MarketMySpec.Accounts.AgencyClientGrantsRepository
+  alias MarketMySpec.Accounts.MembersRepository
   alias MarketMySpec.Users
   alias MarketMySpec.Users.Scope
 
@@ -28,6 +32,9 @@ defmodule MarketMySpec.UsersFixtures do
   end
 
   def user_fixture(attrs \\ %{}) do
+    skip_default_account = Map.get(attrs, :skip_default_account, false)
+    attrs = Map.delete(attrs, :skip_default_account)
+
     user = unconfirmed_user_fixture(attrs)
 
     token =
@@ -38,6 +45,10 @@ defmodule MarketMySpec.UsersFixtures do
     {:ok, {user, _expired_tokens}} =
       Users.login_user_by_magic_link(token)
 
+    unless skip_default_account do
+      {:ok, _account} = Accounts.create_default_individual_account(user)
+    end
+
     user
   end
 
@@ -47,6 +58,113 @@ defmodule MarketMySpec.UsersFixtures do
   end
 
   def user_scope_fixture(user) do
+    Scope.for_user(user)
+  end
+
+  @doc """
+  Creates an admin-provisioned agency account owned by the given user.
+  This simulates the admin provisioning flow where the account type is set
+  to `:agency` directly, bypassing the self-service form which only creates
+  individual accounts.
+  """
+  def agency_account_fixture(user) do
+    unique_suffix = System.unique_integer([:positive])
+    attrs = %{name: "Agency Account #{unique_suffix}", type: :agency}
+
+    case AccountsRepository.create_agency_account_with_owner(attrs, user.id) do
+      {:ok, account} -> account
+      {:error, reason} -> raise "Failed to create agency account fixture: #{inspect(reason)}"
+    end
+  end
+
+  @doc """
+  Creates an individual account owned by the given user.
+  Accepts optional attrs to override defaults (e.g., %{name: "My Co"}).
+  """
+  def account_fixture(user, attrs \\ %{}) do
+    unique_suffix = System.unique_integer([:positive])
+    default_attrs = %{name: "Account #{unique_suffix}"}
+    merged_attrs = Map.merge(default_attrs, attrs)
+
+    case AccountsRepository.create_account_with_owner(merged_attrs, user.id) do
+      {:ok, account} -> account
+      {:error, reason} -> raise "Failed to create account fixture: #{inspect(reason)}"
+    end
+  end
+
+  @doc """
+  Creates an invited agency-client grant (originator="client", status="accepted").
+  Used when a client has granted an agency access to their account.
+  Accepts keyword list or map for attrs (e.g., access_level: "account_manager").
+  """
+  def invited_grant_fixture(agency_account, client_account, attrs \\ []) do
+    attrs_map = Enum.into(attrs, %{})
+    access_level = Map.get(attrs_map, :access_level, "read_only")
+
+    case AgencyClientGrantsRepository.create_invited_grant(%{
+           agency_account_id: agency_account.id,
+           client_account_id: client_account.id,
+           access_level: access_level
+         }) do
+      {:ok, grant} -> grant
+      {:error, reason} -> raise "Failed to create invited grant fixture: #{inspect(reason)}"
+    end
+  end
+
+  @doc """
+  Creates a new client account and an agency-originated grant in one shot.
+  Used to set up "agency created this client" scenarios.
+  Returns {client_account, grant}.
+  """
+  def originated_client_fixture(agency_account, attrs \\ %{}) do
+    unique_suffix = System.unique_integer([:positive])
+    default_attrs = %{name: "Client #{unique_suffix}"}
+    client_attrs = Map.merge(default_attrs, attrs)
+
+    # Create an anonymous user to own the client account, or we can skip that
+    # and just create the account without an owner (use the agency owner).
+    # For fixture purposes we create an ownerless account via a throwaway user.
+    throwaway_user = user_fixture(%{skip_default_account: true})
+
+    case AccountsRepository.create_account_with_owner(client_attrs, throwaway_user.id) do
+      {:ok, client_account} ->
+        grant_attrs = %{
+          agency_account_id: agency_account.id,
+          client_account_id: client_account.id,
+          access_level: "account_manager"
+        }
+
+        case AgencyClientGrantsRepository.create_originated_grant(grant_attrs) do
+          {:ok, grant} -> {client_account, grant}
+          {:error, reason} -> raise "Failed to create originated grant fixture: #{inspect(reason)}"
+        end
+
+      {:error, reason} ->
+        raise "Failed to create client account in originated_client_fixture: #{inspect(reason)}"
+    end
+  end
+
+  @doc """
+  Adds a user as a member of an account with the given role.
+  Accepts role as atom or string.
+  """
+  def account_member_fixture(account, user, opts \\ []) do
+    opts_map = Enum.into(opts, %{})
+    role = Map.get(opts_map, :role, "member")
+    role_atom = if is_atom(role), do: role, else: String.to_existing_atom(role)
+
+    case MembersRepository.add_user_to_account(user.id, account.id, role_atom) do
+      {:ok, member} -> member
+      {:error, reason} -> raise "Failed to create account member fixture: #{inspect(reason)}"
+    end
+  end
+
+  @doc """
+  Creates a registered user with a confirmed account scope.
+  Used by spex tests that need a user with an active account context.
+  """
+  def account_scoped_user_fixture do
+    user = user_fixture()
     Scope.for_user(user)
   end
 

@@ -9,6 +9,8 @@ defmodule MarketMySpec.Users.User do
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
 
+    field :active_client_account_id, :binary_id
+
     timestamps(type: :utc_datetime)
   end
 
@@ -112,6 +114,13 @@ defmodule MarketMySpec.Users.User do
   def confirm_changeset(user) do
     now = DateTime.utc_now(:second)
     change(user, confirmed_at: now)
+  end
+
+  @doc """
+  Changeset for setting the active client account context.
+  """
+  def client_context_changeset(user, account_id) do
+    change(user, active_client_account_id: account_id)
   end
 
   @doc """

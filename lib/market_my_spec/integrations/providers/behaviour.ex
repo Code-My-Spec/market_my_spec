@@ -1,4 +1,8 @@
 defmodule MarketMySpec.Integrations.Providers.Behaviour do
+  @moduledoc """
+  Behaviour definition for OAuth provider adapter modules.
+  """
+
   @callback config(redirect_uri :: String.t()) :: Keyword.t()
   @callback callback_path() :: String.t()
   @callback strategy() :: module()

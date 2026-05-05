@@ -6,6 +6,8 @@ defmodule MarketMySpec.Accounts.Account do
           id: Ecto.UUID.t() | nil,
           name: String.t(),
           slug: String.t() | nil,
+          type: atom(),
+          role: atom() | nil,
           members: [MarketMySpec.Accounts.Member.t()] | Ecto.Association.NotLoaded.t(),
           users: [MarketMySpec.Users.User.t()] | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
@@ -18,6 +20,8 @@ defmodule MarketMySpec.Accounts.Account do
   schema "accounts" do
     field :name, :string
     field :slug, :string
+    field :type, Ecto.Enum, values: [:individual, :agency], default: :individual
+    field :role, Ecto.Enum, values: [:owner, :admin, :member], virtual: true
 
     has_many :members, MarketMySpec.Accounts.Member, on_delete: :delete_all
     has_many :users, through: [:members, :user]
@@ -31,13 +35,23 @@ defmodule MarketMySpec.Accounts.Account do
     |> validate_required([:name])
     |> validate_length(:name, min: 1, max: 100)
     |> validate_slug()
-    |> unique_constraint(:slug)
+    |> unique_constraint(:slug, message: "already taken")
   end
 
   def create_changeset(attrs) do
     %__MODULE__{}
     |> changeset(attrs)
     |> maybe_generate_slug()
+  end
+
+  def admin_changeset(account, attrs) do
+    account
+    |> cast(attrs, [:name, :slug, :type])
+    |> validate_required([:name])
+    |> validate_length(:name, min: 1, max: 100)
+    |> validate_inclusion(:type, [:individual, :agency])
+    |> validate_slug()
+    |> unique_constraint(:slug, message: "already taken")
   end
 
   defp validate_slug(changeset) do

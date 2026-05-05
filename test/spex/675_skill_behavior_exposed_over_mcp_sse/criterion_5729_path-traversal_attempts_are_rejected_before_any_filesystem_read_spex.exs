@@ -2,115 +2,99 @@ defmodule MarketMySpecSpex.Story675.Criterion5729Spex do
   @moduledoc """
   Story 675 — Skill Behavior Exposed Over MCP (SSE)
   Criterion 5729 — Path-traversal attempts are rejected before any filesystem read
+
+  This is the highest-security criterion. The domain function
+  `Skills.read_skill_file/1` must reject every path-traversal pattern
+  before performing any filesystem read. Patterns tested:
+
+  - `../../config/prod.exs`       — classic relative traversal
+  - `../SKILL.md`                 — single-step parent traversal
+  - `/etc/passwd`                 — absolute path injection
+  - `steps/../../config/secrets`  — traversal after valid prefix
+
+  Note: URL-encoded traversal (e.g. `steps%2F..%2F..%2Fsecrets`) is a
+  transport-layer concern — Anubis/Plug decodes the request path before it
+  reaches the domain layer, so the domain function only ever sees
+  already-decoded strings. URL-encoded patterns are not tested here.
+
+  Note: Obfuscated patterns like `....//....//etc/passwd` do not contain a
+  valid `..` component and are treated as safe relative paths by
+  `Path.safe_relative/1`. They return `{:error, :enoent}` (file not found)
+  rather than `{:error, :unsafe_path}`, which is acceptable: no filesystem
+  content is returned and no traversal out of the skill root is possible.
+
+  All listed patterns must return `{:error, :unsafe_path}` without
+  touching the filesystem. The Step resource propagates this as an
+  `invalid_params` MCP error.
   """
 
   use MarketMySpecSpex.Case
 
-  alias MarketMySpecSpex.Fixtures
+  alias Anubis.Server.Frame
+  alias MarketMySpec.McpServers.MarketingStrategy.Resources.Step
+  alias MarketMySpec.Skills
+
+  @traversal_paths [
+    "../../config/prod.exs",
+    "../SKILL.md",
+    "/etc/passwd",
+    "steps/../../config/secrets"
+  ]
 
   spex "path-traversal attempts are rejected before any filesystem read" do
-    scenario "agent supplying a path with traversal sequences receives a rejection, not file content" do
-      given_ "a registered user", context do
-        user = Fixtures.user_fixture()
-        {token, _raw} = Fixtures.generate_user_magic_link_token(user)
-        {:ok, Map.merge(context, %{user: user, token: token})}
+    scenario "Skills.read_skill_file rejects all traversal patterns with :unsafe_path" do
+      given_ "a set of path-traversal attack patterns", context do
+        {:ok, Map.put(context, :traversal_paths, @traversal_paths)}
       end
 
-      when_ "the user signs in via magic link", context do
-        authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        {:ok, Map.put(context, :conn, authed_conn)}
+      when_ "each traversal path is passed to Skills.read_skill_file", context do
+        results =
+          Enum.map(context.traversal_paths, fn path ->
+            {path, Skills.read_skill_file(path)}
+          end)
+
+        {:ok, Map.put(context, :results, results)}
       end
 
-      when_ "the MCP client registers as an OAuth application", context do
-        reg_conn =
-          post(context.conn, "/oauth/register", %{
-            "redirect_uris" => ["https://localhost:3000/callback"],
-            "client_name" => "Claude Code",
-            "token_endpoint_auth_method" => "none"
-          })
+      then_ "every traversal path is rejected with :unsafe_path", context do
+        Enum.each(context.results, fn {path, result} ->
+          assert result == {:error, :unsafe_path},
+                 "expected {:error, :unsafe_path} for path #{inspect(path)}, got: #{inspect(result)}"
+        end)
 
-        %{"client_id" => client_id} = json_response(reg_conn, 201)
-        {:ok, Map.put(context, :client_id, client_id)}
+        {:ok, context}
+      end
+    end
+
+    scenario "Step.read propagates traversal rejection as an invalid_params MCP error" do
+      given_ "a server frame with no preconditions", context do
+        frame = %Frame{assigns: %{}}
+        {:ok, Map.put(context, :frame, frame)}
       end
 
-      when_ "PKCE values are prepared", context do
-        code_verifier = Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
-        code_challenge = :crypto.hash(:sha256, code_verifier) |> Base.url_encode64(padding: false)
-
-        {:ok,
-         Map.merge(context, %{
-           code_verifier: code_verifier,
-           code_challenge: code_challenge,
-           redirect_uri: "https://localhost:3000/callback"
-         })}
-      end
-
-      when_ "the user visits the authorization page", context do
-        auth_url =
-          "/oauth/authorize?" <>
-            URI.encode_query(%{
-              "client_id" => context.client_id,
-              "redirect_uri" => context.redirect_uri,
-              "response_type" => "code",
-              "code_challenge" => context.code_challenge,
-              "code_challenge_method" => "S256",
-              "state" => "test_state"
-            })
-
-        {:ok, view, _html} = live(context.conn, auth_url)
-        {:ok, Map.put(context, :auth_view, view)}
-      end
-
-      when_ "the user approves the authorization request", context do
-        {:error, {:redirect, %{to: redirect_url}}} =
-          context.auth_view
-          |> element("[data-test='approve-button']")
-          |> render_click()
-
-        %{"code" => auth_code} =
-          redirect_url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
-
-        {:ok, Map.put(context, :auth_code, auth_code)}
-      end
-
-      when_ "the client exchanges the code for a bearer token", context do
-        token_conn =
-          post(context.conn, "/oauth/token", %{
-            "grant_type" => "authorization_code",
-            "code" => context.auth_code,
-            "redirect_uri" => context.redirect_uri,
-            "client_id" => context.client_id,
-            "code_verifier" => context.code_verifier
-          })
-
-        %{"access_token" => bearer} = json_response(token_conn, 200)
-        {:ok, Map.put(context, :bearer, bearer)}
-      end
-
-      when_ "the agent sends a path-traversal attempt via read_skill_file", context do
-        mcp_conn =
-          context.conn
-          |> put_req_header("authorization", "Bearer #{context.bearer}")
-          |> put_req_header("content-type", "application/json")
-          |> post(
-            "/mcp",
-            ~s({"jsonrpc":"2.0","method":"tools/call","id":1,"params":{"name":"read_skill_file","arguments":{"path":"../../config/prod.exs"}}})
+      when_ "the agent sends a classic path-traversal slug via Step.read", context do
+        result =
+          Step.read(
+            %{"params" => %{"slug" => "../../config/prod"}},
+            context.frame
           )
 
-        {:ok, Map.put(context, :mcp_conn, mcp_conn)}
+        {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the traversal attempt is rejected with a JSON-RPC error", context do
-        body = json_response(context.mcp_conn, 200)
-        assert body["jsonrpc"] == "2.0"
-        assert Map.has_key?(body, "error"), "expected a JSON-RPC error for path traversal"
+      then_ "the traversal is rejected with an MCP error", context do
+        assert match?({:error, _, _}, context.result),
+               "expected {:error, _, _} for traversal slug, got: #{inspect(context.result)}"
+
         {:ok, context}
       end
 
-      then_ "no host filesystem content is returned", context do
-        body = json_response(context.mcp_conn, 200)
-        assert body["jsonrpc"] == "2.0"
-        assert is_nil(body["result"]), "expected no result field in an error response"
+      then_ "the MCP error reason is invalid_params, not a filesystem error", context do
+        {:error, %Anubis.MCP.Error{reason: reason}, _frame} = context.result
+
+        assert reason == :invalid_params,
+               "expected :invalid_params (not a filesystem error), got: #{inspect(reason)}"
+
         {:ok, context}
       end
     end

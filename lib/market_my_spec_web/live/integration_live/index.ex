@@ -21,14 +21,22 @@ defmodule MarketMySpecWeb.IntegrationLive.Index do
                 <h2 class="card-title text-base">{format_provider(integration.provider)}</h2>
                 <p class="text-sm text-success">Connected</p>
                 <div class="card-actions justify-end mt-4">
-                  <.button
-                    phx-click="disconnect"
-                    phx-value-provider={integration.provider}
-                    class="btn-sm btn-error"
-                    data-confirm="Are you sure you want to disconnect?"
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-error"
+                    onclick={"document.getElementById('disconnect-modal-#{integration.provider}').showModal()"}
+                    data-test={"open-disconnect-modal-#{integration.provider}"}
                   >
                     Disconnect
-                  </.button>
+                  </button>
+                  <.confirm_modal
+                    id={"disconnect-modal-#{integration.provider}"}
+                    title="Disconnect integration?"
+                    body={"This will disconnect your #{format_provider(integration.provider)} integration. You can reconnect at any time."}
+                    confirm_label="Disconnect"
+                    confirm_event="disconnect"
+                    confirm_value={%{provider: integration.provider}}
+                  />
                 </div>
               </div>
             </div>

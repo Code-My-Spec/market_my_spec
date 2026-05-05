@@ -26,15 +26,11 @@ defmodule MarketMySpecSpex.Story676.Criterion5849Spex do
   spex "the agent persists step 5 to the account workspace via write_file" do
     scenario "agent writes step 5 → read_file returns the body → list_files includes the key" do
       given_ "an authenticated user with an active account scope", context do
-        # Future fixture: builds a confirmed user, an account, a Member row, and
-        # a Scope with active_account_id set. Ships when the Accounts fixtures land.
         scope = Fixtures.account_scoped_user_fixture()
         {:ok, Map.put(context, :scope, scope)}
       end
 
       given_ "an MCP session frame carrying the scope and a stable session id", context do
-        # Anubis exposes frame.context.session_id per MCP session; tests synthesize an
-        # equivalent shape — when anubis_mcp is added to deps, swap to %Anubis.Server.Frame{}.
         frame = %{
           assigns: %{current_scope: context.scope},
           context: %{session_id: "spec-#{System.unique_integer([:positive])}"}
@@ -54,9 +50,7 @@ defmodule MarketMySpecSpex.Story676.Criterion5849Spex do
       end
 
       then_ "write_file returns success", context do
-        # Anubis success responses are non-error tool responses; we assert the response
-        # carries a non-error indicator. Final shape lands when the tool module is implemented.
-        refute Map.get(context.write_response, :is_error, false),
+        refute context.write_response.isError,
                "Expected write_file to succeed, got: #{inspect(context.write_response)}"
 
         {:ok, context}
@@ -99,20 +93,17 @@ defmodule MarketMySpecSpex.Story676.Criterion5849Spex do
     end
   end
 
-  defp response_text(%{content: parts}) when is_list(parts) do
+  defp response_text(%Anubis.Server.Response{content: parts}) when is_list(parts) do
     Enum.map_join(parts, "\n", fn
-      %{text: t} -> t
       %{"text" => t} -> t
       other -> inspect(other)
     end)
   end
 
-  defp response_text(%{text: text}), do: text
   defp response_text(other), do: inspect(other)
 
-  defp response_keys(%{content: parts}) when is_list(parts) do
+  defp response_keys(%Anubis.Server.Response{content: parts}) when is_list(parts) do
     Enum.flat_map(parts, fn
-      %{text: t} -> String.split(t, "\n", trim: true)
       %{"text" => t} -> String.split(t, "\n", trim: true)
       _ -> []
     end)

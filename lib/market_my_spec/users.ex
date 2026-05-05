@@ -6,7 +6,7 @@ defmodule MarketMySpec.Users do
   import Ecto.Query, warn: false
   alias MarketMySpec.Repo
 
-  alias MarketMySpec.Users.{User, UserToken, UserNotifier}
+  alias MarketMySpec.Users.{User, UserNotifier, UserToken}
 
   ## Database getters
 

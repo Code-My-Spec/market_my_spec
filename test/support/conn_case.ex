@@ -17,6 +17,8 @@ defmodule MarketMySpecTest.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias MarketMySpec.Users.Scope
+
   using do
     quote do
       # The default endpoint for testing
@@ -46,7 +48,7 @@ defmodule MarketMySpecTest.ConnCase do
   """
   def register_and_log_in_user(%{conn: conn} = context) do
     user = MarketMySpec.UsersFixtures.user_fixture()
-    scope = MarketMySpec.Users.Scope.for_user(user)
+    scope = Scope.for_user(user)
 
     opts =
       context

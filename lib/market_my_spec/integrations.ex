@@ -1,4 +1,8 @@
 defmodule MarketMySpec.Integrations do
+  @moduledoc """
+  Context module for managing OAuth provider integrations scoped to a user.
+  """
+
   require Logger
 
   alias MarketMySpec.Integrations.IntegrationRepository
@@ -31,7 +35,10 @@ defmodule MarketMySpec.Integrations do
 
   def handle_callback(%Scope{} = scope, provider, redirect_uri, params, session_params, opts \\ []) do
     with {:ok, provider_mod} <- fetch_provider(provider),
-         config = provider_mod.config(redirect_uri) |> Keyword.put(:session_params, session_params) |> Keyword.merge(opts),
+         config =
+           provider_mod.config(redirect_uri)
+           |> Keyword.put(:session_params, session_params)
+           |> Keyword.merge(opts),
          strategy = provider_mod.strategy(),
          {:ok, %{token: token} = result} <- strategy.callback(config, params) do
       user_data = Map.get(result, :user) || %{}
@@ -71,12 +78,14 @@ defmodule MarketMySpec.Integrations do
   defp calculate_expires_at(%{"expires_in" => expires_in}) when is_integer(expires_in) do
     DateTime.add(DateTime.utc_now(), expires_in, :second)
   end
+
   defp calculate_expires_at(_token) do
     DateTime.add(DateTime.utc_now(), 365 * 24 * 3600, :second)
   end
 
   defp parse_scopes(nil), do: []
   defp parse_scopes(scopes) when is_list(scopes), do: scopes
+
   defp parse_scopes(scopes) when is_binary(scopes) do
     scopes |> String.split(~r/[,\s]+/) |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
   end

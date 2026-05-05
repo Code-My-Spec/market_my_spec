@@ -41,3 +41,10 @@ npm-debug.log
 # Diagnostics compiler output
 diagnostics.jsonl
 
+# OS junk
+.DS_Store
+
+# Local agent / Claude Code session state (settings.local.json IS committed)
+/.agents/
+/.claude/settings.json
+

@@ -31,6 +31,51 @@ defmodule MarketMySpecSpex.Fixtures do
   defdelegate user_scope_fixture(), to: MarketMySpec.UsersFixtures
   defdelegate user_scope_fixture(user), to: MarketMySpec.UsersFixtures
 
+  # --- Accounts -----------------------------------------------------------
+  #
+  # Admin-provisioned account types that cannot be created through the
+  # self-service UI. Agency accounts are provisioned by admins only.
+
+  defdelegate agency_account_fixture(user), to: MarketMySpec.UsersFixtures
+
+  @doc """
+  Creates an individual account owned by `user`. Accepts optional attrs map,
+  e.g. %{name: "My Co"}.
+  """
+  defdelegate account_fixture(user, attrs \\ %{}), to: MarketMySpec.UsersFixtures
+
+  # --- Agency-Client Grants -----------------------------------------------
+  #
+  # Fixtures for agency-client grant scenarios. These create database records
+  # directly rather than driving the UI, as they represent server-side state
+  # that BDD specs need as preconditions.
+
+  @doc """
+  Creates a client-originated (invited) grant with status="accepted".
+  Pass access_level via keyword list, e.g. [access_level: "account_manager"].
+  """
+  defdelegate invited_grant_fixture(agency_account, client_account, attrs \\ []),
+    to: MarketMySpec.UsersFixtures
+
+  @doc """
+  Creates a new client account and an agency-originated grant in one shot.
+  Returns {client_account, grant}. Pass attrs map for client name, e.g. %{name: "Bright Co"}.
+  """
+  defdelegate originated_client_fixture(agency_account, attrs \\ %{}),
+    to: MarketMySpec.UsersFixtures
+
+  @doc """
+  Adds `user` as a member of `account` with the given role.
+  Pass role via keyword list, e.g. [role: "member"].
+  """
+  defdelegate account_member_fixture(account, user, opts \\ []), to: MarketMySpec.UsersFixtures
+
+  @doc """
+  Creates a registered user with a confirmed individual account and returns
+  their Scope. Useful for specs that need an account-scoped user as a fixture.
+  """
+  defdelegate account_scoped_user_fixture(), to: MarketMySpec.UsersFixtures
+
   # --- Session tokens -----------------------------------------------------
   #
   # Generates magic-link / session tokens server-side so specs can pre-auth
