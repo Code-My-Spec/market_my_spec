@@ -2,11 +2,13 @@
 
 One-time setup for S3 buckets and IAM users used by the Files backend in UAT and prod.
 
+Deploy target: Hetzner Cloud (cax11 ARM64) running Docker Compose. See ADR `.code_my_spec/architecture/decisions/hetzner-deployment.md` and the deploy playbook at `project_knowledge://devops/hetzner-docker-deploy.md` for the broader stack. AWS credentials below get injected via the `--env-file` Compose pattern.
+
 ## Prerequisites
 
 - `aws` CLI installed (`brew install awscli`)
 - Admin AWS credentials configured (`aws configure` or `AWS_PROFILE` env var)
-- For Fly.io steps: `fly` CLI installed, app names known
+- SSH access to the Hetzner deploy host as the `deploy` user (the env files live at `/opt/market_my_spec/{uat,prod}.env`, mode 600, never in git)
 
 ## Step 1: Create and configure the S3 buckets
 
@@ -47,27 +49,43 @@ The script creates:
 Do NOT paste credentials into any file in this repo. Use your secrets manager or
 deploy-platform secrets.
 
-## Step 3: Push credentials to Fly.io
+## Step 3: Push credentials to the Hetzner host
 
-Note: `fly.toml` does not yet exist. These commands are forward-looking — run them
-once the app is deployed and the app name is known.
+Append the four AWS values to the per-env file on the deploy host. The Compose
+stacks read these via `--env-file` at boot.
 
 ```bash
+ssh deploy@<HETZNER_IP>
+
 # UAT
-fly secrets set \
-  AWS_ACCESS_KEY_ID=<mms-uat-files-access-key> \
-  AWS_SECRET_ACCESS_KEY=<mms-uat-files-secret> \
-  AWS_REGION=us-east-1 \
-  S3_BUCKET=market-my-spec-uat \
-  -a <uat-app-name>
+cat >> /opt/market_my_spec/uat.env <<'EOF'
+AWS_ACCESS_KEY_ID=<mms-uat-files-access-key>
+AWS_SECRET_ACCESS_KEY=<mms-uat-files-secret>
+AWS_REGION=us-east-1
+S3_BUCKET=market-my-spec-uat
+EOF
 
 # Prod
-fly secrets set \
-  AWS_ACCESS_KEY_ID=<mms-prod-files-access-key> \
-  AWS_SECRET_ACCESS_KEY=<mms-prod-files-secret> \
-  AWS_REGION=us-east-1 \
-  S3_BUCKET=market-my-spec-prod \
-  -a <prod-app-name>
+cat >> /opt/market_my_spec/prod.env <<'EOF'
+AWS_ACCESS_KEY_ID=<mms-prod-files-access-key>
+AWS_SECRET_ACCESS_KEY=<mms-prod-files-secret>
+AWS_REGION=us-east-1
+S3_BUCKET=market-my-spec-prod
+EOF
+
+# Confirm permissions
+chmod 600 /opt/market_my_spec/{uat,prod}.env
+ls -la /opt/market_my_spec/*.env
+```
+
+Restart each stack so the new env vars take effect:
+
+```bash
+cd /opt/market_my_spec/app && \
+  docker compose -p market-my-spec-prod --env-file /opt/market_my_spec/prod.env up -d
+
+cd /opt/market_my_spec/uat && \
+  docker compose -p market-my-spec-uat --env-file /opt/market_my_spec/uat.env up -d
 ```
 
 ## Step 4: Verify the bucket works

@@ -8,9 +8,13 @@ set -euo pipefail
 #
 # Operator workflow:
 #   1. Run this script. Copy the printed key + secret.
-#   2. Set them as Fly.io secrets (once fly.toml exists):
-#        fly secrets set AWS_ACCESS_KEY_ID=<key> AWS_SECRET_ACCESS_KEY=<secret> -a <app>
+#   2. SSH to the Hetzner deploy host and append AWS_ACCESS_KEY_ID,
+#      AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET to
+#      /opt/market_my_spec/{uat,prod}.env (chmod 600). Restart the
+#      compose stack so the new env-file is picked up.
 #   3. Do NOT paste credentials into any file in this repo.
+#
+# Full procedure: .code_my_spec/runbooks/aws_buckets.md
 #
 # Prerequisites:
 #   - aws CLI installed and configured with admin credentials
@@ -86,8 +90,12 @@ print(f\"  AWS_SECRET_ACCESS_KEY = {creds['SecretAccessKey']}\")
 "
 
   echo ""
-  echo "  To set on Fly.io (once fly.toml exists):"
-  echo "    fly secrets set AWS_ACCESS_KEY_ID=<key> AWS_SECRET_ACCESS_KEY=<secret> -a <app-name>"
+  echo "  Add to /opt/market_my_spec/${ENV}.env on the Hetzner host:"
+  echo "    AWS_ACCESS_KEY_ID=<key>"
+  echo "    AWS_SECRET_ACCESS_KEY=<secret>"
+  echo "    AWS_REGION=us-east-1"
+  echo "    S3_BUCKET=${BUCKET}"
+  echo "  Then restart the compose stack."
   echo "  Done: ${USER}"
 done
 
