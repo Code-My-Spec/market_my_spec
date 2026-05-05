@@ -1,0 +1,14 @@
+# MarketMySpec Caddy snippets — append into the host's shared Caddyfile
+# at /opt/<deploy>/Caddyfile (or wherever the Caddy container's volume mount
+# points). Caddy auto-obtains TLS certs via Let's Encrypt when DNS resolves
+# to this host.
+
+# Prod (lives on the prod host)
+app.marketmyspec.com {
+	reverse_proxy market-my-spec-prod-app-1:4000
+}
+
+# UAT (lives on the UAT host)
+# uat.marketmyspec.com {
+# 	reverse_proxy market-my-spec-uat-app-1:4000
+# }

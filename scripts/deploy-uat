@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Deploy MarketMySpec UAT to the UAT Hetzner host.
+set -euo pipefail
+
+SERVER="root@<HETZNER_UAT_IP>"
+APP_DIR="/opt/market_my_spec/uat"
+ENV_FILE="/opt/market_my_spec/.env.uat"
+PROJECT="market-my-spec-uat"
+
+echo "==> Syncing code to server..."
+rsync -az --delete \
+  --exclude='.git' \
+  --exclude='_build' \
+  --exclude='deps' \
+  --exclude='assets/node_modules' \
+  --exclude='.code_my_spec' \
+  --exclude='test' \
+  --exclude='envs' \
+  --exclude='.env' \
+  --exclude='.env.*' \
+  --exclude='tmp' \
+  ./ "$SERVER:$APP_DIR/"
+
+echo "==> Building and restarting containers..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -p $PROJECT --env-file $ENV_FILE up -d --build"
+
+echo "==> Running migrations..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
+
+echo "==> Done: https://uat.marketmyspec.com"

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Deploy MarketMySpec prod to the prod Hetzner host.
+set -euo pipefail
+
+SERVER="root@<HETZNER_PROD_IP>"
+APP_DIR="/opt/market_my_spec/app"
+ENV_FILE="/opt/market_my_spec/.env.prod"
+PROJECT="market-my-spec-prod"
+COMPOSE_FILE="docker-compose.prod.yml"
+
+echo "==> Syncing code to server..."
+rsync -az --delete \
+  --exclude='.git' \
+  --exclude='_build' \
+  --exclude='deps' \
+  --exclude='assets/node_modules' \
+  --exclude='.code_my_spec' \
+  --exclude='test' \
+  --exclude='envs' \
+  --exclude='.env' \
+  --exclude='.env.*' \
+  --exclude='tmp' \
+  ./ "$SERVER:$APP_DIR/"
+
+echo "==> Building and restarting containers..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -f $COMPOSE_FILE -p $PROJECT --env-file $ENV_FILE up -d --build"
+
+echo "==> Running migrations..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -f $COMPOSE_FILE -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
+
+echo "==> Done: https://app.marketmyspec.com"

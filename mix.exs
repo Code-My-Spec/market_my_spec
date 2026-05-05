@@ -11,7 +11,14 @@ defmodule MarketMySpec.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: compilers(Mix.env()),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      releases: [
+        market_my_spec: [
+          include_executables_for: [:unix],
+          applications: [runtime_tools: :permanent],
+          steps: [:assemble, :tar]
+        ]
+      ]
     ]
   end
 

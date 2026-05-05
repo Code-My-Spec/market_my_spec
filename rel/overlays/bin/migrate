@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+cd -P -- "$(readlink -f -- "$0")/../.." || exit
+exec ./bin/market_my_spec eval MarketMySpec.Release.migrate

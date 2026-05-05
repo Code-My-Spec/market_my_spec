@@ -1,0 +1,38 @@
+# Prod: docker compose -f docker-compose.prod.yml -p market-my-spec-prod --env-file /opt/market_my_spec/.env.prod up -d --build
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    expose:
+      - "4000"
+    environment:
+      DATABASE_URL: ecto://postgres:${POSTGRES_PASSWORD}@infra-postgres-1/${POSTGRES_DB:-market_my_spec_prod}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      PHX_HOST: ${PHX_HOST}
+      PHX_SERVER: "true"
+      CLOAK_KEY: ${CLOAK_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-market-my-spec-prod}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4000/.well-known/oauth-authorization-server || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - caddy_proxy
+      - db_net
+
+networks:
+  caddy_proxy:
+    external: true
+  db_net:
+    external: true
