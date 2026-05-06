@@ -38,5 +38,7 @@ jobs:
           tags: |
             ghcr.io/code-my-spec/market_my_spec:${{ github.sha }}
             ghcr.io/code-my-spec/market_my_spec:latest
+          labels: |
+            service=market-my-spec
           cache-from: type=registry,ref=ghcr.io/code-my-spec/market_my_spec:buildcache
           cache-to: type=registry,ref=ghcr.io/code-my-spec/market_my_spec:buildcache,mode=max
