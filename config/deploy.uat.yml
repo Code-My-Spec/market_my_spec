@@ -9,7 +9,8 @@ image: code-my-spec/market_my_spec
 servers:
   web:
     hosts:
-      - 178.156.143.212
+      - 46.225.105.88           # UAT box (Hetzner cax11 ARM, Nuremberg)
+    proxy: false
     options:
       network: caddy_proxy
       network-alias: market-my-spec-uat-web
@@ -21,7 +22,7 @@ registry:
     - KAMAL_REGISTRY_PASSWORD
 
 builder:
-  arch: amd64
+  arch: arm64
   local: true
 
 env:
