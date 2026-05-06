@@ -1,32 +1,41 @@
 #!/usr/bin/env bash
-# Deploy MarketMySpec UAT to the UAT Hetzner host.
+# Deploy MarketMySpec UAT to the Hetzner box.
+# Same flow as scripts/deploy but uses /market_my_spec/uat/* SSM path and
+# config/deploy.uat.yml. Image is shared — only env differs.
+
 set -euo pipefail
 
-SERVER="root@46.225.105.88"
-APP_DIR="/opt/market_my_spec/uat"
-ENV_FILE="/opt/market_my_spec/.env.uat"
-PROJECT="market-my-spec-uat"
+REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+DEVOPS_DIR="${DEVOPS_DIR:-$HOME/Documents/github/devops}"
 
-echo "==> Syncing code to server..."
-rsync -az --delete \
-  --exclude='.git' \
-  --exclude='_build' \
-  --exclude='deps' \
-  --exclude='assets/node_modules' \
-  --exclude='.code_my_spec' \
-  --exclude='test' \
-  --exclude='envs' \
-  --exclude='.env' \
-  --exclude='.env.*' \
-  --exclude='tmp' \
-  ./ "$SERVER:$APP_DIR/"
+cd "$REPO_ROOT"
 
-echo "==> Building and restarting containers..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -p $PROJECT --env-file $ENV_FILE up -d --build"
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "ERROR: working tree has uncommitted changes." >&2
+  git status --short >&2
+  exit 1
+fi
 
-echo "==> Running migrations..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
+SHA=$(git rev-parse HEAD)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+echo "==> pushing $BRANCH ($SHA) to origin..."
+git push origin "$BRANCH"
+
+echo "==> waiting for GitHub Actions build to finish..."
+sleep 5
+RUN_ID=$(gh run list --workflow=build.yml --branch="$BRANCH" --limit=1 --json databaseId --jq '.[0].databaseId')
+[[ -n "$RUN_ID" ]] || { echo "no workflow run found" >&2; exit 1; }
+gh run watch "$RUN_ID" --exit-status --interval 10
+
+export KAMAL_REGISTRY_PASSWORD
+KAMAL_REGISTRY_PASSWORD=$(gh auth token)
+
+set -a
+# shellcheck disable=SC1091
+source <("$DEVOPS_DIR/scripts/render-env" market_my_spec uat)
+set +a
+
+kamal deploy -d uat --skip-push --version="$SHA" "$@"
 
 echo "==> Done: https://uat.marketmyspec.com"

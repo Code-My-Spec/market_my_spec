@@ -48,4 +48,9 @@ diagnostics.jsonl
 # Local agent / Claude Code session state (settings.local.json IS committed)
 /.agents/
 /.claude/settings.json
+/.claude/skills/
+
+# Kamal runtime state — locks and per-host app state
+/.kamal/locks/
+/.kamal/apps/
 

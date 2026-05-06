@@ -1,33 +1,51 @@
 #!/usr/bin/env bash
-# Deploy MarketMySpec prod to the prod Hetzner host.
+# Deploy MarketMySpec PROD to the Hetzner box.
+#
+# Image build happens in GitHub Actions (.github/workflows/build.yml) on push
+# to master. This script:
+#   1. Verifies the working tree is clean and pushes commits.
+#   2. Waits for the build workflow to finish.
+#   3. Runs `kamal deploy --skip-push --version=<sha>` against the image
+#      that the workflow just published.
+#
+# Secrets come from AWS SSM Parameter Store (/market_my_spec/prod/*).
+
 set -euo pipefail
 
-SERVER="root@178.156.143.212"
-APP_DIR="/opt/market_my_spec/app"
-ENV_FILE="/opt/market_my_spec/.env.prod"
-PROJECT="market-my-spec-prod"
-COMPOSE_FILE="docker-compose.prod.yml"
+REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+DEVOPS_DIR="${DEVOPS_DIR:-$HOME/Documents/github/devops}"
 
-echo "==> Syncing code to server..."
-rsync -az --delete \
-  --exclude='.git' \
-  --exclude='_build' \
-  --exclude='deps' \
-  --exclude='assets/node_modules' \
-  --exclude='.code_my_spec' \
-  --exclude='test' \
-  --exclude='envs' \
-  --exclude='.env' \
-  --exclude='.env.*' \
-  --exclude='tmp' \
-  ./ "$SERVER:$APP_DIR/"
+cd "$REPO_ROOT"
 
-echo "==> Building and restarting containers..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -f $COMPOSE_FILE -p $PROJECT --env-file $ENV_FILE up -d --build"
+# 1. Working tree must be clean — Kamal versions by commit SHA
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "ERROR: working tree has uncommitted changes. Commit or stash before deploying." >&2
+  git status --short >&2
+  exit 1
+fi
 
-echo "==> Running migrations..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -f $COMPOSE_FILE -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
+SHA=$(git rev-parse HEAD)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# 2. Push and trigger the build
+echo "==> pushing $BRANCH ($SHA) to origin..."
+git push origin "$BRANCH"
+
+echo "==> waiting for GitHub Actions build to finish..."
+sleep 5  # give GitHub a moment to register the trigger
+RUN_ID=$(gh run list --workflow=build.yml --branch="$BRANCH" --limit=1 --json databaseId --jq '.[0].databaseId')
+[[ -n "$RUN_ID" ]] || { echo "no workflow run found" >&2; exit 1; }
+gh run watch "$RUN_ID" --exit-status --interval 10
+
+# 3. Deploy via Kamal — pulls the just-built image from GHCR
+export KAMAL_REGISTRY_PASSWORD
+KAMAL_REGISTRY_PASSWORD=$(gh auth token)
+
+set -a
+# shellcheck disable=SC1091
+source <("$DEVOPS_DIR/scripts/render-env" market_my_spec prod)
+set +a
+
+kamal deploy --skip-push --version="$SHA" "$@"
 
 echo "==> Done: https://marketmyspec.com"

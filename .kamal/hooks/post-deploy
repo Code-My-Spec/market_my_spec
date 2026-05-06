@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# Post-deploy hook: attach the freshly-deployed container to db_net so it
+# can reach infra-postgres-1.
+#
+# Kamal only supports a single network in deploy.yml options. We use
+# caddy_proxy as the primary (so Caddy can reach the app), then connect
+# db_net here. Kamal calls this hook after a successful deploy with the
+# active container id available via `kamal app containers`.
+#
+# Env vars provided by Kamal:
+#   KAMAL_SERVICE       — service name
+#   KAMAL_DESTINATION   — destination (production, uat, ...)
+#   KAMAL_VERSION       — image version (commit SHA)
+#   KAMAL_HOSTS         — comma-separated host list
+
+set -euo pipefail
+
+SERVICE="${KAMAL_SERVICE:?service required}"
+HOSTS="${KAMAL_HOSTS:?hosts required}"
+
+for host in ${HOSTS//,/ }; do
+  echo "==> attaching $SERVICE container on $host to db_net"
+  ssh "root@$host" "
+    set -e
+    cid=\$(docker ps --filter label=service=$SERVICE --format '{{.ID}}' | head -1)
+    [[ -n \"\$cid\" ]] || { echo 'no running container found'; exit 1; }
+    if docker network inspect db_net --format '{{range .Containers}}{{.Name}} {{end}}' | grep -q \"\$(docker ps --filter id=\$cid --format '{{.Names}}')\"; then
+      echo 'already on db_net'
+    else
+      docker network connect db_net \$cid
+      echo 'connected'
+    fi
+  "
+done
