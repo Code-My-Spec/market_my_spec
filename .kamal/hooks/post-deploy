@@ -1,35 +1,52 @@
 #!/usr/bin/env bash
 #
-# Post-deploy hook: attach the freshly-deployed container to db_net so it
-# can reach infra-postgres-1.
+# Post-deploy hook. Two adjustments to the freshly-deployed container:
 #
-# Kamal only supports a single network in deploy.yml options. We use
-# caddy_proxy as the primary (so Caddy can reach the app), then connect
-# db_net here. Kamal calls this hook after a successful deploy with the
-# active container id available via `kamal app containers`.
+# 1. Re-attach the caddy_proxy network with the right alias.
+#    Kamal's docker run lays down `--network kamal ... --network caddy_proxy
+#    --network-alias <alias>`. Docker applies --network-alias to the FIRST
+#    --network flag, so the alias lands on `kamal` instead of `caddy_proxy`.
+#    We disconnect caddy_proxy and reconnect with the alias explicitly.
 #
-# Env vars provided by Kamal:
-#   KAMAL_SERVICE       — service name
-#   KAMAL_DESTINATION   — destination (production, uat, ...)
-#   KAMAL_VERSION       — image version (commit SHA)
-#   KAMAL_HOSTS         — comma-separated host list
+# 2. Connect db_net so the app can reach infra-postgres-1.
+#
+# The desired alias is read from the deploy config at runtime via the
+# KAMAL_NETWORK_ALIAS env var (set in deploy.yml `env.clear`).
 
 set -euo pipefail
 
 SERVICE="${KAMAL_SERVICE:?service required}"
 HOSTS="${KAMAL_HOSTS:?hosts required}"
+DEST="${KAMAL_DESTINATION:-prod}"
+case "$DEST" in
+  ""|production|prod) ALIAS_ENV=prod ;;
+  uat|staging)        ALIAS_ENV=uat  ;;
+  *) ALIAS_ENV="$DEST" ;;
+esac
+ALIAS="${SERVICE}-${ALIAS_ENV}-web"
 
 for host in ${HOSTS//,/ }; do
-  echo "==> attaching $SERVICE container on $host to db_net"
+  echo "==> post-deploy on $host (alias=$ALIAS)"
   ssh "root@$host" "
     set -e
-    cid=\$(docker ps --filter label=service=$SERVICE --format '{{.ID}}' | head -1)
+    cid=\$(docker ps --filter label=service=$SERVICE --filter status=running --format '{{.ID}}' | head -1)
     [[ -n \"\$cid\" ]] || { echo 'no running container found'; exit 1; }
-    if docker network inspect db_net --format '{{range .Containers}}{{.Name}} {{end}}' | grep -q \"\$(docker ps --filter id=\$cid --format '{{.Names}}')\"; then
-      echo 'already on db_net'
+
+    # Re-attach caddy_proxy with the right alias
+    if docker inspect \$cid --format '{{range \$n, \$c := .NetworkSettings.Networks}}{{\$n}}={{\$c.Aliases}} {{end}}' | grep -qE \"caddy_proxy=\\[.*$ALIAS\"; then
+      echo 'caddy_proxy already has the right alias'
+    else
+      docker network disconnect caddy_proxy \$cid 2>/dev/null || true
+      docker network connect --alias $ALIAS caddy_proxy \$cid
+      echo 'caddy_proxy re-attached with alias'
+    fi
+
+    # Connect db_net (idempotent)
+    if docker inspect \$cid --format '{{json .NetworkSettings.Networks}}' | grep -q '\"db_net\"'; then
+      echo 'db_net already connected'
     else
       docker network connect db_net \$cid
-      echo 'connected'
+      echo 'db_net connected'
     fi
   "
 done
