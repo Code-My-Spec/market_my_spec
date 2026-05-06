@@ -3,7 +3,7 @@
 #
 # Run with: kamal deploy -d uat
 
-service: market-my-spec-uat
+service: market-my-spec
 image: code-my-spec/market_my_spec
 
 servers:
