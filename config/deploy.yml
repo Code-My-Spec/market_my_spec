@@ -17,6 +17,7 @@ servers:
   web:
     hosts:
       - 178.156.143.212
+    proxy: false
     options:
       network: caddy_proxy
       network-alias: market-my-spec-prod-web
