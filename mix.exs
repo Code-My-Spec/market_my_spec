@@ -34,7 +34,10 @@ defmodule MarketMySpec.MixProject do
   def application do
     [
       mod: {MarketMySpecWeb.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      # :ex_aws_ssm and :hackney are listed here so they're booted by the
+      # release before MarketMySpec.Secrets.load!/1 is called from
+      # config/runtime.exs — no manual Application.ensure_all_started.
+      extra_applications: [:logger, :runtime_tools, :ex_aws_ssm, :hackney]
     ]
   end
 
@@ -54,6 +57,14 @@ defmodule MarketMySpec.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
+      # SSM-bootstrap secrets at boot — see lib/market_my_spec/secrets.ex.
+      # hackney is the HTTP client ExAws uses; listed explicitly so it
+      # can go in extra_applications and start with the release before
+      # config/runtime.exs runs.
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_ssm, "~> 2.1"},
+      {:hackney, "~> 1.20"},
+      {:sweet_xml, "~> 0.7"},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},

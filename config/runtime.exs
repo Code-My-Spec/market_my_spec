@@ -1,14 +1,27 @@
 import Config
 import Dotenvy
 
-# Load environment variables from .env files
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
+# === Secret loading =========================================================
+# Dev/test: source secrets from local .env files (gitignored).
+# Prod (UAT + prod box): fetch from AWS SSM Parameter Store at boot via
+#   MarketMySpec.Secrets.load!/1 — Kamal carries only AWS bootstrap creds,
+#   never the app secrets themselves.
+# In all cases, env!/3 below reads from the Dotenvy process dict that
+# source! populates — so SSM values must be in System env BEFORE source!
+# runs, then source! pulls them in via System.get_env().
+if config_env() in [:dev, :test] do
+  env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
-source!([
-  Path.absname(".env", env_dir_prefix),
-  Path.absname("#{config_env()}.env", env_dir_prefix),
-  System.get_env()
-])
+  source!([
+    Path.absname(".env", env_dir_prefix),
+    Path.absname("#{config_env()}.env", env_dir_prefix),
+    System.get_env()
+  ])
+else
+  app_env = System.get_env("APP_ENV") || raise "APP_ENV must be set (prod|uat)"
+  MarketMySpec.Secrets.load!(app_env)
+  source!([System.get_env()])
+end
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the

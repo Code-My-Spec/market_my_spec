@@ -2,12 +2,14 @@
 # Run with: kamal deploy
 #
 # Notes:
-# - kamal-proxy serves traffic on :80/:443 directly (Caddy retired
-#   2026-05-07). Routes are registered automatically on `kamal deploy`.
+# - kamal-proxy serves traffic on :80/:443 directly. Routes registered
+#   automatically on `kamal deploy`.
 # - db_net is pre-attached so the container can reach infra-postgres-1
-#   at start time (before the post-deploy hook runs).
-# - Secrets come from AWS SSM Parameter Store via .kamal/secrets-common,
-#   which is sourced from the deploy script's env (set up by render-env).
+#   at start time.
+# - SSM-bootstrap secrets pattern: Kamal carries only AWS bootstrap
+#   creds + APP_ENV/AWS_REGION; the container fetches all app secrets
+#   from /market_my_spec/<APP_ENV>/* at boot via
+#   MarketMySpec.Secrets.load!/1 (see lib/market_my_spec/secrets.ex).
 
 service: market-my-spec
 image: code-my-spec/market_my_spec
@@ -35,21 +37,12 @@ builder:
   local: true
 
 env:
+  clear:
+    APP_ENV: prod
+    AWS_REGION: us-east-1
   secret:
-    - DATABASE_URL
-    - SECRET_KEY_BASE
-    - PHX_HOST
-    - PHX_SERVER
-    - CLOAK_KEY
-    - RESEND_API_KEY
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
-    - AWS_REGION
-    - S3_BUCKET
-    - GOOGLE_CLIENT_ID
-    - GOOGLE_CLIENT_SECRET
-    - GITHUB_CLIENT_ID
-    - GITHUB_CLIENT_SECRET
 
 ssh:
   user: root
