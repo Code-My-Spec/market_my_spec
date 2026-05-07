@@ -2,13 +2,12 @@
 # Run with: kamal deploy
 #
 # Notes:
-# - kamal-proxy is intentionally disabled (proxy: false). The shared Caddy
-#   in /opt/shared/ continues to terminate TLS and route. When all 4 apps
-#   on the box are on Kamal, the Caddy → kamal-proxy swap happens once.
-# - Container is attached to caddy_proxy at deploy time and to db_net via
-#   the post-deploy hook so it can reach infra-postgres-1.
-# - Secrets come from AWS SSM Parameter Store via .kamal/secrets, which
-#   shells out to ~/Documents/github/devops/scripts/render-env.
+# - kamal-proxy serves traffic on :80/:443 directly (Caddy retired
+#   2026-05-07). Routes are registered automatically on `kamal deploy`.
+# - db_net is pre-attached so the container can reach infra-postgres-1
+#   at start time (before the post-deploy hook runs).
+# - Secrets come from AWS SSM Parameter Store via .kamal/secrets-common,
+#   which is sourced from the deploy script's env (set up by render-env).
 
 service: market-my-spec
 image: code-my-spec/market_my_spec
@@ -17,10 +16,13 @@ servers:
   web:
     hosts:
       - 178.156.143.212
-    proxy: false
     options:
-      network: caddy_proxy
-      network-alias: market-my-spec-prod-web
+      network: db_net
+
+proxy:
+  ssl: true
+  host: marketmyspec.com
+  app_port: 4000
 
 registry:
   server: ghcr.io
