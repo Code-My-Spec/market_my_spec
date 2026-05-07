@@ -10,10 +10,11 @@ servers:
   web:
     hosts:
       - 46.225.105.88           # UAT box (Hetzner cax11 ARM, Nuremberg)
-    proxy: false
-    options:
-      network: caddy_proxy
-      network-alias: market-my-spec-uat-web
+
+proxy:
+  ssl: true
+  host: uat.marketmyspec.com
+  app_port: 4000
 
 registry:
   server: ghcr.io
