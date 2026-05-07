@@ -10,7 +10,8 @@ servers:
   web:
     hosts:
       - 46.225.105.88           # UAT box (Hetzner cax11 ARM, Nuremberg)
-    options: {}                 # override deploy.yml's caddy_proxy options
+    options:
+      network: db_net           # pre-attach so app can reach infra-postgres-1 at start
     proxy:                      # role-level override of deploy.yml's `proxy: false`
       ssl: true
       host: uat.marketmyspec.com

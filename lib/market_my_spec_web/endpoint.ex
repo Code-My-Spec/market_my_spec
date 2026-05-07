@@ -15,6 +15,19 @@ defmodule MarketMySpecWeb.Endpoint do
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
+  # Plain HTTP healthcheck for kamal-proxy (excluded from force_ssl in
+  # config/prod.exs). Short-circuits before Plug.Static so it never
+  # touches the rest of the pipeline.
+  plug :health_check
+
+  defp health_check(%{request_path: "/up"} = conn, _opts) do
+    conn
+    |> Plug.Conn.send_resp(200, "OK")
+    |> Plug.Conn.halt()
+  end
+
+  defp health_check(conn, _opts), do: conn
+
   # Serve at "/" the static files from "priv/static" directory.
   #
   # When code reloading is disabled (e.g., in production),
