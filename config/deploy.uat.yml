@@ -10,11 +10,11 @@ servers:
   web:
     hosts:
       - 46.225.105.88           # UAT box (Hetzner cax11 ARM, Nuremberg)
-    options: {}                 # override deploy.yml's options (caddy_proxy alias for prod)
-    proxy:                      # override deploy.yml's role-level `proxy: false`
-      ssl: true
-      host: uat.marketmyspec.com
-      app_port: 4000
+
+proxy:
+  ssl: true
+  host: uat.marketmyspec.com
+  app_port: 4000
 
 registry:
   server: ghcr.io
