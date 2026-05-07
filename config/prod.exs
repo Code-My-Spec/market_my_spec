@@ -15,7 +15,10 @@ config :market_my_spec, MarketMySpecWeb.Endpoint,
   force_ssl: [
     rewrite_on: [:x_forwarded_proto],
     exclude: [
-      # paths: ["/health"],
+      # /up is kamal-proxy's healthcheck endpoint. The internal probe
+      # doesn't carry X-Forwarded-Proto, so without this exclude
+      # Plug.SSL would 301-redirect and the deploy would fail.
+      paths: ["/up"],
       hosts: ["localhost", "127.0.0.1"]
     ]
   ]
