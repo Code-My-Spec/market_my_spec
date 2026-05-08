@@ -45,9 +45,20 @@ defmodule MarketMySpec.UsersFixtures do
     {:ok, {user, _expired_tokens}} =
       Users.login_user_by_magic_link(token)
 
-    unless skip_default_account do
-      {:ok, _account} = Accounts.create_default_individual_account(user)
-    end
+    user =
+      if skip_default_account do
+        user
+      else
+        {:ok, account} = Accounts.create_default_individual_account(user)
+        # Pin active_account_id so Scope.for_user/1 is deterministic when
+        # tests create additional accounts after the default. Without this,
+        # scope.active_account_id falls back to "newest by inserted_at",
+        # which ties on the same DB tick and flakes test isolation.
+        {:ok, user} = MarketMySpec.Repo.update(
+          Ecto.Changeset.change(user, active_account_id: account.id)
+        )
+        user
+      end
 
     user
   end
