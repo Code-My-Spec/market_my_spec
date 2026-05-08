@@ -6,7 +6,7 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.marketing flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-lg">
         <div :if={@loading} class="text-center">
           <div class="loading loading-spinner loading-lg"></div>
@@ -116,7 +116,7 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
           </div>
         </div>
       </div>
-    </Layouts.app>
+    </Layouts.marketing>
     """
   end
 

@@ -64,13 +64,20 @@ defmodule MarketMySpecWeb.AccountLive.Picker do
 
   @impl true
   def handle_event("account-selected", %{"account-id" => account_id}, socket) do
-    if Enum.any?(socket.assigns.accounts, &(&1.id == account_id)) do
-      {:noreply,
-       socket
-       |> put_flash(:info, "Account selected")
-       |> push_navigate(to: ~p"/accounts/#{account_id}")}
-    else
-      {:noreply, put_flash(socket, :error, "You don't have access to this account")}
+    user = socket.assigns.current_scope.user
+
+    case Accounts.set_active_account_context(user, account_id) do
+      {:ok, _user} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Account selected")
+         |> push_navigate(to: ~p"/files")}
+
+      {:error, :not_a_member} ->
+        {:noreply, put_flash(socket, :error, "You don't have access to this account")}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Could not switch accounts")}
     end
   end
 

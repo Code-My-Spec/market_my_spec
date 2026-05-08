@@ -142,4 +142,122 @@ code, pre, kbd, samp, .font-mono {
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
+/* ==========================================================================
+   MARKDOWN — styles applied to rendered markdown output (FilesLive.Browser)
+   Brand-aware: uses base-content / primary tokens so themes track correctly.
+   ========================================================================== */
+.markdown {
+  color: var(--color-base-content);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.markdown > * + * { margin-top: 1em; }
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  font-family: "Space Mono", ui-monospace, monospace;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-base-content);
+  line-height: 1.25;
+}
+
+.markdown h1 { font-size: 1.75rem; margin-top: 1.5em; }
+.markdown h2 { font-size: 1.375rem; margin-top: 1.5em; }
+.markdown h3 { font-size: 1.125rem; margin-top: 1.25em; }
+.markdown h4 { font-size: 1rem; margin-top: 1em; }
+
+.markdown h1:first-child,
+.markdown h2:first-child,
+.markdown h3:first-child { margin-top: 0; }
+
+.markdown p { margin: 0.75em 0; }
+
+.markdown a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdown strong { font-weight: 700; color: var(--color-base-content); }
+.markdown em { font-style: italic; }
+
+.markdown ul,
+.markdown ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.markdown ul { list-style: disc; }
+.markdown ol { list-style: decimal; }
+.markdown li { margin: 0.25em 0; }
+.markdown li > ul,
+.markdown li > ol { margin: 0.25em 0; }
+
+.markdown blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 3px solid var(--color-primary);
+  color: color-mix(in oklab, var(--color-base-content) 80%, transparent);
+}
+
+.markdown code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.875em;
+  padding: 0.15em 0.35em;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
+  border-radius: var(--radius-selector);
+}
+
+.markdown pre {
+  margin: 1em 0;
+  padding: 1em;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
+  border-radius: var(--radius-box);
+  overflow-x: auto;
+}
+
+.markdown pre > code {
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 0.875em;
+}
+
+.markdown hr {
+  margin: 1.5em 0;
+  border: 0;
+  border-top: 1px solid var(--color-base-300);
+}
+
+.markdown table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.markdown th,
+.markdown td {
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--color-base-300);
+  text-align: left;
+}
+
+.markdown th {
+  background: var(--color-base-200);
+  font-weight: 700;
+}
+
+.markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-box);
+}
+
 /* This file is for your main application CSS */

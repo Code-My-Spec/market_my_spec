@@ -8,7 +8,7 @@ defmodule MarketMySpecWeb.McpAuthorizationLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.marketing flash={@flash} current_scope={@current_scope}>
       <div class="max-w-md mx-auto mt-12">
         <.header>
           Authorize MCP client
@@ -29,7 +29,7 @@ defmodule MarketMySpecWeb.McpAuthorizationLive do
           </div>
         </div>
       </div>
-    </Layouts.app>
+    </Layouts.marketing>
     """
   end
 

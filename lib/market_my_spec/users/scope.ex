@@ -34,10 +34,19 @@ defmodule MarketMySpec.Users.Scope do
   Returns nil if no user is given.
   """
   def for_user(%User{} = user) do
+    accounts = MembersRepository.list_user_accounts(user.id)
+    member_ids = Enum.map(accounts, & &1.id)
+
     active_account_id =
-      case MembersRepository.list_user_accounts(user.id) do
-        [account | _] -> account.id
-        [] -> nil
+      cond do
+        user.active_account_id && user.active_account_id in member_ids ->
+          user.active_account_id
+
+        accounts != [] ->
+          hd(accounts).id
+
+        true ->
+          nil
       end
 
     %__MODULE__{user: user, active_account_id: active_account_id}

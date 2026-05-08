@@ -268,6 +268,30 @@ defmodule MarketMySpec.Accounts do
   end
 
   @doc """
+  Sets the user's active individual account. The account must be one the
+  user is a member of; otherwise returns `{:error, :not_a_member}`.
+
+  Persisting the active account on the user record means subsequent calls
+  to `Scope.for_user/1` rebuild the scope with the new account context.
+  """
+  @spec set_active_account_context(User.t(), binary()) ::
+          {:ok, User.t()} | {:error, :not_a_member | any()}
+  def set_active_account_context(%User{} = user, account_id) when is_binary(account_id) do
+    member_ids =
+      user.id
+      |> MembersRepository.list_user_accounts()
+      |> Enum.map(& &1.id)
+
+    if account_id in member_ids do
+      user
+      |> User.active_account_changeset(account_id)
+      |> Repo.update()
+    else
+      {:error, :not_a_member}
+    end
+  end
+
+  @doc """
   Checks whether the given user has agency-granted access to the specified client account.
   Used to validate context-switching authorization.
 

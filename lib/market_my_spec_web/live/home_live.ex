@@ -7,7 +7,7 @@ defmodule MarketMySpecWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.marketing flash={@flash} current_scope={@current_scope}>
       <%!-- Hero section --%>
       <section class="py-16 border-b border-base-300">
         <div class="max-w-3xl">
@@ -88,7 +88,7 @@ defmodule MarketMySpecWeb.HomeLive do
           >Talk to John</.link> about early access.
         </p>
       </section>
-    </Layouts.app>
+    </Layouts.marketing>
     """
   end
 

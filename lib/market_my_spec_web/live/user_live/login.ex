@@ -6,7 +6,7 @@ defmodule MarketMySpecWeb.UserLive.Login do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.marketing flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-sm space-y-4">
         <div class="text-center mb-8">
           <h1 class="font-display text-3xl">Log in</h1>
@@ -103,7 +103,7 @@ defmodule MarketMySpecWeb.UserLive.Login do
           </.button>
         </.form>
       </div>
-    </Layouts.app>
+    </Layouts.marketing>
     """
   end
 

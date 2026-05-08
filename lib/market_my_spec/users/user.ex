@@ -10,6 +10,7 @@ defmodule MarketMySpec.Users.User do
     field :authenticated_at, :utc_datetime, virtual: true
 
     field :active_client_account_id, :binary_id
+    field :active_account_id, :binary_id
 
     timestamps(type: :utc_datetime)
   end
@@ -121,6 +122,13 @@ defmodule MarketMySpec.Users.User do
   """
   def client_context_changeset(user, account_id) do
     change(user, active_client_account_id: account_id)
+  end
+
+  @doc """
+  Changeset for setting the user's active individual account.
+  """
+  def active_account_changeset(user, account_id) do
+    change(user, active_account_id: account_id)
   end
 
   @doc """
