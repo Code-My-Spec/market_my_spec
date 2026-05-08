@@ -3,6 +3,9 @@ import Config
 # Only in tests, remove the complexity from the password hashing algorithm
 config :bcrypt_elixir, :log_rounds, 1
 
+# Disable AppSignal agent in test — no push to the platform from CI.
+config :appsignal, :config, active: false
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used

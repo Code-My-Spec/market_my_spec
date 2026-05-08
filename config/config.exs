@@ -105,6 +105,11 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# AppSignal — runtime values (push_api_key, name, env, active) come from
+# APPSIGNAL_* env vars loaded by MarketMySpec.Secrets at boot from SSM.
+# This block exists so the :appsignal app starts; values are env-driven.
+config :appsignal, :config, otp_app: :market_my_spec
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

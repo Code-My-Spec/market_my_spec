@@ -57,6 +57,10 @@ defmodule MarketMySpec.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
+      # Observability — AppSignal (errors + APM + Phoenix/LiveView/Ecto).
+      # Config is env-var driven via APPSIGNAL_* in SSM at /market_my_spec/<env>/.
+      {:appsignal, "~> 2.16"},
+      {:appsignal_phoenix, "~> 2.5"},
       # SSM-bootstrap secrets at boot — see lib/market_my_spec/secrets.ex.
       # hackney is the HTTP client ExAws uses; listed explicitly so it
       # can go in extra_applications and start with the release before
