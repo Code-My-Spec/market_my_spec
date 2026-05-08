@@ -141,17 +141,41 @@ defmodule MarketMySpecWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :current_agency, :map,
+    default: nil,
+    doc: "the agency resolved from the request host, or nil on the apex"
+
   slot :inner_block, required: true
 
   def marketing(assigns) do
     ~H"""
-    <header class="border-b border-base-300 bg-base-200">
+    <header
+      class="border-b border-base-300 bg-base-200"
+      style={agency_style(@current_agency)}
+      data-agency-primary={agency_color(@current_agency, :primary_color)}
+      data-agency-secondary={agency_color(@current_agency, :secondary_color)}
+    >
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-        <a href="/" class="flex items-baseline gap-3">
-          <span class="font-display text-lg tracking-tight">
-            marketmyspec<span class="text-primary">.</span>
-          </span>
-        </a>
+        <%= if @current_agency do %>
+          <a href="/" data-test="agency-navbar-logo" class="flex items-center gap-3">
+            <%= if @current_agency.logo_url && @current_agency.logo_url != "" do %>
+              <img
+                src={@current_agency.logo_url}
+                alt={@current_agency.name}
+                class="h-8 w-auto"
+              />
+            <% end %>
+            <span class="font-display text-lg tracking-tight">
+              {@current_agency.name}
+            </span>
+          </a>
+        <% else %>
+          <a href="/" class="flex items-baseline gap-3">
+            <span class="font-display text-lg tracking-tight">
+              marketmyspec<span class="text-primary">.</span>
+            </span>
+          </a>
+        <% end %>
         <div class="flex items-center gap-3">
           <.theme_toggle />
         </div>
@@ -209,6 +233,34 @@ defmodule MarketMySpecWeb.Layouts do
       </.flash>
     </div>
     """
+  end
+
+  defp agency_style(nil), do: nil
+
+  defp agency_style(agency) do
+    [
+      maybe_var("--color-primary", agency.primary_color),
+      maybe_var("--color-secondary", agency.secondary_color)
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> case do
+      [] -> nil
+      vars -> Enum.join(vars, "; ")
+    end
+  end
+
+  defp maybe_var(_name, nil), do: nil
+  defp maybe_var(_name, ""), do: nil
+  defp maybe_var(name, value), do: "#{name}: #{value}"
+
+  defp agency_color(nil, _field), do: nil
+
+  defp agency_color(agency, field) do
+    case Map.get(agency, field) do
+      nil -> nil
+      "" -> nil
+      value -> value
+    end
   end
 
   @doc """

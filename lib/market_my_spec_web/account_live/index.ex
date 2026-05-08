@@ -4,6 +4,7 @@ defmodule MarketMySpecWeb.AccountLive.Index do
   alias MarketMySpec.Accounts
   alias MarketMySpec.Accounts.Account
   alias MarketMySpec.Accounts.Invitation
+  alias MarketMySpec.Agencies
   alias MarketMySpec.Authorization
   alias MarketMySpec.Users
 
@@ -442,7 +443,7 @@ defmodule MarketMySpecWeb.AccountLive.Index do
         {:noreply, put_flash(socket, :error, "Account not found")}
 
       account ->
-        case Accounts.invite_agency_grant(account, agency_slug, access_level, current_scope.user.id) do
+        case Agencies.invite_agency_grant(account, agency_slug, access_level, current_scope.user.id) do
           {:ok, _grant} ->
             grant_forms = Map.put(socket.assigns.grant_forms, account_id, fresh_grant_form())
 

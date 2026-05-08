@@ -10,6 +10,7 @@ defmodule MarketMySpecWeb.AgencyLive.Dashboard do
   use MarketMySpecWeb, :live_view
 
   alias MarketMySpec.Accounts
+  alias MarketMySpec.Agencies
 
   @impl true
   def render(assigns) do
@@ -122,7 +123,7 @@ defmodule MarketMySpecWeb.AgencyLive.Dashboard do
     grants =
       case agency_account do
         nil -> []
-        agency -> Accounts.list_grants_for_agency(agency.id)
+        agency -> Agencies.list_grants_for_agency(agency.id)
       end
 
     {:ok,
@@ -135,7 +136,7 @@ defmodule MarketMySpecWeb.AgencyLive.Dashboard do
   def handle_event("enter_client", %{"account-id" => account_id}, socket) do
     user = socket.assigns.current_scope.user
 
-    if Accounts.user_has_agency_access_to_client?(user, account_id) do
+    if Agencies.user_has_agency_access_to_client?(user, account_id) do
       case Accounts.set_active_client_context(user, account_id) do
         {:ok, _user} ->
           {:noreply, push_navigate(socket, to: ~p"/accounts")}
@@ -149,7 +150,7 @@ defmodule MarketMySpecWeb.AgencyLive.Dashboard do
   end
 
   def handle_event("revoke_grant", %{"grant-id" => grant_id}, socket) do
-    case Accounts.revoke_grant(grant_id) do
+    case Agencies.revoke_grant(grant_id) do
       {:ok, _grant} ->
         user = socket.assigns.current_scope.user
         agency_account = Accounts.get_user_agency_account(user)
@@ -157,7 +158,7 @@ defmodule MarketMySpecWeb.AgencyLive.Dashboard do
         grants =
           case agency_account do
             nil -> []
-            agency -> Accounts.list_grants_for_agency(agency.id)
+            agency -> Agencies.list_grants_for_agency(agency.id)
           end
 
         {:noreply,

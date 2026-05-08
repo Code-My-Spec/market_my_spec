@@ -9,6 +9,7 @@ defmodule MarketMySpecWeb.UserAuth do
   import Phoenix.Controller
 
   alias MarketMySpec.Accounts
+  alias MarketMySpec.Accounts.AccountsRepository
   alias MarketMySpec.Users
   alias MarketMySpec.Users.Scope
 
@@ -288,6 +289,19 @@ defmodule MarketMySpecWeb.UserAuth do
 
       {:halt, socket}
     end
+  end
+
+  def on_mount(:fetch_current_agency, _params, session, socket) do
+    {:cont, mount_current_agency(socket, session)}
+  end
+
+  defp mount_current_agency(socket, session) do
+    Phoenix.Component.assign_new(socket, :current_agency, fn ->
+      case session["current_agency_id"] do
+        nil -> nil
+        id -> AccountsRepository.get_account(id)
+      end
+    end)
   end
 
   defp mount_current_scope(socket, session) do

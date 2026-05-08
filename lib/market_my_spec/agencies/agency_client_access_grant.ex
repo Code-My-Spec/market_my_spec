@@ -1,4 +1,4 @@
-defmodule MarketMySpec.Accounts.AgencyClientGrant do
+defmodule MarketMySpec.Agencies.AgencyClientAccessGrant do
   @moduledoc """
   Represents an access grant between an agency account and a client account.
 
@@ -40,7 +40,14 @@ defmodule MarketMySpec.Accounts.AgencyClientGrant do
   @doc "Changeset for creating a new agency-client grant."
   def changeset(grant, attrs) do
     grant
-    |> cast(attrs, [:agency_account_id, :client_account_id, :access_level, :status, :originator, :created_by_user_id])
+    |> cast(attrs, [
+      :agency_account_id,
+      :client_account_id,
+      :access_level,
+      :status,
+      :originator,
+      :created_by_user_id
+    ])
     |> validate_required([:agency_account_id, :client_account_id, :access_level, :originator])
     |> validate_inclusion(:access_level, @valid_access_levels,
       message: "must be one of: #{Enum.join(@valid_access_levels, ", ")}"

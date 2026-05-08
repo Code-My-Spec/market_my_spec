@@ -8,8 +8,8 @@ defmodule MarketMySpec.UsersFixtures do
 
   alias MarketMySpec.Accounts
   alias MarketMySpec.Accounts.AccountsRepository
-  alias MarketMySpec.Accounts.AgencyClientGrantsRepository
   alias MarketMySpec.Accounts.MembersRepository
+  alias MarketMySpec.Agencies.AgenciesRepository
   alias MarketMySpec.Users
   alias MarketMySpec.Users.Scope
 
@@ -101,7 +101,7 @@ defmodule MarketMySpec.UsersFixtures do
     attrs_map = Enum.into(attrs, %{})
     access_level = Map.get(attrs_map, :access_level, "read_only")
 
-    case AgencyClientGrantsRepository.create_invited_grant(%{
+    case AgenciesRepository.create_invited_grant(%{
            agency_account_id: agency_account.id,
            client_account_id: client_account.id,
            access_level: access_level
@@ -134,7 +134,7 @@ defmodule MarketMySpec.UsersFixtures do
           access_level: "account_manager"
         }
 
-        case AgencyClientGrantsRepository.create_originated_grant(grant_attrs) do
+        case AgenciesRepository.create_originated_grant(grant_attrs) do
           {:ok, grant} -> {client_account, grant}
           {:error, reason} -> raise "Failed to create originated grant fixture: #{inspect(reason)}"
         end

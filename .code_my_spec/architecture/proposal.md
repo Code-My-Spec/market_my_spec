@@ -1,6 +1,6 @@
 # Architecture Proposal
 
-Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport) to a connected agent. The web app handles sign-up, MCP setup guidance, and OAuth consent. Domain layer splits into Users (web identity), Integrations (Google/GitHub OAuth sign-in), McpAuth (OAuth server for MCP clients), and Skills (the marketing-strategy skill content).
+Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport) to a connected agent. The web app handles sign-up, MCP setup guidance, and OAuth consent. Domain layer splits into Users (web identity), Integrations (Google/GitHub OAuth sign-in), McpAuth (OAuth server for MCP clients), Skills (the marketing-strategy skill content), Accounts (multi-tenant workspaces), Agencies (agency account type, agency-client grants, subdomain routing), and Files (account-scoped file storage for skill artifacts).
 
 ## Contexts
 
@@ -51,25 +51,38 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 
 #### Children
 
-- MarketMySpec.Accounts.Account (schema) [Stories: 678]: Account record — name, slug, type (individual/agency)
+- MarketMySpec.Accounts.Account (schema) [Stories: 678, 691, 695]: Account record — name, slug, type (individual/agency); for agency-typed accounts also holds subdomain (story 695) and branding fields — logo_url, primary_color, secondary_color (story 691)
 - MarketMySpec.Accounts.Member (schema) [Stories: 678]: User-to-account membership with role
 - MarketMySpec.Accounts.AccountsRepository (module) [Stories: 678]: Account CRUD and membership queries
 - MarketMySpec.Accounts.MembersRepository (module) [Stories: 678]: Member-specific queries
 - MarketMySpec.Accounts.Invitation (schema) [Stories: 678]: Pending membership invitations
 - MarketMySpec.Accounts.InvitationRepository (module) [Stories: 678]: Invitation CRUD
 - MarketMySpec.Accounts.InvitationNotifier (module) [Stories: 678]: Sends invitation emails via Swoosh
-- MarketMySpec.Authorization (module) [Stories: 678]: Role-based permission checks used across contexts
 
 ### MarketMySpec.Agencies
 
 - **Type:** context
-- **Description:** Agency account type and client account management. Agency accounts can create client accounts (originator relationship), view their client portfolio, and navigate into client contexts. Access grants link agency accounts to client accounts with a permission level.
-- **Stories:** 679
+- **Description:** Agency account type, client account management, and agency identity (subdomain + branding). Agency accounts can create client accounts (originator relationship), view their client portfolio, and navigate into client contexts. Access grants link agency accounts to client accounts with a permission level. Also handles agency subdomain claiming/host resolution and agency branding configuration.
+- **Stories:** 679, 691, 695
 
 #### Children
 
 - MarketMySpec.Agencies.AgencyClientAccessGrant (schema) [Stories: 679]: Agency-to-client access record — access_level, origination_status (originator/invited)
-- MarketMySpec.Agencies.AgenciesRepository (module) [Stories: 679]: Create client accounts (originator path), record invited access grants, query portfolio of client accounts for a given agency
+- MarketMySpec.Agencies.AgenciesRepository (module) [Stories: 679, 691]: Create client accounts (originator path), record invited access grants, query portfolio of client accounts for a given agency, update agency branding fields
+- MarketMySpec.Agencies.HostResolver (module) [Stories: 695]: Resolves a request host to an agency account by subdomain match; validates subdomain format and uniqueness on claim; updates an agency's subdomain
+
+### MarketMySpec.Files
+
+- **Type:** context
+- **Description:** Account-scoped file storage for skill artifacts. Files written by the user's MCP-connected agent through the marketing-strategy skill's tools land here, scoped to the active account's prefix. Behaviour-backed so the storage backend is configurable (S3 in prod/UAT, disk in dev, in-memory in test).
+- **Stories:** 683, 684
+
+#### Children
+
+- MarketMySpec.Files.Behaviour (module) [Stories: 683, 684]: Storage behaviour contract — put/get/list/delete with account-scoped keys
+- MarketMySpec.Files.S3 (module) [Stories: 683, 684]: S3 implementation of the Files behaviour; default backend in UAT/prod
+- MarketMySpec.Files.Disk (module) [Stories: 683, 684]: Local-disk implementation of the Files behaviour; used in dev
+- MarketMySpec.Files.Memory (module) [Stories: 683, 684]: In-memory implementation of the Files behaviour; used in test
 
 ### MarketMySpec.Skills
 
@@ -84,7 +97,7 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 
 ## Surface Components
 
-### MarketMySpecWeb.AccountsLive
+### MarketMySpecWeb.AccountLive
 
 - **Type:** live_context
 - **Description:** Account management views — create first account, list accounts, manage settings, and members. Includes the account picker used when switching between accounts.
@@ -92,32 +105,43 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 
 #### Children
 
-- MarketMySpecWeb.AccountsLive.Index (liveview) [Stories: 678]: List all accounts the user belongs to
-- MarketMySpecWeb.AccountsLive.Picker (liveview) [Stories: 678]: Account switcher — select current account context
-- MarketMySpecWeb.AccountsLive.Form (liveview) [Stories: 678]: Create a new account (name only, type defaults to individual)
-- MarketMySpecWeb.AccountsLive.Manage (liveview) [Stories: 678]: Account settings
-- MarketMySpecWeb.AccountsLive.Members (liveview) [Stories: 678]: Member list and role management
+- MarketMySpecWeb.AccountLive.Index (liveview) [Stories: 678]: List all accounts the user belongs to
+- MarketMySpecWeb.AccountLive.Picker (liveview) [Stories: 678]: Account switcher — select current account context
+- MarketMySpecWeb.AccountLive.Form (liveview) [Stories: 678]: Create a new account (name only, type defaults to individual)
+- MarketMySpecWeb.AccountLive.Manage (liveview) [Stories: 678]: Account settings
+- MarketMySpecWeb.AccountLive.Members (liveview) [Stories: 678]: Member list and role management
 
 ### MarketMySpecWeb.InvitationsLive
 
 - **Type:** live_context
-- **Description:** Invitation management views — invite new members to an account and manage pending invitations.
-- **Stories:** 678
+- **Description:** Invitation management views — invite new members to an account and manage pending invitations. Reached transitively from AccountLive (the account management surface that owns story 678).
+- **Stories:**
 
 #### Children
 
-- MarketMySpecWeb.InvitationsLive.Index (liveview) [Stories: 678]: List pending invitations for the current account
-- MarketMySpecWeb.InvitationsLive.New (liveview) [Stories: 678]: Send a new member invitation by email
+- MarketMySpecWeb.InvitationsLive.Index (liveview): List pending invitations for the current account
+- MarketMySpecWeb.InvitationsLive.New (liveview): Send a new member invitation by email
 
 ### MarketMySpecWeb.AgencyLive
 
 - **Type:** live_context
-- **Description:** Agency client management views — available only to agency-type accounts. Dashboard lists all client accounts the agency has access to. Agency users can navigate into any client account context from here.
-- **Stories:** 679
+- **Description:** Agency views available only to agency-typed accounts. Dashboard lists managed clients; settings let the agency owner claim a subdomain and configure branding (logo URL + primary/secondary colors).
+- **Stories:** 679, 691, 695
 
 #### Children
 
 - MarketMySpecWeb.AgencyLive.Dashboard (liveview) [Stories: 679]: Client portfolio dashboard — lists client accounts with name and agency access level; enter-client action switches current account context
+- MarketMySpecWeb.AgencyLive.Settings (liveview) [Stories: 691, 695]: Agency settings form — owner sets/changes the agency's unique subdomain (story 695) and branding fields (logo URL + primary/secondary colors, story 691); validates format/uniqueness; renders saved values prefilled on reload
+
+### MarketMySpecWeb.FilesLive
+
+- **Type:** live_context
+- **Description:** Account-scoped file browser. Surfaces artifacts the user's agent has written into the account via MCP file tools, with a hierarchical tree view and rendered file content.
+- **Stories:** 684
+
+#### Children
+
+- MarketMySpecWeb.FilesLive.Browser (liveview) [Stories: 684]: List artifacts for the current account in a file hierarchy; selecting a file displays its rendered content alongside the tree
 
 ### MarketMySpecWeb.HomeLive
 
@@ -153,8 +177,14 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 ### MarketMySpecWeb.McpController
 
 - **Type:** controller
-- **Description:** MCP server endpoint mounting Anubis MCP. Validates the bearer token (issued by McpAuth), then handles JSON-RPC requests over POST and the long-lived SSE stream. Exposes the marketing-strategy skill's orientation/steps as MCP resources and an artifact-tracking tool the agent calls when each step is completed.
-- **Stories:** 674, 675, 676
+- **Description:** MCP server endpoint mounting Anubis MCP. Validates the bearer token (issued by McpAuth), then handles JSON-RPC requests over POST and the long-lived SSE stream. Exposes the marketing-strategy skill's orientation/steps as MCP resources, an artifact-tracking tool the agent calls when each step is completed, and account-scoped file tools (read/write/edit/delete/list) the agent uses to produce skill artifacts.
+- **Stories:** 674, 675, 676, 683
+
+### MarketMySpecWeb.Plugs.AgencyHost
+
+- **Type:** module
+- **Description:** Endpoint plug that reads the request host. If the host is `<slug>.marketmyspec.com` and an agency currently claims that subdomain, attaches the agency to the conn for downstream LiveViews. Apex requests pass through unchanged. Unrecognized subdomains redirect to the apex. API endpoints (`/oauth/*`, `/mcp`, `/.well-known/*`) are skipped — they remain apex-only.
+- **Stories:** 695
 
 ## Dependencies
 
@@ -166,12 +196,18 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 - MarketMySpecWeb.McpAuthorizationLive -> MarketMySpec.Users
 - MarketMySpecWeb.McpController -> MarketMySpec.McpAuth
 - MarketMySpecWeb.McpController -> MarketMySpec.Skills
+- MarketMySpecWeb.McpController -> MarketMySpec.Files
 - MarketMySpec.McpAuth -> MarketMySpec.Users
 - MarketMySpec.Integrations -> MarketMySpec.Users
-- MarketMySpecWeb.AccountsLive -> MarketMySpec.Accounts
-- MarketMySpecWeb.AccountsLive -> MarketMySpec.Users
+- MarketMySpecWeb.AccountLive -> MarketMySpec.Accounts
+- MarketMySpecWeb.AccountLive -> MarketMySpec.Users
+- MarketMySpecWeb.AccountLive -> MarketMySpecWeb.InvitationsLive
 - MarketMySpecWeb.InvitationsLive -> MarketMySpec.Accounts
 - MarketMySpecWeb.InvitationsLive -> MarketMySpec.Users
 - MarketMySpecWeb.AgencyLive -> MarketMySpec.Agencies
 - MarketMySpecWeb.AgencyLive -> MarketMySpec.Accounts
+- MarketMySpecWeb.FilesLive -> MarketMySpec.Files
+- MarketMySpecWeb.FilesLive -> MarketMySpec.Accounts
+- MarketMySpecWeb.Plugs.AgencyHost -> MarketMySpec.Agencies
 - MarketMySpec.Agencies -> MarketMySpec.Accounts
+- MarketMySpec.Files -> MarketMySpec.Accounts

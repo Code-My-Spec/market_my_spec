@@ -84,6 +84,7 @@ defmodule MarketMySpecWeb.Router do
       ] do
       live "/agency", AgencyLive.Dashboard, :index
       live "/agency/clients/new", AgencyLive.ClientNew, :new
+      live "/agency/settings", AgencyLive.Settings, :edit
     end
 
     # All other authenticated routes — requires authentication AND at least one account membership.
@@ -133,7 +134,10 @@ defmodule MarketMySpecWeb.Router do
     pipe_through [:browser]
 
     live_session :current_user,
-      on_mount: [{MarketMySpecWeb.UserAuth, :mount_current_scope}] do
+      on_mount: [
+        {MarketMySpecWeb.UserAuth, :mount_current_scope},
+        {MarketMySpecWeb.UserAuth, :fetch_current_agency}
+      ] do
       live "/", HomeLive, :index
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new

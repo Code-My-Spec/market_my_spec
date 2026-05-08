@@ -71,5 +71,6 @@ defmodule MarketMySpecWeb.Endpoint do
   end
 
   plug Plug.Session, @session_options
+  plug MarketMySpecWeb.Plugs.AgencyHost
   plug MarketMySpecWeb.Router
 end

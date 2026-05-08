@@ -2,7 +2,7 @@ defmodule MarketMySpecWeb.AgencyLive.ClientNew do
   @moduledoc """
   LiveView for creating a new client account from the agency dashboard.
 
-  The form creates a new individual Account and an originated AgencyClientGrant
+  The form creates a new individual Account and an originated AgencyClientAccessGrant
   (originator="agency", status="accepted") in a single transaction.
   After successful creation, the user is redirected to /agency.
   """
@@ -10,6 +10,7 @@ defmodule MarketMySpecWeb.AgencyLive.ClientNew do
   use MarketMySpecWeb, :live_view
 
   alias MarketMySpec.Accounts
+  alias MarketMySpec.Agencies
 
   @impl true
   def render(assigns) do
@@ -82,7 +83,7 @@ defmodule MarketMySpecWeb.AgencyLive.ClientNew do
       agency ->
         client_attrs = %{name: client_params["name"], slug: client_params["slug"]}
 
-        case Accounts.create_client_account_with_originated_grant(agency, client_attrs, user.id) do
+        case Agencies.create_client_account_with_originated_grant(agency, client_attrs, user.id) do
           {:ok, _result} ->
             {:noreply,
              socket

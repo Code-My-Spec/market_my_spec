@@ -1,20 +1,22 @@
-defmodule MarketMySpec.Accounts.AgencyClientGrantsRepository do
+defmodule MarketMySpec.Agencies.AgenciesRepository do
   @moduledoc """
-  Database access layer for AgencyClientGrant records.
+  Database access layer for AgencyClientAccessGrant records and agency lookups
+  used by the agency-client grant flows.
   """
 
   import Ecto.Query, warn: false
 
-  alias MarketMySpec.Accounts.{Account, AgencyClientGrant, Member}
+  alias MarketMySpec.Accounts.{Account, Member}
+  alias MarketMySpec.Agencies.AgencyClientAccessGrant
   alias MarketMySpec.Repo
 
   @doc """
   Lists all active grants for an agency, with the associated client account preloaded.
   Returns grants with status "accepted" only.
   """
-  @spec list_grants_for_agency(binary()) :: [AgencyClientGrant.t()]
+  @spec list_grants_for_agency(binary()) :: [AgencyClientAccessGrant.t()]
   def list_grants_for_agency(agency_account_id) do
-    from(g in AgencyClientGrant,
+    from(g in AgencyClientAccessGrant,
       where: g.agency_account_id == ^agency_account_id and g.status == "accepted",
       preload: [:client_account],
       order_by: [asc: g.inserted_at]
@@ -26,12 +28,13 @@ defmodule MarketMySpec.Accounts.AgencyClientGrantsRepository do
   Creates an agency-originated grant. Used when an agency creates a new client account
   from /agency/clients/new. The originator is set to "agency" and status to "accepted".
   """
-  @spec create_originated_grant(map()) :: {:ok, AgencyClientGrant.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_originated_grant(map()) ::
+          {:ok, AgencyClientAccessGrant.t()} | {:error, Ecto.Changeset.t()}
   def create_originated_grant(attrs) do
     attrs_with_defaults = Map.merge(%{originator: "agency", status: "accepted"}, attrs)
 
-    %AgencyClientGrant{}
-    |> AgencyClientGrant.changeset(attrs_with_defaults)
+    %AgencyClientAccessGrant{}
+    |> AgencyClientAccessGrant.changeset(attrs_with_defaults)
     |> Repo.insert()
   end
 
@@ -39,12 +42,13 @@ defmodule MarketMySpec.Accounts.AgencyClientGrantsRepository do
   Creates a client-originated (invited) grant. Used when a client owner grants agency
   access from /accounts. Originator is "client"; status defaults to "accepted" (auto-accepted).
   """
-  @spec create_invited_grant(map()) :: {:ok, AgencyClientGrant.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_invited_grant(map()) ::
+          {:ok, AgencyClientAccessGrant.t()} | {:error, Ecto.Changeset.t()}
   def create_invited_grant(attrs) do
     attrs_with_defaults = Map.merge(%{originator: "client", status: "accepted"}, attrs)
 
-    %AgencyClientGrant{}
-    |> AgencyClientGrant.changeset(attrs_with_defaults)
+    %AgencyClientAccessGrant{}
+    |> AgencyClientAccessGrant.changeset(attrs_with_defaults)
     |> Repo.insert()
   end
 
@@ -59,25 +63,26 @@ defmodule MarketMySpec.Accounts.AgencyClientGrantsRepository do
   @doc """
   Retrieves a grant by ID.
   """
-  @spec get_grant(binary()) :: AgencyClientGrant.t() | nil
-  def get_grant(id), do: Repo.get(AgencyClientGrant, id)
+  @spec get_grant(binary()) :: AgencyClientAccessGrant.t() | nil
+  def get_grant(id), do: Repo.get(AgencyClientAccessGrant, id)
 
   @doc """
   Revokes a grant by setting its status to "revoked".
   Only non-originator ("client"-originated) grants may be revoked.
   """
-  @spec revoke_grant(binary()) :: {:ok, AgencyClientGrant.t()} | {:error, :not_found} | {:error, :not_revokable}
+  @spec revoke_grant(binary()) ::
+          {:ok, AgencyClientAccessGrant.t()} | {:error, :not_found} | {:error, :not_revokable}
   def revoke_grant(grant_id) do
-    case Repo.get(AgencyClientGrant, grant_id) do
+    case Repo.get(AgencyClientAccessGrant, grant_id) do
       nil ->
         {:error, :not_found}
 
-      %AgencyClientGrant{originator: "agency"} ->
+      %AgencyClientAccessGrant{originator: "agency"} ->
         {:error, :not_revokable}
 
       grant ->
         grant
-        |> AgencyClientGrant.changeset(%{status: "revoked"})
+        |> AgencyClientAccessGrant.changeset(%{status: "revoked"})
         |> Repo.update()
     end
   end
@@ -88,8 +93,9 @@ defmodule MarketMySpec.Accounts.AgencyClientGrantsRepository do
   @spec grant_exists?(binary(), binary()) :: boolean()
   def grant_exists?(agency_account_id, client_account_id) do
     Repo.exists?(
-      from g in AgencyClientGrant,
-        where: g.agency_account_id == ^agency_account_id and g.client_account_id == ^client_account_id
+      from g in AgencyClientAccessGrant,
+        where:
+          g.agency_account_id == ^agency_account_id and g.client_account_id == ^client_account_id
     )
   end
 
@@ -100,7 +106,7 @@ defmodule MarketMySpec.Accounts.AgencyClientGrantsRepository do
   @spec user_has_agency_access_to_client?(integer(), binary()) :: boolean()
   def user_has_agency_access_to_client?(user_id, client_account_id) do
     Repo.exists?(
-      from g in AgencyClientGrant,
+      from g in AgencyClientAccessGrant,
         join: m in Member,
         on: m.account_id == g.agency_account_id and m.user_id == ^user_id,
         where: g.client_account_id == ^client_account_id and g.status == "accepted"
@@ -113,7 +119,7 @@ defmodule MarketMySpec.Accounts.AgencyClientGrantsRepository do
   """
   @spec get_user_agency_access_level(integer(), binary()) :: String.t() | nil
   def get_user_agency_access_level(user_id, client_account_id) do
-    from(g in AgencyClientGrant,
+    from(g in AgencyClientAccessGrant,
       join: m in Member,
       on: m.account_id == g.agency_account_id and m.user_id == ^user_id,
       where: g.client_account_id == ^client_account_id and g.status == "accepted",
