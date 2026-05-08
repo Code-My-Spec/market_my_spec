@@ -1,5 +1,6 @@
 defmodule MarketMySpecWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :market_my_spec
+  use Appsignal.Phoenix
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
