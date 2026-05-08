@@ -24,6 +24,13 @@ defmodule MarketMySpecSpex.Case do
 
   setup tags do
     MarketMySpecSpex.Fixtures.setup_sandbox(tags)
+    purge_files_memory()
     {:ok, conn: Phoenix.ConnTest.build_conn()}
+  end
+
+  defp purge_files_memory do
+    if :ets.whereis(:market_my_spec_files_memory) != :undefined do
+      :ets.delete_all_objects(:market_my_spec_files_memory)
+    end
   end
 end
