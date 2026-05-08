@@ -1,0 +1,138 @@
+{
+  "version": "2.0",
+  "interactions": [
+    {
+      "recorded_at": "2026-04-25T23:00:00Z",
+      "request": {
+        "method": "POST",
+        "uri": "https://github.com/login/oauth/access_token",
+        "query_string": "",
+        "headers": {
+          "content-type": ["application/x-www-form-urlencoded"]
+        },
+        "body_type": "text",
+        "body": "client_id=test_github_client_id&client_secret=<REDACTED>&code=replay-code&grant_type=authorization_code&redirect_uri=http%3A%2F%2F127.0.0.1%3A4002%2Fauth%2Fgithub%2Fcallback"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": ["private, max-age=60, s-maxage=0"],
+          "content-type": ["application/x-www-form-urlencoded; charset=utf-8"],
+          "date": ["Sat, 25 Apr 2026 23:00:00 GMT"],
+          "server": ["GitHub.com"],
+          "x-frame-options": ["deny"],
+          "x-github-request-id": ["AAAA:1111:2222:3333:4444"]
+        },
+        "body_type": "text",
+        "body": "access_token=<REDACTED>&scope=user%3Aemail&token_type=bearer"
+      }
+    },
+    {
+      "recorded_at": "2026-04-25T23:00:00Z",
+      "request": {
+        "method": "GET",
+        "uri": "https://api.github.com/user",
+        "query_string": "",
+        "headers": {
+          "accept": ["application/json"]
+        },
+        "body_type": "text",
+        "body": ""
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": ["private, max-age=60, s-maxage=60"],
+          "content-type": ["application/json; charset=utf-8"],
+          "date": ["Sat, 25 Apr 2026 23:00:01 GMT"],
+          "server": ["GitHub.com"],
+          "x-github-media-type": ["github.v3; format=json"],
+          "x-github-request-id": ["AAAA:1111:2222:3333:4445"],
+          "x-ratelimit-limit": ["5000"],
+          "x-ratelimit-remaining": ["4999"],
+          "x-ratelimit-resource": ["core"]
+        },
+        "body_type": "json",
+        "body_json": {
+          "login": "mattvanhorn-test",
+          "id": 90210,
+          "node_id": "U_kgDOBhVTzg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/90210?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mattvanhorn-test",
+          "html_url": "https://github.com/mattvanhorn-test",
+          "followers_url": "https://api.github.com/users/mattvanhorn-test/followers",
+          "following_url": "https://api.github.com/users/mattvanhorn-test/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mattvanhorn-test/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mattvanhorn-test/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mattvanhorn-test/subscriptions",
+          "organizations_url": "https://api.github.com/users/mattvanhorn-test/orgs",
+          "repos_url": "https://api.github.com/users/mattvanhorn-test/repos",
+          "events_url": "https://api.github.com/users/mattvanhorn-test/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mattvanhorn-test/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false,
+          "name": "Matt Van Horn",
+          "company": null,
+          "blog": "",
+          "location": null,
+          "email": null,
+          "hireable": null,
+          "bio": null,
+          "twitter_username": null,
+          "notification_email": null,
+          "public_repos": 12,
+          "public_gists": 0,
+          "followers": 4,
+          "following": 7,
+          "created_at": "2014-08-01T12:34:56Z",
+          "updated_at": "2026-04-20T08:09:10Z"
+        }
+      }
+    },
+    {
+      "recorded_at": "2026-04-25T23:00:00Z",
+      "request": {
+        "method": "GET",
+        "uri": "https://api.github.com/user/emails",
+        "query_string": "",
+        "headers": {
+          "accept": ["application/json"]
+        },
+        "body_type": "text",
+        "body": ""
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": ["private, max-age=60, s-maxage=60"],
+          "content-type": ["application/json; charset=utf-8"],
+          "date": ["Sat, 25 Apr 2026 23:00:02 GMT"],
+          "server": ["GitHub.com"],
+          "x-github-media-type": ["github.v3; format=json"],
+          "x-github-request-id": ["AAAA:1111:2222:3333:4446"],
+          "x-oauth-scopes": ["user:email"],
+          "x-ratelimit-limit": ["5000"],
+          "x-ratelimit-remaining": ["4998"],
+          "x-ratelimit-resource": ["core"]
+        },
+        "body_type": "json",
+        "body_json": [
+          {
+            "email": "mattvanhorn-test@example.com",
+            "primary": true,
+            "verified": true,
+            "visibility": "private"
+          },
+          {
+            "email": "90210+mattvanhorn-test@users.noreply.github.com",
+            "primary": false,
+            "verified": true,
+            "visibility": null
+          }
+        ]
+      }
+    }
+  ]
+}

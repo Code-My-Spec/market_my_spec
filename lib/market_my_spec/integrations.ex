@@ -14,6 +14,26 @@ defmodule MarketMySpec.Integrations do
   defdelegate list_integrations(scope), to: IntegrationRepository
   defdelegate delete_integration(scope, provider), to: IntegrationRepository
   defdelegate connected?(scope, provider), to: IntegrationRepository
+  defdelegate find_user_id_by_provider_identity(provider, provider_user_id),
+    to: IntegrationRepository
+
+  defdelegate upsert_integration(scope, provider, attrs), to: IntegrationRepository
+
+  @doc """
+  Builds the integration attribute map from a raw OAuth token response and
+  a normalized user map. Exposed so the public sign-in flow
+  (`UserOAuthController`) can persist an integration row with the same
+  shape as the authenticated integration-add flow.
+  """
+  def build_integration_attrs(token, normalized_user) do
+    %{
+      access_token: Map.get(token, "access_token"),
+      refresh_token: Map.get(token, "refresh_token"),
+      expires_at: calculate_expires_at(token),
+      granted_scopes: parse_scopes(Map.get(token, "scope")),
+      provider_metadata: Map.new(normalized_user)
+    }
+  end
 
   def list_providers do
     providers() |> Map.keys()
@@ -63,16 +83,6 @@ defmodule MarketMySpec.Integrations do
 
   defp providers do
     Application.get_env(:market_my_spec, :oauth_providers, @default_providers)
-  end
-
-  defp build_integration_attrs(token, normalized_user) do
-    %{
-      access_token: Map.get(token, "access_token"),
-      refresh_token: Map.get(token, "refresh_token"),
-      expires_at: calculate_expires_at(token),
-      granted_scopes: parse_scopes(Map.get(token, "scope")),
-      provider_metadata: Map.new(normalized_user)
-    }
   end
 
   defp calculate_expires_at(%{"expires_in" => expires_in}) when is_integer(expires_in) do

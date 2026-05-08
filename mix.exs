@@ -62,6 +62,7 @@ defmodule MarketMySpec.MixProject do
       # can go in extra_applications and start with the release before
       # config/runtime.exs runs.
       {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
       {:ex_aws_ssm, "~> 2.1"},
       {:hackney, "~> 1.20"},
       {:sweet_xml, "~> 0.7"},
@@ -106,6 +107,7 @@ defmodule MarketMySpec.MixProject do
       {:anubis_mcp, github: "zoedsoupe/anubis-mcp"},
       {:mdex, "~> 0.5"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
+      {:req_cassette, "~> 0.6.0", only: :test},
       {:code_my_spec_generators, path: "../code_my_spec_generators", only: :dev, runtime: false}
     ]
   end

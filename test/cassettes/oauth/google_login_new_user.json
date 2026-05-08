@@ -1,0 +1,174 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-04-25T23:00:00Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept": [
+            "application/json"
+          ]
+        },
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://accounts.google.com/.well-known/openid-configuration"
+      },
+      "response": {
+        "body_json": {
+          "authorization_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+          "claims_supported": [
+            "aud",
+            "email",
+            "email_verified",
+            "exp",
+            "family_name",
+            "given_name",
+            "iat",
+            "iss",
+            "name",
+            "picture",
+            "sub"
+          ],
+          "code_challenge_methods_supported": [
+            "plain",
+            "S256"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:device_code",
+            "urn:ietf:params:oauth:grant-type:jwt-bearer"
+          ],
+          "id_token_signing_alg_values_supported": [
+            "RS256"
+          ],
+          "issuer": "https://accounts.google.com",
+          "jwks_uri": "https://www.googleapis.com/oauth2/v3/certs",
+          "response_types_supported": [
+            "code",
+            "token",
+            "id_token",
+            "code token",
+            "code id_token",
+            "token id_token",
+            "code token id_token",
+            "none"
+          ],
+          "revocation_endpoint": "https://oauth2.googleapis.com/revoke",
+          "scopes_supported": [
+            "openid",
+            "email",
+            "profile"
+          ],
+          "subject_types_supported": [
+            "public"
+          ],
+          "token_endpoint": "https://oauth2.googleapis.com/token",
+          "token_endpoint_auth_methods_supported": [
+            "client_secret_post",
+            "client_secret_basic"
+          ],
+          "userinfo_endpoint": "https://openidconnect.googleapis.com/v1/userinfo"
+        },
+        "body_type": "json",
+        "headers": {
+          "cache-control": [
+            "public, max-age=3600"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "server": [
+            "scaffolding on HTTPServer2"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-04-25T23:00:01Z",
+      "request": {
+        "body": "<filtered>",
+        "body_type": "text",
+        "headers": {
+          "content-type": [
+            "application/x-www-form-urlencoded"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://oauth2.googleapis.com/token"
+      },
+      "response": {
+        "body_json": {
+          "access_token": "ya29.test_access_token_redacted",
+          "expires_in": 3599,
+          "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6InRlc3QtZ29vZ2xlLWtleS0xIiwidHlwIjoiSldUIn0.eyJhdWQiOiI2NTc0ODY4MDk3MTctZ245M2Nsc2tjZ2Q0ajhhdWkza29saDc3Ymk4b3M2dDEuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhenAiOiI2NTc0ODY4MDk3MTctZ245M2Nsc2tjZ2Q0ajhhdWkza29saDc3Ymk4b3M2dDEuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJlbWFpbCI6Imdvb2dsZS1maXh0dXJlQGV4YW1wbGUuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc3NzMxODk0NCwiZmFtaWx5X25hbWUiOiJGaXh0dXJlIiwiZ2l2ZW5fbmFtZSI6Ikdvb2dsZSIsImlhdCI6MTc3NzMxNTM0NCwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ikdvb2dsZSBGaXh0dXJlIFVzZXIiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvdGVzdC1hdmF0YXIiLCJzdWIiOiIxMTcyODM0MDAwMDAwMDAwMDAwMDEifQ.YNVwn77GGGbmV-ulFAcXPstxI1OauLeKvJ6-PRaCpL0lrrU-sT9O0g0ytCiXC3rUzexsD3oyJjD-_pXed-EE4kFq14nv1M0pX9tKMe1zPtwBkFDbr4KuZJrCu717DELKq1-RQde-J5D7aNKaeS47zUXEoGMT9vizHnJJylwxkbMaLdliL9YimM6Q8c_65-e7zGQHH2dIL79elryjHxKiAWSmFXuqwX33oEkNYOir4J4k5a_Bmak5G0MYpk071LC4Guz49AUa4pMVZzekCI5g2zci_ydVKjOEfWgktJNTnRGR9Ijh6nqm0Rt9NkyTC3PfdeKGcDAIAdosZgfQg-DM6Q",
+          "refresh_token": "1//test_refresh_token_redacted",
+          "scope": "openid email profile https://www.googleapis.com/auth/analytics.edit",
+          "token_type": "Bearer"
+        },
+        "body_type": "json",
+        "headers": {
+          "cache-control": [
+            "no-cache, no-store, max-age=0, must-revalidate"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "server": [
+            "scaffolding on HTTPServer2"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-04-25T23:00:02Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept": [
+            "application/json"
+          ]
+        },
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://www.googleapis.com/oauth2/v3/certs"
+      },
+      "response": {
+        "body_json": {
+          "keys": [
+            {
+              "alg": "RS256",
+              "e": "AQAB",
+              "kid": "test-google-key-1",
+              "kty": "RSA",
+              "n": "yiMsJq6Z4eJlnwRw6fl-bYG7kuFvYJbYtlnNXJAgQlYjqO6lSpZXdLWI6C1MzyK8LvoJCjlqf86y5pUJ1ekBSawGoFoFeIS0vWCJ0Fu_vQBLHr-ajAif-l5Ca167vEGT4uiKwNI-hiBtxrlX04DrsRl0-I7Q_7ngSjq8A1Dvsn0dKQUzF8BtjKYHKEO93ieY2uZlLHHhxZvs7U935RERAN-skfW8CRAu59RFMtzPRnDBaLL7hxNIlAVlfBjkBEW0ZHrJfhx6BLbBwDWO35mdzuVWLtyU1JuNgmeiaEezNWM-4UCttZRJanFJmOTMQMRMD6M8BIibiDlP2er9Uc_f3w",
+              "use": "sig"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "cache-control": [
+            "public, max-age=21600"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "server": [
+            "scaffolding on HTTPServer2"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

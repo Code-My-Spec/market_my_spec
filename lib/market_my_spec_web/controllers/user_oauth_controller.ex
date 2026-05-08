@@ -16,6 +16,7 @@ defmodule MarketMySpecWeb.UserOAuthController do
   alias MarketMySpec.Integrations
   alias MarketMySpec.Integrations.OAuthStateStore
   alias MarketMySpec.Users
+  alias MarketMySpec.Users.Scope
   alias MarketMySpecWeb.UserAuth
 
   require Logger
@@ -93,10 +94,13 @@ defmodule MarketMySpecWeb.UserOAuthController do
            provider_mod.config(redirect_uri)
            |> Keyword.put(:session_params, session_params),
          strategy = provider_mod.strategy(),
-         {:ok, %{user: user_data}} <- strategy.callback(config, params),
+         {:ok, callback_result} <- strategy.callback(config, params),
+         user_data = Map.get(callback_result, :user) || %{},
+         token = Map.get(callback_result, :token) || %{},
          {:ok, normalized} <- provider_mod.normalize_user(user_data),
          {:ok, email} <- require_email(normalized) do
-      user = Users.get_user_by_email(email) || create_user_from_oauth!(email)
+      user = resolve_or_create_user(provider, normalized, email)
+      _ = persist_integration(user, provider, token, normalized)
 
       conn
       |> put_flash(:info, "Signed in successfully.")
@@ -126,6 +130,25 @@ defmodule MarketMySpecWeb.UserOAuthController do
 
   defp require_email(_), do: {:error, :missing_email}
 
+  # Resolution priority:
+  #   1. By (provider, provider_user_id) — the same provider account, even if
+  #      the user changed their primary email upstream (criterion 5681).
+  #   2. By email — a different provider on the same person's email
+  #      (e.g. signed up with Google, now signing in via GitHub on the same
+  #      address).
+  #   3. Otherwise, create a new user.
+  defp resolve_or_create_user(provider, %{provider_user_id: pid}, email)
+       when is_binary(pid) and byte_size(pid) > 0 do
+    case Integrations.find_user_id_by_provider_identity(provider, pid) do
+      nil -> Users.get_user_by_email(email) || create_user_from_oauth!(email)
+      user_id -> Users.get_user!(user_id)
+    end
+  end
+
+  defp resolve_or_create_user(_provider, _normalized, email) do
+    Users.get_user_by_email(email) || create_user_from_oauth!(email)
+  end
+
   defp create_user_from_oauth!(email) do
     case Users.register_user(%{email: email}) do
       {:ok, user} ->
@@ -133,6 +156,27 @@ defmodule MarketMySpecWeb.UserOAuthController do
 
       {:error, changeset} ->
         raise "Failed to create user from OAuth: #{inspect(changeset.errors)}"
+    end
+  end
+
+  # Stores the OAuth identity (provider_user_id lives in provider_metadata)
+  # plus the access/refresh tokens for the integration. Failures here must
+  # not block sign-in — the user is already authenticated by the time we
+  # reach this point.
+  defp persist_integration(user, provider, token, normalized) do
+    scope = Scope.for_user(user)
+    attrs = Integrations.build_integration_attrs(token, normalized)
+
+    case Integrations.upsert_integration(scope, provider, attrs) do
+      {:ok, integration} ->
+        {:ok, integration}
+
+      {:error, reason} ->
+        Logger.warning(
+          "Failed to persist OAuth integration for user_id=#{user.id} provider=#{provider}: #{inspect(reason)}"
+        )
+
+        {:error, reason}
     end
   end
 

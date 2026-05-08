@@ -3,82 +3,91 @@ defmodule MarketMySpecSpex.Story673.Criterion5687Spex do
   Story 673 — Sign Up And Sign In With GitHub
   Criterion 5687 — User with private GitHub email still resolves consistently
 
-  GitHub users can configure their email as private. When the callback returns
-  a nil email, the account must still resolve using the stable GitHub user id.
+  GitHub users can mark their email private; the `/user` endpoint then
+  returns `email: null`. The criterion requires that sign-in still
+  succeeds — the account must resolve via the stable `id`, with the
+  primary email pulled from `/user/emails` instead.
 
-  REQ.TEST STUB LIMITATION:
-  `Req.Test.stub(:github_oauth, ...)` only intercepts Req HTTP calls when the
-  Req client is configured with `plug: {Req.Test, :github_oauth}`. Assent's
-  `Assent.HTTPAdapter.Req` calls `Req.new() |> Req.request()` without this plug
-  option, so the stub has no effect and Assent makes real HTTP calls to GitHub.
+  HOW THIS WORKS:
+  Assent's GitHub strategy (`Assent.Strategy.Github`) automatically calls
+  `/user/emails` when the `user:email` scope is granted and merges the
+  primary verified address into `user_data["email"]` when `/user` returned
+  null. So `MarketMySpec.Integrations.Providers.GitHub.normalize_user/1`
+  receives a populated email field even for private-email accounts, and
+  `UserOAuthController.require_email/1` is satisfied. The cassette below
+  confirms this end-to-end against scrubbed real-shape recordings of both
+  endpoints.
 
-  In the test environment (no real GitHub credentials, no network access to
-  GitHub's API), the callback fails with "Failed to complete connection".
-
-  For this criterion to be fully testable, Assent must be configured with a
-  test HTTP adapter that intercepts the token and user-data endpoints and returns
-  controlled stub responses.
-
-  `fail_on_error_logs: false` is set because the callback failure produces
-  expected error-level logs (no real GitHub server available in test).
+  `fail_on_error_logs: false` is retained as a safety net because Assent's
+  email-merge path can warn at runtime in edge cases (e.g. all emails
+  unverified). Remove if it never trips.
   """
 
   use MarketMySpecSpex.Case
 
-  alias MarketMySpecSpex.Fixtures
+  alias MarketMySpec.Users
+  alias MarketMySpecSpex.OAuthHelpers
 
-  # fail_on_error_logs: false because OAuth callback failure in test mode
-  # produces expected error-level logs.
-  spex "account resolves by GitHub id even when email is private", fail_on_error_logs: false do
-    scenario "user whose GitHub email is private still successfully connects" do
-      given_ "a registered user", context do
-        user = Fixtures.user_fixture()
-        {token, _raw} = Fixtures.generate_user_magic_link_token(user)
-        {:ok, Map.merge(context, %{user: user, token: token})}
+  spex "account resolves by GitHub id even when email is private",
+       fail_on_error_logs: false do
+    scenario "GitHub callback succeeds when /user returns nil email but /user/emails has a primary" do
+      given_ "a GitHub identity whose /user response has a nil email", context do
+        unique = System.unique_integer([:positive])
+        primary_email = "private-#{unique}@users.noreply.github.com"
+
+        user_json = %{
+          "id" => 99_700_000 + unique,
+          "login" => "privateuser#{unique}",
+          "name" => "Private Email User",
+          # Private — GitHub returns nil here when the user has hidden it.
+          "email" => nil,
+          "avatar_url" => "https://avatars.githubusercontent.com/u/0"
+        }
+
+        emails_json = [
+          %{
+            "email" => primary_email,
+            "primary" => true,
+            "verified" => true,
+            "visibility" => "private"
+          }
+        ]
+
+        cassette = "github_5687_#{unique}"
+        OAuthHelpers.build_github_cassette!(cassette, user_json, emails_json)
+
+        refute Users.get_user_by_email(primary_email),
+               "expected no pre-existing user for the private primary email"
+
+        {:ok, Map.merge(context, %{primary_email: primary_email, cassette: cassette})}
       end
 
-      when_ "they sign in via magic link", context do
-        authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        {:ok, Map.put(context, :conn, authed_conn)}
-      end
-
-      when_ "they initiate the GitHub OAuth flow", context do
-        req_conn = get(context.conn, "/integrations/oauth/github")
-        github_url = redirected_to(req_conn, 302)
-        %{"state" => state} = github_url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
-        {:ok, Map.put(context, :oauth_state, state)}
-      end
-
-      when_ "GitHub returns a callback with a nil email but a valid user id", context do
-        # Req.Test.stub(:github_oauth, ...) does NOT intercept Assent's HTTP calls.
-        # This stub is a no-op in the current implementation.
-        # When Assent is configured with a test HTTP adapter, restore this stub.
-        # Req.Test.stub(:github_oauth, fn conn -> ... end)
-
-        # Anchor: the callback route exists and responds.
+      when_ "the GitHub OAuth callback runs against the cassette", context do
         callback_conn =
-          get(
+          OAuthHelpers.do_github_callback(
             context.conn,
-            "/integrations/oauth/callback/github?code=test_code&state=#{context.oauth_state}"
+            context.cassette,
+            "github-state-5687-#{System.unique_integer([:positive])}"
           )
 
         {:ok, Map.put(context, :callback_conn, callback_conn)}
       end
 
-      then_ "the integration is accepted despite the nil email", context do
-        # Feature gap: without injectable test HTTP adapter for Assent, the callback
-        # always fails with "Failed to complete connection". The assertion below is
-        # anchored to the fact that a redirect occurs (either to /integrations or
-        # some other destination).
-        assert context.callback_conn.status == 302
+      then_ "the visitor is logged in (not rejected for missing email)", context do
+        assert redirected_to(context.callback_conn, 302) == "/",
+               "expected redirect to / on successful sign-in; private-email users " <>
+                 "must not be turned away — the primary verified email is in /user/emails"
+
+        assert Plug.Conn.get_session(context.callback_conn, :user_token),
+               "expected :user_token after successful GitHub OAuth callback"
+
         {:ok, context}
       end
 
-      then_ "a success flash confirms the GitHub connection", context do
-        # Feature gap: callback fails internally, no success flash from GitHub.
-        # Anchor: confirm a flash is set (could be error from callback failure).
-        flash = context.callback_conn.assigns.flash
-        assert map_size(flash) > 0
+      then_ "a user record exists for the primary verified GitHub email", context do
+        assert Users.get_user_by_email(context.primary_email),
+               "expected a user to be created with the primary email from /user/emails"
+
         {:ok, context}
       end
     end

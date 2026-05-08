@@ -43,6 +43,28 @@ defmodule MarketMySpec.Integrations.IntegrationRepository do
     end
   end
 
+  @doc """
+  Returns the `user_id` of the integration whose `provider_metadata` carries
+  the given `provider_user_id` for `provider`, or `nil` if none matches.
+
+  Uses Postgres' `->>` JSONB accessor against `provider_metadata`. Used by
+  the public OAuth sign-in flow to resolve a returning visitor by their
+  stable provider identity (Google `sub`, GitHub `id`) so an email change
+  does not produce a duplicate account.
+  """
+  @spec find_user_id_by_provider_identity(atom(), String.t()) :: integer() | nil
+  def find_user_id_by_provider_identity(provider, provider_user_id)
+      when is_binary(provider_user_id) do
+    Integration
+    |> where([i], i.provider == ^provider)
+    |> where(
+      [i],
+      fragment("?->>'provider_user_id' = ?", i.provider_metadata, ^provider_user_id)
+    )
+    |> select([i], i.user_id)
+    |> Repo.one()
+  end
+
   def upsert_integration(%Scope{user: user}, provider, attrs) do
     attrs_with_user_and_provider =
       attrs

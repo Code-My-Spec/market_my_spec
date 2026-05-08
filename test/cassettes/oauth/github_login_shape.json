@@ -1,0 +1,285 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-04-25T23:00:00Z",
+      "request": {
+        "body": "<filtered>",
+        "body_type": "text",
+        "headers": {
+          "content-type": [
+            "application/x-www-form-urlencoded"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://github.com/login/oauth/access_token"
+      },
+      "response": {
+        "body_json": {
+          "access_token": "<TEST_ACCESS_TOKEN_PLACEHOLDER>",
+          "scope": "read:user,user:email",
+          "token_type": "bearer"
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": [
+            "application/json; charset=utf-8"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-04-27T02:54:20.854788Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://api.github.com/user"
+      },
+      "response": {
+        "body_json": {
+          "starred_url": "<TEST_STARRED_URL_PLACEHOLDER>",
+          "gravatar_id": "<TEST_GRAVATAR_ID_PLACEHOLDER>",
+          "bio": null,
+          "notification_email": "<TEST_NOTIFICATION_EMAIL_PLACEHOLDER>",
+          "type": "User",
+          "location": "<TEST_LOCATION_PLACEHOLDER>",
+          "events_url": "<TEST_EVENTS_URL_PLACEHOLDER>",
+          "received_events_url": "<TEST_RECEIVED_EVENTS_URL_PLACEHOLDER>",
+          "gists_url": "<TEST_GISTS_URL_PLACEHOLDER>",
+          "blog": "<TEST_BLOG_PLACEHOLDER>",
+          "following": 1,
+          "hireable": null,
+          "site_admin": false,
+          "updated_at": "2026-03-22T14:19:24Z",
+          "public_repos": 62,
+          "organizations_url": "<TEST_ORGANIZATIONS_URL_PLACEHOLDER>",
+          "name": "<TEST_NAME_PLACEHOLDER>",
+          "id": 20461,
+          "email": "<TEST_EMAIL_PLACEHOLDER>",
+          "following_url": "<TEST_FOLLOWING_URL_PLACEHOLDER>",
+          "login": "<TEST_LOGIN_PLACEHOLDER>",
+          "avatar_url": "<TEST_AVATAR_URL_PLACEHOLDER>",
+          "twitter_username": null,
+          "url": "<TEST_URL_PLACEHOLDER>",
+          "subscriptions_url": "<TEST_SUBSCRIPTIONS_URL_PLACEHOLDER>",
+          "user_view_type": "public",
+          "followers_url": "<TEST_FOLLOWERS_URL_PLACEHOLDER>",
+          "repos_url": "<TEST_REPOS_URL_PLACEHOLDER>",
+          "public_gists": 12,
+          "html_url": "<TEST_HTML_URL_PLACEHOLDER>",
+          "node_id": "<TEST_NODE_ID_PLACEHOLDER>",
+          "company": null,
+          "created_at": "2008-08-12T20:56:05Z",
+          "followers": 44
+        },
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset"
+          ],
+          "cache-control": [
+            "private, max-age=60, s-maxage=60"
+          ],
+          "content-security-policy": [
+            "default-src 'none'"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Mon, 27 Apr 2026 02:54:20 GMT"
+          ],
+          "etag": [
+            "W/\"59d5d909741e5c8c9642e4b74767d1e47e03f6b229ca0047723819d5032cd04d\""
+          ],
+          "last-modified": [
+            "Sun, 22 Mar 2026 14:19:24 GMT"
+          ],
+          "referrer-policy": [
+            "origin-when-cross-origin, strict-origin-when-cross-origin"
+          ],
+          "server": [
+            "github.com"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubdomains; preload"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With"
+          ],
+          "x-accepted-oauth-scopes": [
+            ""
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "deny"
+          ],
+          "x-github-api-version-selected": [
+            "2022-11-28"
+          ],
+          "x-github-media-type": [
+            "github.v3"
+          ],
+          "x-oauth-client-id": [
+            "Ov23liFpnT7j3bK5OC1L"
+          ],
+          "x-oauth-scopes": [
+            "user:email"
+          ],
+          "x-ratelimit-limit": [
+            "5000"
+          ],
+          "x-ratelimit-reset": [
+            "1777262060"
+          ],
+          "x-ratelimit-resource": [
+            "core"
+          ],
+          "x-ratelimit-used": [
+            "1"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-04-27T02:54:21.020812Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://api.github.com/user/emails"
+      },
+      "response": {
+        "body_json": [
+          {
+            "email": "<TEST_EMAIL_PLACEHOLDER>",
+            "primary": true,
+            "verified": true,
+            "visibility": "public"
+          },
+          {
+            "email": "<TEST_EMAIL_PLACEHOLDER>",
+            "primary": false,
+            "verified": true,
+            "visibility": null
+          }
+        ],
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset"
+          ],
+          "cache-control": [
+            "private, max-age=60, s-maxage=60"
+          ],
+          "content-security-policy": [
+            "default-src 'none'"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Mon, 27 Apr 2026 02:54:21 GMT"
+          ],
+          "etag": [
+            "W/\"6f6e2f548cd9d57be7f1e7a8cf2b1a7825ef51b9952dd0687804eb9a5f6939f3\""
+          ],
+          "referrer-policy": [
+            "origin-when-cross-origin, strict-origin-when-cross-origin"
+          ],
+          "server": [
+            "github.com"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubdomains; preload"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With"
+          ],
+          "x-accepted-oauth-scopes": [
+            "user, user:email"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "deny"
+          ],
+          "x-github-api-version-selected": [
+            "2022-11-28"
+          ],
+          "x-github-media-type": [
+            "github.v3"
+          ],
+          "x-oauth-client-id": [
+            "Ov23liFpnT7j3bK5OC1L"
+          ],
+          "x-oauth-scopes": [
+            "user:email"
+          ],
+          "x-ratelimit-limit": [
+            "5000"
+          ],
+          "x-ratelimit-reset": [
+            "1777262060"
+          ],
+          "x-ratelimit-resource": [
+            "core"
+          ],
+          "x-ratelimit-used": [
+            "2"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

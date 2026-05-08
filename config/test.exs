@@ -57,3 +57,13 @@ config :phoenix,
 
 # Use in-memory ETS backend for file storage in tests (avoids real S3 calls)
 config :market_my_spec, :files_backend, MarketMySpec.Files.Memory
+
+# OAuth client credentials for tests. ReqCassette intercepts the actual
+# Google/GitHub HTTP calls (see test/support/oauth_spex_helpers.ex), but
+# the provider modules still call `Application.fetch_env!/2` for these
+# values, so they must be present.
+config :market_my_spec,
+  google_client_id: "test_google_client_id",
+  google_client_secret: "test_google_client_secret",
+  github_client_id: "test_github_client_id",
+  github_client_secret: "test_github_client_secret"
