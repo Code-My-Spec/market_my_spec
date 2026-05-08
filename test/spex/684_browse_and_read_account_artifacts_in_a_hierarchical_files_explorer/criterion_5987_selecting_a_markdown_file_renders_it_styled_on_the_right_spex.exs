@@ -70,7 +70,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5987Spex do
 
       then_ "the URL is at /files/<key> and the same LiveView is still mounted",
             context do
-        assert_patched(context.view, "/files/" <> URI.encode(@path, &URI.char_unreserved?/1))
+        assert_patched(context.view, "/files/" <> @path)
         assert has_element?(context.view, "[data-test='file-tree']")
         {:ok, context}
       end

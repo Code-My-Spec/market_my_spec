@@ -94,7 +94,7 @@ defmodule MarketMySpecWeb.FilesLive.Browser do
           </details>
         <% {:file, name, path, _entry} -> %>
           <.link
-            patch={~p"/files/#{path}"}
+            patch={~p"/files/#{String.split(path, "/")}"}
             data-test={"tree-file-#{path}"}
             class={if path == @selected_key, do: "menu-active"}
           >
