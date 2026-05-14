@@ -85,6 +85,19 @@ defmodule MarketMySpecSpex.Fixtures do
 
   defdelegate generate_user_magic_link_token(user), to: MarketMySpec.UsersFixtures
 
+  # --- Engagements --------------------------------------------------------
+  #
+  # Account-scoped Thread and Touchpoint preconditions for specs that drive
+  # the stage_response MCP tool, the ThreadLive views, or the Posting
+  # orchestrator. Threads default to source=:reddit; touchpoints default to
+  # staged state (no comment_url / posted_at).
+
+  defdelegate thread_fixture(scope), to: MarketMySpec.EngagementsFixtures
+  defdelegate thread_fixture(scope, attrs), to: MarketMySpec.EngagementsFixtures
+
+  defdelegate touchpoint_fixture(scope, thread), to: MarketMySpec.EngagementsFixtures
+  defdelegate touchpoint_fixture(scope, thread, attrs), to: MarketMySpec.EngagementsFixtures
+
   # --- MCP tools (no fixture needed) --------------------------------------
   #
   # Specs drive MCP tools by calling the tool module's execute/2 callback
