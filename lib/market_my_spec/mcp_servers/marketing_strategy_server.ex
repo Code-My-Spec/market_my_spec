@@ -12,6 +12,8 @@ defmodule MarketMySpec.McpServers.MarketingStrategyServer do
   component(MarketMySpec.McpServers.Marketing.Tools.ListFiles)
   component(MarketMySpec.McpServers.Marketing.Tools.EditFile)
   component(MarketMySpec.McpServers.Marketing.Tools.DeleteFile)
+  component(MarketMySpec.McpServers.Marketing.Tools.StageResponse)
+  component(MarketMySpec.McpServers.Engagements.Tools.SearchEngagements)
   component(MarketMySpec.McpServers.MarketingStrategy.Resources.SkillOrientation)
   component(MarketMySpec.McpServers.MarketingStrategy.Resources.Step)
 end

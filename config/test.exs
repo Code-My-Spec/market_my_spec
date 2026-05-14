@@ -19,13 +19,13 @@ config :market_my_spec, MarketMySpec.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
-# Endpoint runs in test so Wallaby can drive a real browser against it.
-# Set :server back to `false` if you ever need plain unit-test mode without
-# Wallaby — but the standard `mix test` flow keeps it on.
+# Endpoint stays off in test — current spex run in-process via LiveViewTest.
+# Flip `:server` to `true` when a Wallaby feature test needs a real browser
+# driving the running endpoint.
 config :market_my_spec, MarketMySpecWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "j4Qw3mzj8ePAdijydTCyco5Jam2HdT6iwn3mKYcRGFmpl0TIIb0xVSk9KdHD0ESl",
-  server: true
+  server: false
 
 # Wallaby — drives Chrome via chromedriver. Requires `brew install chromedriver`
 # (or platform equivalent) on the dev machine. The sandbox flag below is
