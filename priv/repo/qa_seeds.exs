@@ -108,6 +108,13 @@ client_account =
 # ---------------------------------------------------------------------------
 # Output
 # ---------------------------------------------------------------------------
+endpoint_port =
+  Application.get_env(:market_my_spec, MarketMySpecWeb.Endpoint, [])
+  |> Keyword.get(:http, [])
+  |> Keyword.get(:port, 4000)
+
+base_url = "http://localhost:#{endpoint_port}"
+
 IO.puts("""
 
 QA SEED COMPLETE
@@ -116,19 +123,19 @@ QA SEED COMPLETE
 === Journey 1-3 user (individual account) ===
 Email:        #{qa_user.email}
 User id:      #{qa_user.id}
-Magic-link:   http://localhost:4008/users/log-in/#{qa_token}
+Magic-link:   #{base_url}/users/log-in/#{qa_token}
 
 === Journey 4 user (agency account owner) ===
 Email:        #{agency_user.email}
 User id:      #{agency_user.id}
 Agency acct:  #{agency_account.name} (#{agency_account.id}) slug=#{agency_account.slug}
-Magic-link:   http://localhost:4008/users/log-in/#{agency_token}
+Magic-link:   #{base_url}/users/log-in/#{agency_token}
 
 === Journey 5 user (client account owner) ===
 Email:        #{client_user.email}
 User id:      #{client_user.id}
 Client acct:  #{client_account.name} (#{client_account.id}) slug=#{client_account.slug}
-Magic-link:   http://localhost:4008/users/log-in/#{client_token}
+Magic-link:   #{base_url}/users/log-in/#{client_token}
 
 Tokens are single-use and expire in 20 minutes. Re-run to refresh.
 """)
