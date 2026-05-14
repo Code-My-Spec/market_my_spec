@@ -21,9 +21,16 @@ Index of all architecture decision records for Market My Spec. Each record captu
 
 - [BDD with SexySpex + Wallaby](decisions/bdd-testing.md) — behavior-driven specs
 - [Wallaby](decisions/wallaby.md) — browser-based integration tests
-- [ExVCR](decisions/exvcr.md) — HTTP recording for tests
+- [ExVCR](decisions/exvcr.md) — HTTP recording for HTTPoison-based tests (PowAssent/ExAws)
+- [ReqCassette](decisions/req-cassette.md) — HTTP recording for Req-based tests (Engagements context); ExVCR stays for legacy HTTPoison code
 
 ### Market My Spec specifics
 
 - [Anubis MCP](decisions/anubis-mcp.md) — MCP server over SSE for skill exposure
 - [ex_oauth2_provider](decisions/ex-oauth2-provider.md) — OAuth authorization server for MCP client authentication
+
+### Engagements feature
+
+- [Req](decisions/req.md) — HTTP client for all new code in the Engagements context
+- [Reddit integration](decisions/reddit-integration.md) — script app OAuth, password grant, rate-limit back-off, UTM scheme
+- [Discourse integration](decisions/discourse-integration.md) — anonymous read, User API Key for posting, ElixirForum trust levels, UTM scheme

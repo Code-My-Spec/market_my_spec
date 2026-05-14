@@ -54,3 +54,7 @@ diagnostics.jsonl
 /.kamal/locks/
 /.kamal/apps/
 
+# CodeMySpec session-local artifacts: downloaded hex docs cache + per-session hook sentinels
+/.code_my_spec/hex_docs/
+/.code_my_spec/architecture/.proposal_pre_existed_at_session_start
+

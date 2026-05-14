@@ -1,6 +1,6 @@
 # Architecture Proposal
 
-Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport) to a connected agent. The web app handles sign-up, MCP setup guidance, and OAuth consent. Domain layer splits into Users (web identity), Integrations (Google/GitHub OAuth sign-in), McpAuth (OAuth server for MCP clients), Skills (the marketing-strategy skill content), Accounts (multi-tenant workspaces), Agencies (agency account type, agency-client grants, subdomain routing), and Files (account-scoped file storage for skill artifacts).
+Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport) to a connected agent. The web app handles sign-up, MCP setup guidance, and OAuth consent. Domain layer splits into Users (web identity), Integrations (Google/GitHub OAuth sign-in), McpAuth (OAuth server for MCP clients), Skills (the marketing-strategy skill content), Accounts (multi-tenant workspaces), Agencies (agency account type, agency-client grants, subdomain routing), Files (account-scoped file storage for skill artifacts), and Engagements (account-scoped engagement-finder loop — venues, ingested threads, post-back touchpoints, and per-source credentials, all driven by the connected LLM via MCP tools).
 
 ## Contexts
 
@@ -95,6 +95,27 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 - MarketMySpec.Skills.MarketingStrategy (module) [Stories: 674, 675, 676]: The skill — orientation prompt, eight step prompts, artifact write instructions for the agent
 - MarketMySpec.Skills.Overview (module) [Stories: 633]: Public marketing copy describing the skill (value prop, BYO-Claude requirement, who it is for) consumed by HomeLive
 
+### MarketMySpec.Engagements
+
+- **Type:** context
+- **Description:** Account-scoped engagement-finder domain. Owns venues (which subreddits/forum categories to search per source), threads (ingested + normalized OP+comment trees), touchpoints (saved comment records after post-back), and per-account source credentials (encrypted OAuth tokens for posting). Source behaviour with adapter implementations (Reddit, ElixirForum) defines per-source search, thread fetch, post, and identifier validation. Search and Posting modules orchestrate fan-out across enabled venues and UTM-embedded post-back respectively.
+- **Stories:** 705, 706, 707, 708
+
+#### Children
+
+- MarketMySpec.Engagements.Venue (schema) [Stories: 708]: Per-account venue record. Fields: account_id, source (enum: reddit | elixirforum), identifier (source-typed payload — subreddit name for Reddit, category id + optional tag for ElixirForum), weight (float, ranking multiplier, default 1.0), enabled (boolean, default true).
+- MarketMySpec.Engagements.VenuesRepository (module) [Stories: 708]: Account-scoped CRUD for venues. list_venues/2 (account, optional source filter), get_venue/2, create_venue/2, update_venue/3, delete_venue/2. Validates the venue identifier against Source.validate_venue/1 before persisting and rejects cross-account access with not-found.
+- MarketMySpec.Engagements.Source (module) [Stories: 705, 706, 707, 708]: Behaviour contract every engagement source implements. Callbacks: validate_venue/1, search/2 (venues, query → candidate threads), get_thread/2 (venue, thread_id → normalized Thread), post/3 (credential, thread_id, body → comment_url). Lets adapters be swapped and added without touching the orchestrators.
+- MarketMySpec.Engagements.Source.Reddit (module) [Stories: 705, 706, 707]: Reddit Source adapter. Validates subreddit name format, searches via Reddit's per-subreddit search API, fetches full thread JSON and normalizes into the internal Thread schema (preserving comment hierarchy), and posts comments via the Reddit submit-comment endpoint using account-scoped OAuth credentials.
+- MarketMySpec.Engagements.Source.ElixirForum (module) [Stories: 705, 706, 707]: ElixirForum (Discourse) Source adapter. Validates category id (and optional tag filter), pulls latest topics from category JSON endpoints with optional tag scoping, fetches full topic JSON and normalizes into the internal Thread schema, and posts replies via the Discourse posts endpoint using account-scoped credentials.
+- MarketMySpec.Engagements.Search (module) [Stories: 705]: Engagement search orchestrator. Reads the account's enabled venues per source via VenuesRepository, fans out to each Source.search/2 in parallel, deduplicates results, ranks by venue weight × per-source signal, and returns a unified candidate list. Failing sources degrade gracefully — other sources still return results and the failure is reported in the response envelope.
+- MarketMySpec.Engagements.Thread (schema) [Stories: 706]: Ingested thread record. Account-scoped. Fields: account_id, source, source_thread_id, url, title, op_body, comment_tree (jsonb, normalized hierarchy), raw_payload (jsonb, original platform JSON for re-render/debug), fetched_at. Repeat fetches within a freshness window read this row instead of re-hitting the platform.
+- MarketMySpec.Engagements.ThreadsRepository (module) [Stories: 706]: Account-scoped thread persistence + freshness-window cache. get_or_fetch_thread/3 (account, source, thread_id) returns the cached thread if fresh; otherwise calls Source.get_thread/2, persists the normalized + raw forms, and returns it. list_threads/1 returns recently fetched threads per account.
+- MarketMySpec.Engagements.SourceCredential (schema) [Stories: 707]: Per-account-per-source OAuth credentials for posting. Fields: account_id, source, encrypted_access_token, encrypted_refresh_token, expires_at, account_handle (e.g. johns10davenport for Reddit). Refreshed automatically on expiry.
+- MarketMySpec.Engagements.Posting (module) [Stories: 707]: Post-back orchestrator. Embeds the UTM-tracked link into the polished body using a per-source UTM scheme, loads the account's SourceCredential for the source, calls Source.post/3, persists a Touchpoint record on success, and returns the live comment URL. Posting failures (auth expiry, platform error, rate limit) preserve the polished draft and surface a usable error.
+- MarketMySpec.Engagements.Touchpoint (schema) [Stories: 707]: Saved post-back record. Account-scoped. Fields: account_id, thread_id (FK to Thread), comment_url, polished_body, link_target, posted_at. One-to-many from Thread.
+- MarketMySpec.Engagements.TouchpointsRepository (module) [Stories: 707]: Account-scoped touchpoint persistence. create_touchpoint/2, list_touchpoints/1 (per account), list_touchpoints_for_thread/2.
+
 ## Surface Components
 
 ### MarketMySpecWeb.AccountLive
@@ -115,12 +136,12 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 
 - **Type:** live_context
 - **Description:** Invitation management views — invite new members to an account and manage pending invitations. Reached transitively from AccountLive (the account management surface that owns story 678).
-- **Stories:**
+- **Stories:** 696
 
 #### Children
 
-- MarketMySpecWeb.InvitationsLive.Index (liveview): List pending invitations for the current account
-- MarketMySpecWeb.InvitationsLive.New (liveview): Send a new member invitation by email
+- MarketMySpecWeb.InvitationsLive.Index (liveview) [Stories: 696]: List pending invitations for the current account; owners can send a new invitation and cancel pending ones
+- MarketMySpecWeb.InvitationsLive.New (liveview) [Stories: 696]: Send a new member invitation by email
 
 ### MarketMySpecWeb.AgencyLive
 
@@ -142,6 +163,37 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 #### Children
 
 - MarketMySpecWeb.FilesLive.Browser (liveview) [Stories: 684]: List artifacts for the current account in a file hierarchy; selecting a file displays its rendered content alongside the tree
+
+### MarketMySpecWeb.VenueLive
+
+- **Type:** live_context
+- **Description:** Admin LiveViews for managing engagement-finder venues — view the per-account venue list, add/edit/remove venues, toggle enabled flag. Index page handles list + inline create/edit; per-source identifier validation surfaces inline.
+- **Stories:** 708
+
+#### Children
+
+- MarketMySpecWeb.VenueLive.Index (liveview) [Stories: 708]: Account-scoped venue admin. Lists venues for the active account with source, identifier, weight, and enabled toggle. Inline form to add new venues, edit/remove actions per row, optimistic toggle for enabled flag. Per-source identifier validation surfaces inline before submit.
+
+### MarketMySpecWeb.ThreadLive
+
+- **Type:** live_context
+- **Description:** LiveViews for browsing ingested engagement threads — list of recently fetched threads per account, drill into a single thread to see normalized OP + comment tree alongside any touchpoint records (drafts or posted comments).
+- **Stories:** 706, 707
+
+#### Children
+
+- MarketMySpecWeb.ThreadLive.Index (liveview) [Stories: 706]: Lists recently ingested threads for the active account — title, source, venue, fetched_at, touchpoint count. Click a row to open ThreadLive.Show.
+- MarketMySpecWeb.ThreadLive.Show (liveview) [Stories: 706, 707]: Single-thread view. Renders the normalized OP + comment tree alongside any touchpoint records (drafts or posted comments) for the thread. Read-only; posting happens via the MCP tool driven by the LLM, not from this view.
+
+### MarketMySpecWeb.SourceConnectionLive
+
+- **Type:** live_context
+- **Description:** LiveViews for connecting and disconnecting per-source posting credentials. Drives the OAuth flow against each source (Reddit, ElixirForum), persists encrypted tokens via Engagements.SourceCredential, and shows connection status per source for the active account.
+- **Stories:** 707
+
+#### Children
+
+- MarketMySpecWeb.SourceConnectionLive.Connect (liveview) [Stories: 707]: Per-source connection status + connect/disconnect actions for the active account. Initiates the OAuth flow against each source (Reddit, ElixirForum), receives the callback, persists the encrypted SourceCredential, and shows connected handle and expiry per source.
 
 ### MarketMySpecWeb.HomeLive
 
@@ -177,8 +229,8 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 ### MarketMySpecWeb.McpController
 
 - **Type:** controller
-- **Description:** MCP server endpoint mounting Anubis MCP. Validates the bearer token (issued by McpAuth), then handles JSON-RPC requests over POST and the long-lived SSE stream. Exposes the marketing-strategy skill's orientation/steps as MCP resources, an artifact-tracking tool the agent calls when each step is completed, and account-scoped file tools (read/write/edit/delete/list) the agent uses to produce skill artifacts.
-- **Stories:** 674, 675, 676, 683
+- **Description:** MCP server endpoint mounting Anubis MCP. Validates the bearer token (issued by McpAuth), then handles JSON-RPC requests over POST and the long-lived SSE stream. Exposes the marketing-strategy skill's orientation/steps as MCP resources, an artifact-tracking tool the agent calls when each step is completed, account-scoped file tools (read/write/edit/delete/list) the agent uses to produce skill artifacts, and the engagement-finder tools (search_engagements, get_thread, post_response, add_venue, list_venues, update_venue, remove_venue) the agent calls into the Engagements context.
+- **Stories:** 674, 675, 676, 683, 705, 706, 707, 708
 
 ### MarketMySpecWeb.Plugs.AgencyHost
 
@@ -211,3 +263,11 @@ Market My Spec exposes a single marketing-strategy skill over MCP (SSE transport
 - MarketMySpecWeb.Plugs.AgencyHost -> MarketMySpec.Agencies
 - MarketMySpec.Agencies -> MarketMySpec.Accounts
 - MarketMySpec.Files -> MarketMySpec.Accounts
+- MarketMySpec.Engagements -> MarketMySpec.Accounts
+- MarketMySpecWeb.VenueLive -> MarketMySpec.Engagements
+- MarketMySpecWeb.VenueLive -> MarketMySpec.Accounts
+- MarketMySpecWeb.ThreadLive -> MarketMySpec.Engagements
+- MarketMySpecWeb.ThreadLive -> MarketMySpec.Accounts
+- MarketMySpecWeb.SourceConnectionLive -> MarketMySpec.Engagements
+- MarketMySpecWeb.SourceConnectionLive -> MarketMySpec.Accounts
+- MarketMySpecWeb.McpController -> MarketMySpec.Engagements
