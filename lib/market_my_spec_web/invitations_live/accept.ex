@@ -70,6 +70,21 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
             </div>
           </div>
 
+          <div :if={@mismatched_user} class="alert alert-warning">
+            <.icon name="hero-exclamation-triangle" class="size-5" />
+            <div>
+              <h3 class="font-bold">Wrong account</h3>
+              <p class="text-sm">
+                You're signed in as <strong>{@current_scope.user.email}</strong>, but this invitation
+                is for <strong>{@invitation.email}</strong>.
+                <.link href={~p"/users/log-out"} method="delete" class="link link-primary">
+                  Sign out
+                </.link>
+                and open the invitation link again to accept it.
+              </p>
+            </div>
+          </div>
+
           <div :if={@existing_user} class="card card-compact bg-base-100 shadow-lg">
             <div class="card-body">
               <h3 class="card-title">Welcome back!</h3>
@@ -81,6 +96,7 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
                   phx-click="accept_invitation"
                   phx-disable-with="Accepting..."
                   class="btn btn-primary w-full"
+                  disabled={@mismatched_user}
                 >
                   Accept Invitation
                 </.button>
@@ -107,6 +123,7 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
                     phx-click="accept_invitation"
                     phx-disable-with="Creating account..."
                     class="btn btn-primary w-full"
+                    disabled={@mismatched_user}
                   >
                     Create Account & Accept Invitation
                   </.button>
@@ -123,18 +140,18 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
   def mount(%{"token" => token}, _session, socket) do
     case Accounts.get_invitation_by_token(token) do
       nil ->
-        {:ok, assign(socket, error: :invalid_token, loading: false, invitation: nil, existing_user: nil)}
+        {:ok, assign_blank(socket, :invalid_token)}
 
       invitation ->
         cond do
           invitation.status == :accepted ->
-            {:ok, assign(socket, error: :already_accepted, loading: false, invitation: nil, existing_user: nil)}
+            {:ok, assign_blank(socket, :already_accepted)}
 
           invitation.status == :declined ->
-            {:ok, assign(socket, error: :invalid_token, loading: false, invitation: nil, existing_user: nil)}
+            {:ok, assign_blank(socket, :invalid_token)}
 
           DateTime.compare(DateTime.utc_now(), invitation.expires_at) != :lt ->
-            {:ok, assign(socket, error: :expired_token, loading: false, invitation: nil, existing_user: nil)}
+            {:ok, assign_blank(socket, :expired_token)}
 
           true ->
             existing_user = Users.get_user_by_email(invitation.email)
@@ -145,6 +162,7 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
                token: token,
                invitation: invitation,
                existing_user: existing_user,
+               mismatched_user: mismatched_user?(socket.assigns[:current_scope], invitation),
                loading: false,
                error: nil
              )}
@@ -153,10 +171,23 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
   end
 
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, error: :invalid_token, loading: false, invitation: nil, existing_user: nil)}
+    {:ok, assign_blank(socket, :invalid_token)}
   end
 
   def handle_event("accept_invitation", _params, socket) do
+    if socket.assigns.mismatched_user do
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         "You're signed in as #{socket.assigns.current_scope.user.email}. Sign out and reopen the invitation link to accept."
+       )}
+    else
+      do_accept_invitation(socket)
+    end
+  end
+
+  defp do_accept_invitation(socket) do
     user_attrs = %{email: socket.assigns.invitation.email}
 
     case Accounts.accept_invitation(socket.assigns.token, user_attrs) do
@@ -182,5 +213,22 @@ defmodule MarketMySpecWeb.InvitationsLive.Accept do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to accept invitation. Please try again.")}
     end
+  end
+
+  defp mismatched_user?(%{user: %{email: email}}, %{email: invitation_email})
+       when is_binary(email) and is_binary(invitation_email) do
+    email != invitation_email
+  end
+
+  defp mismatched_user?(_scope, _invitation), do: false
+
+  defp assign_blank(socket, error) do
+    assign(socket,
+      error: error,
+      loading: false,
+      invitation: nil,
+      existing_user: nil,
+      mismatched_user: false
+    )
   end
 end
