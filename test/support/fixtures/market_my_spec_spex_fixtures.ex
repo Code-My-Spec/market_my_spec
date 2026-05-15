@@ -91,12 +91,18 @@ defmodule MarketMySpecSpex.Fixtures do
   # the stage_response MCP tool, the ThreadLive views, or the Posting
   # orchestrator. Threads default to source=:reddit; touchpoints default to
   # staged state (no comment_url / posted_at).
+  #
+  # Both fixtures are scoped to scope.active_account_id and insert a real
+  # database row via MarketMySpec.Repo.
 
   defdelegate thread_fixture(scope), to: MarketMySpec.EngagementsFixtures
   defdelegate thread_fixture(scope, attrs), to: MarketMySpec.EngagementsFixtures
 
   defdelegate touchpoint_fixture(scope, thread), to: MarketMySpec.EngagementsFixtures
   defdelegate touchpoint_fixture(scope, thread, attrs), to: MarketMySpec.EngagementsFixtures
+
+  defdelegate venue_fixture(scope), to: MarketMySpec.EngagementsFixtures
+  defdelegate venue_fixture(scope, attrs), to: MarketMySpec.EngagementsFixtures
 
   # --- MCP tools (no fixture needed) --------------------------------------
   #

@@ -10,6 +10,7 @@ defmodule MarketMySpec.EngagementsFixtures do
 
   alias MarketMySpec.Engagements.Thread
   alias MarketMySpec.Engagements.Touchpoint
+  alias MarketMySpec.Engagements.Venue
   alias MarketMySpec.Repo
 
   @doc """
@@ -79,6 +80,34 @@ defmodule MarketMySpec.EngagementsFixtures do
       end
 
     Repo.insert!(changeset)
+  end
+
+  @doc """
+  Inserts a Venue scoped to `scope.active_account_id`. Defaults to a Reddit
+  subreddit named uniquely per call. Pass `:source` and/or `:identifier` to
+  override.
+  """
+  @spec venue_fixture(MarketMySpec.Users.Scope.t(), map() | keyword()) :: Venue.t()
+  def venue_fixture(scope, attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+    unique = System.unique_integer([:positive])
+
+    defaults = %{
+      account_id: scope.active_account_id,
+      source: :reddit,
+      identifier: "venue_#{unique}",
+      weight: 1.0,
+      enabled: true
+    }
+
+    merged =
+      defaults
+      |> Map.merge(attrs)
+      |> Map.update(:source, :reddit, &cast_source/1)
+
+    %Venue{}
+    |> Venue.changeset(merged)
+    |> Repo.insert!()
   end
 
   defp normalize_attrs(attrs) when is_list(attrs), do: Map.new(attrs)

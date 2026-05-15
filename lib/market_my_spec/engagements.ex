@@ -29,6 +29,8 @@ defmodule MarketMySpec.Engagements do
   """
 
   alias MarketMySpec.Engagements.Posting
+  alias MarketMySpec.Engagements.SavedSearch
+  alias MarketMySpec.Engagements.SavedSearchesRepository
   alias MarketMySpec.Engagements.Search
   alias MarketMySpec.Engagements.ThreadsRepository
   alias MarketMySpec.Engagements.TouchpointsRepository
@@ -117,6 +119,67 @@ defmodule MarketMySpec.Engagements do
   """
   @spec delete_venue(Scope.t(), integer()) :: {:ok, Venue.t()} | {:error, :not_found}
   defdelegate delete_venue(scope, id), to: VenuesRepository
+
+  # ---------------------------------------------------------------------------
+  # Saved Searches
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Returns all saved searches for the caller's account, preloaded with their
+  linked venues, ordered by insertion time ascending.
+  """
+  @spec list_saved_searches(Scope.t()) :: [SavedSearch.t()]
+  defdelegate list_saved_searches(scope), to: SavedSearchesRepository
+
+  @doc """
+  Fetches a single saved search by id (account-scoped), preloaded with venues.
+
+  Returns `{:ok, saved_search}` or `{:error, :not_found}` on missing or
+  cross-account access.
+  """
+  @spec get_saved_search(Scope.t(), integer()) ::
+          {:ok, SavedSearch.t()} | {:error, :not_found}
+  defdelegate get_saved_search(scope, id), to: SavedSearchesRepository
+
+  @doc """
+  Persists a new SavedSearch for the account in the given scope.
+
+  `attrs` must include `name` and `query`. At least one venue selector must
+  be present — either `:venue_ids` or `:source_wildcards`.
+
+  Returns `{:ok, saved_search}` or `{:error, changeset}`.
+  """
+  @spec create_saved_search(Scope.t(), map()) ::
+          {:ok, SavedSearch.t()} | {:error, Ecto.Changeset.t()}
+  defdelegate create_saved_search(scope, attrs), to: SavedSearchesRepository
+
+  @doc """
+  Updates an existing SavedSearch (account-scoped).
+
+  Returns `{:ok, saved_search}`, `{:error, :not_found}`, or `{:error, changeset}`.
+  """
+  @spec update_saved_search(Scope.t(), integer(), map()) ::
+          {:ok, SavedSearch.t()} | {:error, :not_found | Ecto.Changeset.t()}
+  defdelegate update_saved_search(scope, id, attrs), to: SavedSearchesRepository
+
+  @doc """
+  Deletes a SavedSearch (account-scoped).
+
+  Returns `{:ok, saved_search}` or `{:error, :not_found}`.
+  """
+  @spec delete_saved_search(Scope.t(), integer()) ::
+          {:ok, SavedSearch.t()} | {:error, :not_found}
+  defdelegate delete_saved_search(scope, id), to: SavedSearchesRepository
+
+  @doc """
+  Runs a saved search: resolves the recipe (linked venues + wildcard-expanded
+  enabled venues per source) and delegates to the search orchestrator.
+
+  Returns `{:ok, %{candidates: [...], failures: [...]}}` or `{:error, :not_found}`.
+  """
+  @spec run_saved_search(Scope.t(), integer()) ::
+          {:ok, SavedSearchesRepository.search_result()} | {:error, :not_found}
+  defdelegate run_saved_search(scope, id), to: SavedSearchesRepository
 
   # ---------------------------------------------------------------------------
   # Threads

@@ -25,6 +25,9 @@ context
 - MarketMySpec.Engagements.Source.ElixirForum (module): ElixirForum (Discourse) source adapter
 - MarketMySpec.Engagements.Search (module): Parallel fan-out search across enabled venues
 - MarketMySpec.Engagements.Posting (module): UTM-embedded post-back orchestrator
+- MarketMySpec.Engagements.SavedSearch (schema): Account-scoped saved-search recipe — name (unique per account), Google-style query string, many-to-many venues, per-source wildcards
+- MarketMySpec.Engagements.SavedSearchVenue (schema): Join table for SavedSearch ↔ Venue many-to-many
+- MarketMySpec.Engagements.SavedSearchesRepository (module): Account-scoped CRUD plus run_saved_search/2 which resolves the recipe and delegates to Engagements.Search.search/3
 
 ## Functions
 

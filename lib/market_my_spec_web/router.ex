@@ -104,6 +104,7 @@ defmodule MarketMySpecWeb.Router do
       live "/accounts/:id/members", AccountLive.Members, :show
       live "/accounts/:id/invitations", InvitationsLive.Index, :index
       live "/accounts/:id/venues", VenueLive.Index, :index
+      live "/accounts/:id/searches", SearchLive.Index, :index
       live "/accounts/:id/threads", ThreadLive.Index, :index
       live "/accounts/:account_id/threads/:thread_id", ThreadLive.Show, :show
 
