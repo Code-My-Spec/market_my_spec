@@ -7,6 +7,9 @@ defmodule MarketMySpecSpex.Story707.Criterion6206Spex do
   The Source adapters for Reddit and ElixirForum return {:error, :posting_not_supported}
   when post/3 is called. The UI shows "Copy to clipboard" instead of a "Post" button
   because posting is not available programmatically in v1.
+
+  Both adapters are deliberately read-only in v1 — programmatic posting requires
+  OAuth write scopes that are not part of the current integration surface.
   """
 
   use MarketMySpecSpex.Case
