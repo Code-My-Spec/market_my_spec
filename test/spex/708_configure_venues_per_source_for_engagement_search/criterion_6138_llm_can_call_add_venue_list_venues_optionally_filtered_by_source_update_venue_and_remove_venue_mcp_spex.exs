@@ -4,16 +4,21 @@ defmodule MarketMySpecSpex.Story708.Criterion6138Spex do
   Criterion 6138 — LLM can call `add_venue`, `list_venues` (optionally filtered by
   source), `update_venue`, and `remove_venue` MCP tools.
 
-  The engagement MCP server exposes four venue management tools. The LLM can
-  call each tool with a valid payload and receive a structured response. At the
-  scaffold stage this verifies the tool modules exist, accept the expected
-  parameters, and return a response envelope without crashing.
+  The engagement MCP server exposes four venue management tools registered on
+  `MarketMySpec.McpServers.MarketingStrategyServer`. Each tool exposes the
+  Anubis component contract (`execute/2` returning `{:reply, %Response{}, frame}`).
 
   Interaction surface: MCP tool execution (agent surface).
   """
 
   use MarketMySpecSpex.Case
 
+  alias Anubis.Server.Response
+  alias MarketMySpec.McpServers.Engagements.Tools.AddVenue
+  alias MarketMySpec.McpServers.Engagements.Tools.ListVenues
+  alias MarketMySpec.McpServers.Engagements.Tools.RemoveVenue
+  alias MarketMySpec.McpServers.Engagements.Tools.UpdateVenue
+  alias MarketMySpec.McpServers.MarketingStrategyServer
   alias MarketMySpecSpex.Fixtures
 
   defp build_frame(scope) do
@@ -24,110 +29,94 @@ defmodule MarketMySpecSpex.Story708.Criterion6138Spex do
   end
 
   spex "LLM can call add_venue, list_venues, update_venue, and remove_venue MCP tools" do
-    scenario "add_venue tool exists and returns a response" do
+    scenario "all four venue tools are registered on the marketing-strategy MCP server" do
+      given_ "the marketing-strategy server's tool list", context do
+        names = MarketingStrategyServer.__components__(:tool) |> Enum.map(& &1.name)
+        {:ok, Map.put(context, :tool_names, names)}
+      end
+
+      then_ "add_venue, list_venues, update_venue, and remove_venue all appear",
+            context do
+        for name <- ~w(add_venue list_venues update_venue remove_venue) do
+          assert name in context.tool_names,
+                 "expected #{name} on MarketingStrategyServer; got: #{inspect(context.tool_names)}"
+        end
+
+        {:ok, context}
+      end
+    end
+
+    scenario "add_venue returns a reply tuple with a Response struct" do
       given_ "an authenticated account-scoped user", context do
         scope = Fixtures.account_scoped_user_fixture()
         {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope)})}
       end
 
       when_ "the LLM calls add_venue with a valid reddit venue", context do
-        result =
-          try do
-            tool = Module.safe_concat(["MarketMySpec", "McpServers", "Engagements", "Tools", "AddVenue"])
-            tool.execute(%{source: "reddit", identifier: "elixir"}, context.frame)
-          rescue
-            _ -> {:scaffold, :not_yet_implemented}
-          end
-
+        result = AddVenue.execute(%{source: "reddit", identifier: "elixir"}, context.frame)
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the tool returns a reply tuple or a scaffold placeholder", context do
-        assert match?({:reply, _, _}, context.result) or
-                 match?({:scaffold, _}, context.result),
-               "expected add_venue to return {:reply, _, _} or be a scaffold, got: #{inspect(context.result)}"
-
+      then_ "the tool returns {:reply, %Response{}, frame}", context do
+        assert {:reply, %Response{}, _frame} = context.result
         {:ok, context}
       end
     end
 
-    scenario "list_venues tool exists and returns a response" do
+    scenario "list_venues returns a reply tuple with a Response struct" do
       given_ "an authenticated account-scoped user", context do
         scope = Fixtures.account_scoped_user_fixture()
         {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope)})}
       end
 
-      when_ "the LLM calls list_venues", context do
-        result =
-          try do
-            tool = Module.safe_concat(["MarketMySpec", "McpServers", "Engagements", "Tools", "ListVenues"])
-            tool.execute(%{}, context.frame)
-          rescue
-            _ -> {:scaffold, :not_yet_implemented}
-          end
-
+      when_ "the LLM calls list_venues with no filter", context do
+        result = ListVenues.execute(%{}, context.frame)
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the tool returns a reply tuple or a scaffold placeholder", context do
-        assert match?({:reply, _, _}, context.result) or
-                 match?({:scaffold, _}, context.result),
-               "expected list_venues to return {:reply, _, _} or be a scaffold"
-
+      then_ "the tool returns {:reply, %Response{}, frame}", context do
+        assert {:reply, %Response{}, _frame} = context.result
         {:ok, context}
       end
     end
 
-    scenario "update_venue tool exists and returns a response" do
-      given_ "an authenticated account-scoped user", context do
+    scenario "update_venue returns a reply tuple with a Response struct" do
+      given_ "an authenticated account-scoped user with one venue", context do
         scope = Fixtures.account_scoped_user_fixture()
-        {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope)})}
+        venue = Fixtures.venue_fixture(scope, %{source: :reddit, identifier: "elixir"})
+        {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope), venue_id: venue.id})}
       end
 
-      when_ "the LLM calls update_venue with a venue id", context do
+      when_ "the LLM calls update_venue with enabled: false", context do
         result =
-          try do
-            tool = Module.safe_concat(["MarketMySpec", "McpServers", "Engagements", "Tools", "UpdateVenue"])
-            tool.execute(%{venue_id: "1", enabled: false}, context.frame)
-          rescue
-            _ -> {:scaffold, :not_yet_implemented}
-          end
+          UpdateVenue.execute(
+            %{venue_id: context.venue_id, enabled: false},
+            context.frame
+          )
 
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the tool returns a reply tuple or a scaffold placeholder", context do
-        assert match?({:reply, _, _}, context.result) or
-                 match?({:scaffold, _}, context.result),
-               "expected update_venue to return {:reply, _, _} or be a scaffold"
-
+      then_ "the tool returns {:reply, %Response{}, frame}", context do
+        assert {:reply, %Response{}, _frame} = context.result
         {:ok, context}
       end
     end
 
-    scenario "remove_venue tool exists and returns a response" do
-      given_ "an authenticated account-scoped user", context do
+    scenario "remove_venue returns a reply tuple with a Response struct" do
+      given_ "an authenticated account-scoped user with one venue", context do
         scope = Fixtures.account_scoped_user_fixture()
-        {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope)})}
+        venue = Fixtures.venue_fixture(scope, %{source: :reddit, identifier: "elixir"})
+        {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope), venue_id: venue.id})}
       end
 
-      when_ "the LLM calls remove_venue with a venue id", context do
-        result =
-          try do
-            tool = Module.safe_concat(["MarketMySpec", "McpServers", "Engagements", "Tools", "RemoveVenue"])
-            tool.execute(%{venue_id: "1"}, context.frame)
-          rescue
-            _ -> {:scaffold, :not_yet_implemented}
-          end
-
+      when_ "the LLM calls remove_venue with the venue id", context do
+        result = RemoveVenue.execute(%{venue_id: context.venue_id}, context.frame)
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the tool returns a reply tuple or a scaffold placeholder", context do
-        assert match?({:reply, _, _}, context.result) or
-                 match?({:scaffold, _}, context.result),
-               "expected remove_venue to return {:reply, _, _} or be a scaffold"
-
+      then_ "the tool returns {:reply, %Response{}, frame}", context do
+        assert {:reply, %Response{}, _frame} = context.result
         {:ok, context}
       end
     end

@@ -3,16 +3,18 @@ defmodule MarketMySpecSpex.Story708.Criterion6150Spex do
   Story 708 — Configure Venues Per Source for Engagement Search
   Criterion 6150 — The agent creates a venue via add_venue MCP tool.
 
-  The LLM agent calls the add_venue MCP tool with source and identifier params.
-  The tool creates a venue scoped to the calling account and returns a success
-  response. At the scaffold stage this verifies the tool module path exists and
-  the calling pattern is established.
+  Drives the AddVenue tool's execute/2 callback with a Reddit and an
+  ElixirForum payload. Asserts the response envelope shape and confirms the
+  venue is persisted under the calling account.
 
   Interaction surface: MCP tool execution (agent surface).
   """
 
   use MarketMySpecSpex.Case
 
+  alias Anubis.Server.Response
+  alias MarketMySpec.Engagements
+  alias MarketMySpec.McpServers.Engagements.Tools.AddVenue
   alias MarketMySpecSpex.Fixtures
 
   defp build_frame(scope) do
@@ -23,47 +25,30 @@ defmodule MarketMySpecSpex.Story708.Criterion6150Spex do
   end
 
   spex "the agent creates a venue via add_venue MCP tool" do
-    scenario "add_venue is called with a Reddit source and subreddit identifier" do
+    scenario "add_venue persists a Reddit venue scoped to the account" do
       given_ "an authenticated account-scoped agent user", context do
         scope = Fixtures.account_scoped_user_fixture()
         {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope)})}
       end
 
       when_ "the agent calls add_venue with source=reddit, identifier=elixir", context do
-        result =
-          try do
-            tool =
-              Module.safe_concat([
-                "MarketMySpec",
-                "McpServers",
-                "Engagements",
-                "Tools",
-                "AddVenue"
-              ])
-
-            tool.execute(%{source: "reddit", identifier: "elixir"}, context.frame)
-          rescue
-            UndefinedFunctionError ->
-              {:scaffold, :add_venue_not_yet_implemented}
-
-            ArgumentError ->
-              {:scaffold, :module_not_yet_defined}
-          end
-
+        result = AddVenue.execute(%{source: "reddit", identifier: "elixir"}, context.frame)
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the call returns a response or indicates scaffold stage", context do
-        assert match?({:reply, _, _}, context.result) or
-                 match?({:scaffold, _}, context.result),
-               "expected add_venue to return {:reply, _, _} or scaffold, " <>
-                 "got: #{inspect(context.result)}"
+      then_ "the call returns {:reply, %Response{}, frame} and the venue is in the DB",
+            context do
+        assert {:reply, %Response{}, _frame} = context.result
+
+        venues = Engagements.list_venues(context.scope, :reddit)
+        assert Enum.any?(venues, &(&1.identifier == "elixir")),
+               "expected reddit/elixir venue to be persisted on the account"
 
         {:ok, context}
       end
     end
 
-    scenario "add_venue is called with an ElixirForum source and category identifier" do
+    scenario "add_venue persists an ElixirForum venue scoped to the account" do
       given_ "an authenticated account-scoped agent user", context do
         scope = Fixtures.account_scoped_user_fixture()
         {:ok, Map.merge(context, %{scope: scope, frame: build_frame(scope)})}
@@ -71,28 +56,21 @@ defmodule MarketMySpecSpex.Story708.Criterion6150Spex do
 
       when_ "the agent calls add_venue with source=elixirforum", context do
         result =
-          try do
-            tool =
-              Module.safe_concat([
-                "MarketMySpec",
-                "McpServers",
-                "Engagements",
-                "Tools",
-                "AddVenue"
-              ])
-
-            tool.execute(%{source: "elixirforum", identifier: "phoenix-forum"}, context.frame)
-          rescue
-            _ -> {:scaffold, :not_yet_implemented}
-          end
+          AddVenue.execute(
+            %{source: "elixirforum", identifier: "phoenix-forum"},
+            context.frame
+          )
 
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the call returns a response or scaffold", context do
-        assert match?({:reply, _, _}, context.result) or
-                 match?({:scaffold, _}, context.result),
-               "expected add_venue to return {:reply, _, _} or scaffold"
+      then_ "the call returns {:reply, %Response{}, frame} and the venue is in the DB",
+            context do
+        assert {:reply, %Response{}, _frame} = context.result
+
+        venues = Engagements.list_venues(context.scope, :elixirforum)
+        assert Enum.any?(venues, &(&1.identifier == "phoenix-forum")),
+               "expected elixirforum/phoenix-forum venue to be persisted"
 
         {:ok, context}
       end
