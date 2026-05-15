@@ -19,7 +19,9 @@ defmodule MarketMySpec.Agencies.HostResolver do
   alias MarketMySpec.Accounts.Account
   alias MarketMySpec.Repo
 
-  @apex_host Application.compile_env(:market_my_spec, :apex_host, "marketmyspec.com")
+  # NOTE: read at runtime, not compile time — the same Docker image is deployed
+  # to UAT (uat.marketmyspec.com) and prod (marketmyspec.com), and the apex host
+  # has to differ per environment. `runtime.exs` sets :apex_host from PHX_HOST.
 
   @doc """
   Resolves a request host string to an agency `Account`.
@@ -54,7 +56,9 @@ defmodule MarketMySpec.Agencies.HostResolver do
   Returns the configured apex host (e.g. `"marketmyspec.com"`).
   """
   @spec apex_host() :: String.t()
-  def apex_host, do: @apex_host
+  def apex_host do
+    Application.get_env(:market_my_spec, :apex_host, "marketmyspec.com")
+  end
 
   defp normalize(host) do
     host
@@ -63,7 +67,7 @@ defmodule MarketMySpec.Agencies.HostResolver do
   end
 
   defp extract_subdomain(host) do
-    apex = @apex_host
+    apex = apex_host()
 
     case host do
       ^apex -> :apex

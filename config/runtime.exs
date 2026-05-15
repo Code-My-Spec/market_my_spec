@@ -84,6 +84,12 @@ if config_env() == :prod do
 
   host = System.get_env("PHX_HOST") || "example.com"
 
+  # `:apex_host` is the platform host where the marketing site lives.
+  # On prod that's `marketmyspec.com`; on UAT it's `uat.marketmyspec.com`. The
+  # AgencyHost plug uses it to distinguish apex requests (pass through) from
+  # agency-subdomain requests (lookup) — see MarketMySpec.Agencies.HostResolver.
+  config :market_my_spec, :apex_host, host
+
   config :market_my_spec, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :market_my_spec, MarketMySpecWeb.Endpoint,
