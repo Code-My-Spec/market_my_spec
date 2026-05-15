@@ -43,7 +43,24 @@ RUN mkdir -p envs && touch envs/.env envs/prod.env
 
 # Compile and build assets
 RUN mix compile
-RUN mix assets.deploy
+
+# `mix assets.deploy` downloads platform-specific tailwind + esbuild binaries
+# from GitHub releases / npm on first run. Both endpoints occasionally 504,
+# especially on arm64 (see CI history). Retry up to 5x with linear backoff so
+# a transient gateway timeout doesn't fail the build.
+RUN for attempt in 1 2 3 4 5; do \
+      if mix assets.deploy; then \
+        echo "assets.deploy succeeded on attempt $attempt"; \
+        break; \
+      fi; \
+      if [ "$attempt" = "5" ]; then \
+        echo "assets.deploy failed after 5 attempts" >&2; \
+        exit 1; \
+      fi; \
+      sleep_for=$((attempt * 5)); \
+      echo "assets.deploy failed on attempt $attempt — sleeping ${sleep_for}s before retry"; \
+      sleep "$sleep_for"; \
+    done
 
 # Build release
 RUN mix release

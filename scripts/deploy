@@ -5,8 +5,13 @@
 # to master. This script:
 #   1. Verifies the working tree is clean and pushes commits.
 #   2. Waits for the build workflow to finish.
-#   3. Runs `kamal deploy --skip-push --version=<sha>` against the image
-#      that the workflow just published.
+#   3. Runs `bin/migrate` from the just-built image BEFORE traffic swaps,
+#      so the new container never serves against a stale schema. (See the
+#      "column subdomain does not exist" near-miss in commit history — a
+#      deploy reported success while every request 500'd until migrations
+#      caught up.)
+#   4. Runs `kamal deploy --skip-push --version=<sha>` to swap traffic
+#      to the new container.
 #
 # Secrets come from AWS SSM Parameter Store (/market_my_spec/prod/*).
 
@@ -46,6 +51,21 @@ set -a
 source <("$DEVOPS_DIR/scripts/render-env" market_my_spec prod)
 set +a
 
+# 3. Migrate the database against the NEW image, BEFORE swapping traffic.
+# `kamal app exec --version=<sha>` boots a one-off container with the new
+# image, runs the command, and removes the container. The currently-serving
+# container is untouched — old traffic keeps flowing against the now-
+# migrated schema until step 4 swaps in.
+#
+# Note: this assumes additive migrations (add column / add table). A
+# destructive migration that drops a column the old code still reads would
+# break the old container during this window — for that case, do the
+# breaking change in two deploys (deploy code that stops reading the
+# column first, then deploy code that drops it).
+echo "==> running migrations against $SHA before swapping traffic..."
+kamal app exec --version="$SHA" "/app/bin/migrate"
+
+# 4. Swap traffic to the new container.
 kamal deploy --skip-push --version="$SHA" "$@"
 
 echo "==> Done: https://marketmyspec.com"

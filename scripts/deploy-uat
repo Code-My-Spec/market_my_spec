@@ -36,6 +36,11 @@ set -a
 source <("$DEVOPS_DIR/scripts/render-env" market_my_spec uat)
 set +a
 
+# Migrate against the NEW image before swapping traffic. See scripts/deploy
+# for the full rationale.
+echo "==> running migrations against $SHA before swapping traffic..."
+kamal app exec -d uat --version="$SHA" "/app/bin/migrate"
+
 kamal deploy -d uat --skip-push --version="$SHA" "$@"
 
 echo "==> Done: https://uat.marketmyspec.com"
