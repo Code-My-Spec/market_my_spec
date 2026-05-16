@@ -70,3 +70,11 @@ config :market_my_spec,
   google_client_secret: "test_google_client_secret",
   github_client_id: "test_github_client_id",
   github_client_secret: "test_github_client_secret"
+
+# ReqCassette default: replay only. Tests run hermetically; recording a
+# fresh cassette is an explicit `with_cassette "name", mode: :record, fn ... end`
+# in the spec being re-recorded. See knowledge/req-and-cassette-stack.md.
+config :req_cassette,
+  cassette_dir: "test/cassettes",
+  mode: :replay,
+  filter_request_headers: ["authorization", "user-api-key", "user-api-client-id"]

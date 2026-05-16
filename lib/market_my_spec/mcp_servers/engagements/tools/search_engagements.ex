@@ -8,6 +8,9 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.SearchEngagements do
 
   Failing sources degrade gracefully — their errors are surfaced in the
   `failures` field of the response envelope without crashing the tool.
+
+  Pass `cursor` (returned as `next_cursor` from a prior call) to fetch the
+  next page of results.
   """
 
   use Anubis.Server.Component, type: :tool
@@ -18,21 +21,25 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.SearchEngagements do
   schema do
     field :query, :string, required: true, doc: "Keyword query to search across venues"
     field :venue, :string, required: false, doc: "Optional venue identifier to scope the search"
+    field :cursor, :string, required: false, doc: "Pagination cursor from a prior call"
   end
 
   @impl true
   def execute(params, frame) do
     scope = frame.assigns.current_scope
     query = params.query
-    venue = Map.get(params, :venue)
 
-    opts = if venue, do: [venue: venue], else: []
+    opts = []
+    opts = if Map.has_key?(params, :venue), do: [{:venue, params.venue} | opts], else: opts
+    opts = if Map.has_key?(params, :cursor), do: [{:cursor, params.cursor} | opts], else: opts
 
-    %{candidates: candidates, failures: failures} = Search.search(scope, query, opts)
+    %{candidates: candidates, failures: failures, next_cursor: next_cursor} =
+      Search.search(scope, query, opts)
 
     payload = %{
       candidates: candidates,
-      failures: encode_failures(failures)
+      failures: encode_failures(failures),
+      next_cursor: next_cursor
     }
 
     response =

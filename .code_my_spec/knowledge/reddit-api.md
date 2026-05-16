@@ -2,6 +2,28 @@
 
 As of 2026-05-14.
 
+## Auth posture for THIS project (decision 2026-05-16)
+
+**Story 705 ships with anonymous read.** The `www.reddit.com/r/<sub>/search.json`
+endpoint serves a 200 with the standard listing JSON when called with just a
+descriptive `User-Agent` header — no bearer, no OAuth. The Engagements
+adapter (`MarketMySpec.Engagements.Source.Reddit`) uses this path for the
+search-only v1.
+
+**OAuth (the rest of this doc) is deferred to story 707** when the agent needs
+the `submit` scope to post comments. At that point we wire the script-app
+password grant + TokenStore GenServer described below.
+
+Anonymous-read trade-offs to know:
+- Rate limit is lower (~10 req/min by IP, vs 100/min OAuth) — acceptable for
+  on-demand agent search, not for background scanning.
+- Some subreddits (quarantined, private) require auth. Search will silently
+  skip them; document the venue list as "public subreddits only" for v1.
+- No personalization, no user-context. Fine for ICP-keyword discovery.
+
+The rest of this doc remains the canonical reference for the OAuth path —
+just don't implement it until story 707 demands it.
+
 ## OAuth 2.0 App Types and Which Fits This Use Case
 
 Reddit offers three app types (per https://github.com/reddit-archive/reddit/wiki/oauth2):

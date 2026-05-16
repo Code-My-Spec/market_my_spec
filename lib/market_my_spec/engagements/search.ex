@@ -22,22 +22,30 @@ defmodule MarketMySpec.Engagements.Search do
 
   @type result :: %{
           candidates: [candidate()],
-          failures: [%{venue: map(), reason: term()}]
+          failures: [%{venue: map(), reason: term()}],
+          next_cursor: nil | String.t()
         }
 
   @doc """
   Fans out the keyword `query` to all enabled venues in the account's scope.
 
-  Accepts an optional `venue` identifier string to restrict search to a single
-  venue (matched by identifier). When omitted, all enabled venues are searched.
+  Accepts opts:
+  - `:venue` — restrict to a single venue identifier
+  - `:cursor` — pagination cursor passed through to each adapter (Reddit's
+    `after` parameter). Single-venue pagination is well-defined;
+    multi-venue pagination returns the first non-nil cursor it sees (v1
+    limitation — to be revisited if multi-venue pagination becomes a
+    real workflow).
 
   Returns a map with:
   - `:candidates` — deduplicated list ranked by `venue.weight × signal` descending
   - `:failures` — list of `%{venue: venue, reason: reason}` for source errors
+  - `:next_cursor` — opaque pagination token (or `nil` at end of listing)
   """
   @spec search(Scope.t(), String.t(), keyword()) :: result()
   def search(%Scope{} = scope, query, opts \\ []) when is_binary(query) do
     venue_filter = Keyword.get(opts, :venue, nil)
+    cursor = Keyword.get(opts, :cursor, nil)
 
     venues =
       scope
@@ -45,44 +53,46 @@ defmodule MarketMySpec.Engagements.Search do
       |> Enum.filter(& &1.enabled)
       |> maybe_filter_venue(venue_filter)
 
-    {candidates, failures} = fan_out(venues, query)
+    {candidates, failures, next_cursor} = fan_out(venues, query, cursor)
 
     ranked =
       candidates
       |> deduplicate()
       |> rank()
 
-    %{candidates: ranked, failures: failures}
+    %{candidates: ranked, failures: failures, next_cursor: next_cursor}
   end
 
   # Fan out to each venue in parallel via Task.async_stream.
-  # Each result is either {:ok, [candidate]} or {:error, reason}.
-  # We collect both, never letting a single failure abort the stream.
-  defp fan_out(venues, query) do
+  # Each adapter returns either `{:ok, %{candidates: [...], next_cursor: ...}}`
+  # or `{:error, reason}`. We collect candidates, failures, and the first
+  # non-nil per-venue cursor (single-venue pagination is the v1 use case).
+  defp fan_out(venues, query, cursor) do
     venues
     |> Task.async_stream(
-      fn venue -> {venue, search_venue(venue, query)} end,
+      fn venue -> {venue, search_venue(venue, query, cursor)} end,
       on_timeout: :kill_task,
       timeout: 15_000
     )
-    |> Enum.reduce({[], []}, fn
-      {:ok, {venue, {:ok, raw_candidates}}}, {acc_candidates, acc_failures} ->
+    |> Enum.reduce({[], [], nil}, fn
+      {:ok, {venue, {:ok, %{candidates: raw_candidates, next_cursor: nc}}}},
+      {acc_candidates, acc_failures, acc_cursor} ->
         weighted = Enum.map(raw_candidates, &attach_weight(&1, venue.weight))
-        {acc_candidates ++ weighted, acc_failures}
+        {acc_candidates ++ weighted, acc_failures, acc_cursor || nc}
 
-      {:ok, {venue, {:error, reason}}}, {acc_candidates, acc_failures} ->
+      {:ok, {venue, {:error, reason}}}, {acc_candidates, acc_failures, acc_cursor} ->
         failure = %{venue: venue, reason: reason}
-        {acc_candidates, acc_failures ++ [failure]}
+        {acc_candidates, acc_failures ++ [failure], acc_cursor}
 
-      {:exit, reason}, {acc_candidates, acc_failures} ->
+      {:exit, reason}, {acc_candidates, acc_failures, acc_cursor} ->
         failure = %{venue: nil, reason: {:task_exit, reason}}
-        {acc_candidates, acc_failures ++ [failure]}
+        {acc_candidates, acc_failures ++ [failure], acc_cursor}
     end)
   end
 
-  defp search_venue(venue, query) do
+  defp search_venue(venue, query, cursor) do
     adapter = adapter_for(venue.source)
-    adapter.search(venue, query)
+    adapter.search(venue, query, cursor: cursor)
   rescue
     error -> {:error, error}
   end

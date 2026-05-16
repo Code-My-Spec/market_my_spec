@@ -30,10 +30,14 @@ defmodule MarketMySpec.Engagements.Source.ElixirForum do
   @doc """
   Fetches latest topics from Discourse category JSON endpoints with optional tag scoping.
 
-  NOTE: Scaffold — returns empty results until HTTP client integration is complete.
+  NOTE: Scaffold — story 714 wires the live Discourse fetch. Returns the
+  canonical envelope shape (`%{candidates: [], next_cursor: nil}`) so the
+  orchestrator can fan out across Reddit + ElixirForum venues without
+  branching on adapter return type.
   """
-  @spec search(map(), String.t()) :: {:ok, list()} | {:error, term()}
-  def search(_venue, _query), do: {:ok, []}
+  @spec search(map(), String.t(), keyword()) ::
+          {:ok, %{candidates: [map()], next_cursor: nil | String.t()}} | {:error, term()}
+  def search(_venue, _query, _opts \\ []), do: {:ok, %{candidates: [], next_cursor: nil}}
 
   @doc """
   Fetches full Discourse topic JSON and normalizes into Thread schema.
