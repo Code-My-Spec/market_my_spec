@@ -52,6 +52,36 @@ config :market_my_spec,
   github_client_id: env!("GITHUB_CLIENT_ID", :string, nil),
   github_client_secret: env!("GITHUB_CLIENT_SECRET", :string, nil)
 
+# Cloudflare named tunnel for dev — exposes the local Phoenix dev server
+# at https://dev.marketmyspec.com via `ClientUtils.CloudflareTunnel`. The
+# GenServer overrides the Endpoint's :url config after start so URL helpers
+# generate `https://dev.marketmyspec.com/...` instead of `http://localhost:4008`.
+# Only configured in :dev when all three env vars are present (so missing
+# creds disable gracefully rather than crash boot).
+if config_env() == :dev do
+  tunnel_id = env!("CLOUDFLARE_TUNNEL_ID", :string, nil)
+  tunnel_secret = env!("CLOUDFLARE_TUNNEL_SECRET", :string, nil)
+  account_tag = env!("CLOUDFLARE_ACCOUNT_ID", :string, nil)
+
+  if tunnel_id && tunnel_secret && account_tag do
+    config :market_my_spec, :cloudflare_tunnel,
+      mode: :named,
+      hostname: "dev.marketmyspec.com",
+      tunnel_id: tunnel_id,
+      tunnel_secret: tunnel_secret,
+      account_tag: account_tag,
+      origin_url: "http://127.0.0.1:#{env!("PORT", :integer, 4008)}",
+      endpoint: MarketMySpecWeb.Endpoint,
+      otp_app: :market_my_spec
+
+    # When the dev tunnel is wired, dev.marketmyspec.com IS the apex from
+    # the app's perspective — otherwise AgencyHost treats "dev" as an
+    # agency subdomain and 302s back to https://marketmyspec.com. Same
+    # gotcha that 8694071 fixed for UAT.
+    config :market_my_spec, :apex_host, "dev.marketmyspec.com"
+  end
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
