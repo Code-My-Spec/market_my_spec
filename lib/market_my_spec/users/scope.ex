@@ -16,6 +16,7 @@ defmodule MarketMySpec.Users.Scope do
   growing application requirements.
   """
 
+  alias MarketMySpec.Accounts.AccountsRepository
   alias MarketMySpec.Accounts.MembersRepository
   alias MarketMySpec.Users.User
 
@@ -49,7 +50,13 @@ defmodule MarketMySpec.Users.Scope do
           nil
       end
 
-    %__MODULE__{user: user, active_account_id: active_account_id}
+    active_account = active_account_id && AccountsRepository.get_account(active_account_id)
+
+    %__MODULE__{
+      user: user,
+      active_account_id: active_account_id,
+      active_account: active_account
+    }
   end
 
   def for_user(nil), do: nil

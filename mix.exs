@@ -109,6 +109,8 @@ defmodule MarketMySpec.MixProject do
       {:dotenvy, "~> 1.1.0"},
       {:ex_oauth2_provider, "~> 0.5.7"},
       {:anubis_mcp, github: "zoedsoupe/anubis-mcp"},
+      {:google_api_analytics_admin, "~> 0.26.0"},
+      {:tesla, "~> 1.4"},
       {:mdex, "~> 0.5"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
       {:req_cassette, "~> 0.6.0", only: :test},

@@ -10,6 +10,7 @@ defmodule MarketMySpec.Accounts.Account do
           logo_url: String.t() | nil,
           primary_color: String.t() | nil,
           secondary_color: String.t() | nil,
+          google_analytics_property_id: String.t() | nil,
           type: atom(),
           role: atom() | nil,
           members: [MarketMySpec.Accounts.Member.t()] | Ecto.Association.NotLoaded.t(),
@@ -30,6 +31,7 @@ defmodule MarketMySpec.Accounts.Account do
     field :logo_url, :string
     field :primary_color, :string
     field :secondary_color, :string
+    field :google_analytics_property_id, :string
     field :type, Ecto.Enum, values: [:individual, :agency], default: :individual
     field :role, Ecto.Enum, values: [:owner, :admin, :member], virtual: true
 
@@ -101,13 +103,32 @@ defmodule MarketMySpec.Accounts.Account do
 
   def admin_changeset(account, attrs) do
     account
-    |> cast(attrs, [:name, :slug, :type])
+    |> cast(attrs, [:name, :slug, :type, :google_analytics_property_id])
     |> validate_required([:name])
     |> validate_length(:name, min: 1, max: 100)
     |> validate_inclusion(:type, [:individual, :agency])
     |> validate_slug()
     |> unique_constraint(:slug, message: "already taken")
   end
+
+  @doc """
+  Changeset for setting the Google Analytics 4 property ID used by the
+  AnalyticsAdmin MCP tools. Property IDs are bare numeric strings (e.g.
+  "123456789"); tools prepend the "properties/" prefix when calling the
+  API. Empty strings are normalized to nil.
+  """
+  def analytics_changeset(account, attrs) do
+    account
+    |> cast(attrs, [:google_analytics_property_id])
+    |> update_change(:google_analytics_property_id, &normalize_property_id/1)
+    |> validate_format(:google_analytics_property_id, ~r/^\d+$/,
+      message: "must be a numeric GA4 property ID (digits only)"
+    )
+  end
+
+  defp normalize_property_id(nil), do: nil
+  defp normalize_property_id(""), do: nil
+  defp normalize_property_id(value) when is_binary(value), do: String.trim(value)
 
   @doc """
   Changeset for setting or changing an agency account's subdomain.

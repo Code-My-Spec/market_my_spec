@@ -44,6 +44,7 @@ defmodule MarketMySpecWeb.Router do
     pipe_through :mcp_authenticated
 
     match :*, "/", McpController, :handle
+    match :*, "/analytics-admin", AnalyticsAdminMcpController, :handle
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
