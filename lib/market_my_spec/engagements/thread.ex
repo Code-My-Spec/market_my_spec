@@ -46,8 +46,8 @@ defmodule MarketMySpec.Engagements.Thread do
     timestamps(type: :utc_datetime)
   end
 
-  @required_fields [:account_id, :source, :source_thread_id, :url, :title]
-  @optional_fields [:op_body, :comment_tree, :raw_payload, :fetched_at, :last_activity_at]
+  @required_fields [:account_id, :source, :source_thread_id, :url, :title, :fetched_at]
+  @optional_fields [:op_body, :comment_tree, :raw_payload, :last_activity_at]
 
   @doc """
   Changeset for creating or updating a Thread record.
