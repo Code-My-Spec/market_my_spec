@@ -187,7 +187,7 @@ defmodule MarketMySpec.Engagements.Search do
     if heads == [] do
       Enum.reverse(acc)
     else
-      remaining = Enum.reject(tails, &(&1 == []))
+      _remaining = Enum.reject(tails, &(&1 == []))
       non_empty_tails = tails
 
       do_interleave(non_empty_tails, Enum.reverse(heads) ++ acc)

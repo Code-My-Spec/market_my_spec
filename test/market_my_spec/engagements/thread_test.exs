@@ -62,11 +62,11 @@ defmodule MarketMySpec.Engagements.ThreadTest do
       assert "can't be blank" in errors_on(changeset).title
     end
 
-    test "requires fetched_at" do
+    test "fetched_at is optional" do
       account = account_fixture()
       attrs = @valid_attrs |> Map.put(:account_id, account.id) |> Map.delete(:fetched_at)
       changeset = Thread.changeset(%Thread{}, attrs)
-      assert "can't be blank" in errors_on(changeset).fetched_at
+      assert changeset.valid?
     end
 
     test "op_body is optional" do
