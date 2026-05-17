@@ -107,6 +107,8 @@ defmodule MarketMySpecWeb.Router do
       live "/accounts/:id/searches", SearchLive.Index, :index
       live "/accounts/:id/threads", ThreadLive.Index, :index
       live "/accounts/:account_id/threads/:thread_id", ThreadLive.Show, :show
+      live "/accounts/:account_id/touchpoints", TouchpointLive.Index, :index
+      live "/accounts/:account_id/touchpoints/:touchpoint_id", TouchpointLive.Show, :show
 
       live "/files", FilesLive.Browser, :index
       live "/files/*key", FilesLive.Browser, :show

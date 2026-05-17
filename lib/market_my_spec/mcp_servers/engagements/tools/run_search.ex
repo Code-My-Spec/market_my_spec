@@ -36,15 +36,19 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.RunSearch do
   end
 
   defp encode_failures(failures) do
-    Enum.map(failures, fn
-      %{venue: nil, reason: reason} ->
-        %{venue: nil, reason: inspect(reason)}
-
-      %{venue: venue, reason: reason} ->
-        %{
-          venue: %{source: venue.source, identifier: venue.identifier},
-          reason: inspect(reason)
-        }
+    Enum.map(failures, fn failure ->
+      %{
+        source: failure |> Map.get(:source) |> stringify(),
+        venue_identifier: Map.get(failure, :venue_identifier),
+        reason: failure |> Map.get(:reason, "") |> stringify_reason()
+      }
     end)
   end
+
+  defp stringify(nil), do: nil
+  defp stringify(atom) when is_atom(atom), do: Atom.to_string(atom)
+  defp stringify(other), do: to_string(other)
+
+  defp stringify_reason(reason) when is_binary(reason), do: reason
+  defp stringify_reason(reason), do: inspect(reason)
 end

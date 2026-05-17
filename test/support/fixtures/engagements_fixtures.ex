@@ -25,16 +25,21 @@ defmodule MarketMySpec.EngagementsFixtures do
     attrs = normalize_attrs(attrs)
     source_thread_id = "thread-#{System.unique_integer([:positive])}"
 
+    # `fetched_at` defaults to nil so get_thread treats the row as needing a
+    # refresh (mirrors how story 705's search upserts Threads without content;
+    # story 706 populates fetched_at + comment_tree on refresh). Spex that
+    # want a "freshly cached" row pass `fetched_at: DateTime.utc_now()`
+    # explicitly.
     defaults = %{
       account_id: scope.active_account_id,
       source: :reddit,
       source_thread_id: source_thread_id,
       url: "https://www.reddit.com/r/elixir/comments/#{source_thread_id}",
       title: "Engagement opportunity #{source_thread_id}",
-      op_body: "An OP body that the agent can analyze.",
+      op_body: nil,
       comment_tree: %{"children" => []},
       raw_payload: %{"source_thread_id" => source_thread_id},
-      fetched_at: DateTime.utc_now() |> DateTime.truncate(:second)
+      fetched_at: nil
     }
 
     merged =

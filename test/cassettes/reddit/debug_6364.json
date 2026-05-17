@@ -1,0 +1,107 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-05-16T21:15:25.394536Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "user-agent": [
+            "market_my_spec/0.1 by /u/johns10davenport"
+          ]
+        },
+        "method": "GET",
+        "query_string": "sort=confidence&limit=25",
+        "uri": "https://www.reddit.com/comments/ord001.json"
+      },
+      "response": {
+        "body_json": [
+          {
+            "data": {
+              "after": null,
+              "before": null,
+              "children": [
+                {
+                  "data": {
+                    "author": "anon",
+                    "created_utc": 1.7e9,
+                    "id": "ord001",
+                    "name": "t3_ord001",
+                    "num_comments": 0,
+                    "permalink": "/r/elixir/comments/ord001/_/",
+                    "score": 1,
+                    "selftext": "",
+                    "subreddit": "elixir",
+                    "title": "Thread ord001",
+                    "url": "https://www.reddit.com/r/elixir/comments/ord001/_/"
+                  },
+                  "kind": "t3"
+                }
+              ]
+            },
+            "kind": "Listing"
+          },
+          {
+            "data": {
+              "after": null,
+              "before": null,
+              "children": [
+                {
+                  "data": {
+                    "author": "u1",
+                    "body": "Top 1",
+                    "created_utc": 1.7e9,
+                    "depth": 0,
+                    "id": "C1",
+                    "name": "t1_C1",
+                    "parent_id": "t3_unknown",
+                    "replies": "",
+                    "score": 10
+                  },
+                  "kind": "t1"
+                },
+                {
+                  "data": {
+                    "author": "u2",
+                    "body": "Top 2",
+                    "created_utc": 1700000001.0,
+                    "depth": 0,
+                    "id": "C2",
+                    "name": "t1_C2",
+                    "parent_id": "t3_unknown",
+                    "replies": "",
+                    "score": 5
+                  },
+                  "kind": "t1"
+                },
+                {
+                  "data": {
+                    "author": "u5",
+                    "body": "Top 3",
+                    "created_utc": 1700000002.0,
+                    "depth": 0,
+                    "id": "C3",
+                    "name": "t1_C3",
+                    "parent_id": "t3_unknown",
+                    "replies": "",
+                    "score": 3
+                  },
+                  "kind": "t1"
+                }
+              ]
+            },
+            "kind": "Listing"
+          }
+        ],
+        "body_type": "json",
+        "headers": {
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "1.0"
+}

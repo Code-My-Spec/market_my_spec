@@ -25,25 +25,53 @@ defmodule MarketMySpec.Engagements.Posting do
 
   @doc """
   Builds a UTM-enriched URL for the given thread and bare link target.
+
+  Reddit: utm_source=reddit&utm_medium=comment&utm_campaign=<subreddit>
+  ElixirForum: utm_source=elixirforum&utm_medium=reply&utm_campaign=<category-slug>
+
+  The campaign value is extracted from the thread URL:
+  - Reddit: path segment after `/r/`
+  - ElixirForum: path segment after `/c/` or the subdomain
+  Falls back to `source_thread_id` if parsing fails.
   """
   @spec build_utm_url(map(), String.t()) :: String.t()
   def build_utm_url(thread, link_target) do
-    source = Map.get(thread, :source, "unknown")
-    thread_id = Map.get(thread, :source_thread_id, Map.get(thread, :id, "unknown"))
+    source = Map.get(thread, :source)
+    url = Map.get(thread, :url, "")
 
     utm_params =
       case source do
-        "reddit" ->
-          "utm_source=reddit&utm_medium=engagement&utm_campaign=engagement&utm_content=#{thread_id}"
+        :reddit ->
+          campaign = extract_subreddit(url) || to_string(Map.get(thread, :source_thread_id, "reddit"))
+          "utm_source=reddit&utm_medium=comment&utm_campaign=#{campaign}"
 
-        "elixirforum" ->
-          "utm_source=elixirforum&utm_medium=engagement&utm_campaign=engagement&utm_content=#{thread_id}"
+        :elixirforum ->
+          campaign = extract_ef_category(url) || to_string(Map.get(thread, :source_thread_id, "elixirforum"))
+          "utm_source=elixirforum&utm_medium=reply&utm_campaign=#{campaign}"
 
-        _ ->
-          "utm_source=#{source}&utm_medium=engagement"
+        # atom strings or unknown
+        other ->
+          src = to_string(other || "unknown")
+          "utm_source=#{src}&utm_medium=engagement"
       end
 
     separator = if String.contains?(link_target, "?"), do: "&", else: "?"
     "#{link_target}#{separator}#{utm_params}"
+  end
+
+  # Extract subreddit name from Reddit URL: /r/<subreddit>/...
+  defp extract_subreddit(url) do
+    case Regex.run(~r{/r/([^/]+)}, url) do
+      [_, sub] -> sub
+      _ -> nil
+    end
+  end
+
+  # Extract category slug from ElixirForum URL: /t/<slug>/... or /c/<slug>/...
+  defp extract_ef_category(url) do
+    case Regex.run(~r{/(?:c|t)/([^/]+)}, url) do
+      [_, slug] -> slug
+      _ -> nil
+    end
   end
 end

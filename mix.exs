@@ -37,7 +37,7 @@ defmodule MarketMySpec.MixProject do
       # :ex_aws_ssm and :hackney are listed here so they're booted by the
       # release before MarketMySpec.Secrets.load!/1 is called from
       # config/runtime.exs — no manual Application.ensure_all_started.
-      extra_applications: [:logger, :runtime_tools, :ex_aws_ssm, :hackney]
+      extra_applications: [:logger, :runtime_tools, :ex_aws_ssm, :hackney, :castore]
     ]
   end
 

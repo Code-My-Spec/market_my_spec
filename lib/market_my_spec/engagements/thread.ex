@@ -23,6 +23,7 @@ defmodule MarketMySpec.Engagements.Thread do
           comment_tree: map() | nil,
           raw_payload: map() | nil,
           fetched_at: DateTime.t() | nil,
+          last_activity_at: DateTime.t() | nil,
           account: MarketMySpec.Accounts.Account.t() | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
@@ -38,14 +39,15 @@ defmodule MarketMySpec.Engagements.Thread do
     field :comment_tree, :map, default: %{}
     field :raw_payload, :map, default: %{}
     field :fetched_at, :utc_datetime
+    field :last_activity_at, :utc_datetime
 
     belongs_to :account, MarketMySpec.Accounts.Account, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end
 
-  @required_fields [:account_id, :source, :source_thread_id, :url, :title, :fetched_at]
-  @optional_fields [:op_body, :comment_tree, :raw_payload]
+  @required_fields [:account_id, :source, :source_thread_id, :url, :title]
+  @optional_fields [:op_body, :comment_tree, :raw_payload, :fetched_at, :last_activity_at]
 
   @doc """
   Changeset for creating or updating a Thread record.

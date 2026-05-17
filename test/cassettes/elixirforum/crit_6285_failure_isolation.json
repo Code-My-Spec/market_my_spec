@@ -1,0 +1,3080 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-05-17T01:02:12.136373Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "market_my_spec/0.1 by /u/johns10davenport"
+          ]
+        },
+        "method": "GET",
+        "query_string": "limit=25&q=phoenix&restrict_sr=1&sort=new",
+        "uri": "https://www.reddit.com/r/elixir/search.json"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "content-type": [
+            "text/plain"
+          ]
+        },
+        "body_type": "text",
+        "body": "Service Unavailable"
+      }
+    },
+    {
+      "recorded_at": "2026-05-17T01:02:26.229998Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "market_my_spec/0.1 (engagement-finder; contact: johns10@gmail.com)"
+          ]
+        },
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://elixirforum.com/c/phoenix-forum/20/l/latest.json"
+      },
+      "response": {
+        "body_json": {
+          "flair_groups": [
+            {
+              "flair_bg_color": "F26736",
+              "flair_color": "",
+              "flair_url": "/uploads/default/original/2X/6/6b7bfd72866ebb0c3ee7a5616ba7031dfe29f22b.png",
+              "id": 43,
+              "name": "Phoenix-Core-Team"
+            }
+          ],
+          "primary_groups": [
+            {
+              "id": 43,
+              "name": "Phoenix-Core-Team"
+            }
+          ],
+          "topic_list": {
+            "can_create_topic": false,
+            "more_topics_url": "/c/phoenix-forum/20/l/latest?page=1",
+            "per_page": 30,
+            "top_tags": [
+              {
+                "id": 133,
+                "name": "phoenix",
+                "slug": "phoenix"
+              },
+              {
+                "id": 1036,
+                "name": "liveview",
+                "slug": "liveview"
+              },
+              {
+                "id": 7,
+                "name": "ecto",
+                "slug": "ecto"
+              },
+              {
+                "id": 385,
+                "name": "troubleshooting",
+                "slug": "troubleshooting"
+              },
+              {
+                "id": 137,
+                "name": "deployment",
+                "slug": "deployment"
+              },
+              {
+                "id": 568,
+                "name": "learning-elixir",
+                "slug": "learning-elixir"
+              },
+              {
+                "id": 33,
+                "name": "channels",
+                "slug": "channels"
+              },
+              {
+                "id": 140,
+                "name": "testing",
+                "slug": "testing"
+              },
+              {
+                "id": 242,
+                "name": "phoenix_html",
+                "slug": "phoenix-html"
+              },
+              {
+                "id": 153,
+                "name": "javascript",
+                "slug": "javascript"
+              },
+              {
+                "id": 88,
+                "name": "plug",
+                "slug": "plug"
+              },
+              {
+                "id": 21,
+                "name": "authentication",
+                "slug": "authentication"
+              },
+              {
+                "id": 214,
+                "name": "absinthe",
+                "slug": "absinthe"
+              },
+              {
+                "id": 5,
+                "name": "forms",
+                "slug": "forms"
+              },
+              {
+                "id": 2056,
+                "name": "livecomponents",
+                "slug": "livecomponents"
+              },
+              {
+                "id": 268,
+                "name": "router",
+                "slug": "router"
+              },
+              {
+                "id": 754,
+                "name": "websockets",
+                "slug": "websockets"
+              },
+              {
+                "id": 1046,
+                "name": "tailwindcss",
+                "slug": "tailwindcss"
+              },
+              {
+                "id": 413,
+                "name": "socket",
+                "slug": "socket"
+              },
+              {
+                "id": 2884,
+                "name": "heex",
+                "slug": "heex"
+              },
+              {
+                "id": 285,
+                "name": "postgres",
+                "slug": "postgres"
+              },
+              {
+                "id": 380,
+                "name": "templates",
+                "slug": "templates"
+              },
+              {
+                "id": 89,
+                "name": "docker",
+                "slug": "docker"
+              },
+              {
+                "id": 2109,
+                "name": "live-view",
+                "slug": "live-view"
+              },
+              {
+                "id": 2299,
+                "name": "liveview-form",
+                "slug": "liveview-form"
+              },
+              {
+                "id": 13,
+                "name": "erlang",
+                "slug": "erlang"
+              },
+              {
+                "id": 254,
+                "name": "phoenix_pubsub",
+                "slug": "phoenix-pubsub"
+              },
+              {
+                "id": 48,
+                "name": "api",
+                "slug": "api"
+              },
+              {
+                "id": 45,
+                "name": "mix",
+                "slug": "mix"
+              },
+              {
+                "id": 162,
+                "name": "presence",
+                "slug": "presence"
+              },
+              {
+                "id": 237,
+                "name": "file-uploading",
+                "slug": "file-uploading"
+              }
+            ],
+            "topics": [
+              {
+                "highest_post_number": 5,
+                "bookmarked": null,
+                "posts_count": 5,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 14789
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 12674
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 4796
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 23507
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 18841
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 2102,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "davemccrea",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 9,
+                "closed": false,
+                "id": 29113,
+                "visible": true,
+                "fancy_title": "Validate form fields only when its been focus/change once",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-15T16:21:42.041Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-15T16:21:42.041Z",
+                "has_accepted_answer": false,
+                "reply_count": 1,
+                "slug": "validate-form-fields-only-when-its-been-focus-change-once",
+                "title": "Validate form fields only when its been focus/change once",
+                "archived": false,
+                "created_at": "2020-02-15T06:06:03.724Z"
+              },
+              {
+                "highest_post_number": 7,
+                "bookmarked": null,
+                "posts_count": 7,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 24827
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 2601
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 4384
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 789
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 11631
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 166,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "lud",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 6,
+                "closed": false,
+                "id": 75355,
+                "visible": true,
+                "fancy_title": "Best practices to store API Keys in a Phoenix web application?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 137,
+                    "name": "deployment",
+                    "slug": "deployment"
+                  },
+                  {
+                    "id": 568,
+                    "name": "learning-elixir",
+                    "slug": "learning-elixir"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-15T08:50:57.761Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-15T08:50:57.761Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "best-practices-to-store-api-keys-in-a-phoenix-web-application",
+                "title": "Best practices to store API Keys in a Phoenix web application?",
+                "archived": false,
+                "created_at": "2026-05-14T20:57:07.541Z"
+              },
+              {
+                "highest_post_number": 7,
+                "bookmarked": null,
+                "posts_count": 7,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 11632
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": 43,
+                    "primary_group_id": 43,
+                    "user_id": 676
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 11155
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 28667
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 5985,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "jam",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 2,
+                "unpinned": null,
+                "like_count": 22,
+                "closed": false,
+                "id": 20644,
+                "visible": true,
+                "fancy_title": "Phoenix.Pubsub subscriptions performance",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 254,
+                    "name": "phoenix_pubsub",
+                    "slug": "phoenix-pubsub"
+                  },
+                  {
+                    "id": 1142,
+                    "name": "swarm",
+                    "slug": "swarm"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-12T19:20:54.192Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-12T19:20:54.192Z",
+                "has_accepted_answer": false,
+                "reply_count": 3,
+                "slug": "phoenix-pubsub-subscriptions-performance",
+                "title": "Phoenix.Pubsub subscriptions performance",
+                "archived": false,
+                "created_at": "2019-03-05T17:39:05.588Z"
+              },
+              {
+                "highest_post_number": 20,
+                "bookmarked": null,
+                "posts_count": 20,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 14682
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3262
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16212
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 27785
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 20434
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 1100,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "cpursley",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 2,
+                "unpinned": null,
+                "like_count": 16,
+                "closed": false,
+                "id": 69223,
+                "visible": true,
+                "fancy_title": "Choosing the Best Tech Stack for an Analytics Dashboard: LiveView + D3 or React?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-12T14:36:09.644Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-12T14:36:09.644Z",
+                "has_accepted_answer": false,
+                "reply_count": 10,
+                "slug": "choosing-the-best-tech-stack-for-an-analytics-dashboard-liveview-d3-or-react",
+                "title": "Choosing the Best Tech Stack for an Analytics Dashboard: LiveView + D3 or React?",
+                "archived": false,
+                "created_at": "2025-02-05T05:39:31.385Z"
+              },
+              {
+                "highest_post_number": 10,
+                "bookmarked": null,
+                "posts_count": 10,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 25336
+                  },
+                  {
+                    "description": "Frequent Poster, Accepted Answer",
+                    "extras": null,
+                    "flair_group_id": 43,
+                    "primary_group_id": 43,
+                    "user_id": 17074
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 229,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "rhcarvalho",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 6,
+                "closed": false,
+                "id": 72378,
+                "visible": true,
+                "fancy_title": "Handling Channels/LiveView LongPoll fallback &ldquo;unmatched topic&rdquo;",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 33,
+                    "name": "channels",
+                    "slug": "channels"
+                  },
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 699,
+                    "name": "longpoll",
+                    "slug": "longpoll"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-08T10:09:08.028Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-08T10:09:08.028Z",
+                "has_accepted_answer": true,
+                "reply_count": 4,
+                "slug": "handling-channels-liveview-longpoll-fallback-unmatched-topic",
+                "title": "Handling Channels/LiveView LongPoll fallback \"unmatched topic\"",
+                "archived": false,
+                "created_at": "2025-09-05T10:30:32.130Z"
+              },
+              {
+                "highest_post_number": 8,
+                "bookmarked": null,
+                "posts_count": 8,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 32067
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 9490
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 28667
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 5730
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3106
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 270,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "lubien",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 13,
+                "closed": false,
+                "id": 75174,
+                "visible": true,
+                "fancy_title": "Syncing LiveView Page with PubSub or Channel?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  },
+                  {
+                    "id": 2055,
+                    "name": "phoenix_live_view",
+                    "slug": "2055-tag"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-02T23:47:14.350Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-02T23:47:14.350Z",
+                "has_accepted_answer": false,
+                "reply_count": 1,
+                "slug": "syncing-liveview-page-with-pubsub-or-channel",
+                "title": "Syncing LiveView Page with PubSub or Channel?",
+                "archived": false,
+                "created_at": "2026-04-30T08:24:14.271Z"
+              },
+              {
+                "highest_post_number": 5,
+                "bookmarked": null,
+                "posts_count": 5,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 31947
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 40
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3078
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 161,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "LostKobrakai",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 4,
+                "closed": false,
+                "id": 75195,
+                "visible": true,
+                "fancy_title": "How do you handle mutually dependent form fields in LiveView forms?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 38,
+                    "name": "changesets",
+                    "slug": "changesets"
+                  },
+                  {
+                    "id": 7,
+                    "name": "ecto",
+                    "slug": "ecto"
+                  },
+                  {
+                    "id": 5,
+                    "name": "forms",
+                    "slug": "forms"
+                  },
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 2299,
+                    "name": "liveview-form",
+                    "slug": "liveview-form"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-02T12:24:35.486Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-02T12:24:35.486Z",
+                "has_accepted_answer": false,
+                "reply_count": 1,
+                "slug": "how-do-you-handle-mutually-dependent-form-fields-in-liveview-forms",
+                "title": "How do you handle mutually dependent form fields in LiveView forms?",
+                "archived": false,
+                "created_at": "2026-05-01T16:28:56.989Z"
+              },
+              {
+                "highest_post_number": 2,
+                "bookmarked": null,
+                "posts_count": 2,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 31782
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 9544
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 91,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "adamu",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 4,
+                "closed": false,
+                "id": 75198,
+                "visible": true,
+                "fancy_title": "Typos in documentation",
+                "category_id": 126,
+                "tags": [
+                  {
+                    "id": 568,
+                    "name": "learning-elixir",
+                    "slug": "learning-elixir"
+                  },
+                  {
+                    "id": 385,
+                    "name": "troubleshooting",
+                    "slug": "troubleshooting"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-02T04:04:06.934Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-02T04:04:06.934Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "typos-in-documentation",
+                "title": "Typos in documentation",
+                "archived": false,
+                "created_at": "2026-05-02T03:24:36.188Z"
+              },
+              {
+                "highest_post_number": 3,
+                "bookmarked": null,
+                "posts_count": 3,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 32078
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16512
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 23201
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 221,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "arcanemachine",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 4,
+                "closed": false,
+                "id": 75175,
+                "visible": true,
+                "fancy_title": "Multiple websites on one machine",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-05-01T03:04:53.061Z",
+                "archetype": "regular",
+                "bumped_at": "2026-05-01T03:04:53.061Z",
+                "has_accepted_answer": false,
+                "reply_count": 1,
+                "slug": "multiple-websites-on-one-machine",
+                "title": "Multiple websites on one machine",
+                "archived": false,
+                "created_at": "2026-04-30T12:47:30.886Z"
+              },
+              {
+                "highest_post_number": 8,
+                "bookmarked": null,
+                "posts_count": 8,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 25678
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3397
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 12902
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 334,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "thoughtarray",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 3,
+                "closed": false,
+                "id": 66708,
+                "visible": true,
+                "fancy_title": "Is it possible to combine LiveView and gen_statem?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 1228,
+                    "name": "gen_statem",
+                    "slug": "gen-statem"
+                  },
+                  {
+                    "id": 1929,
+                    "name": "genserver",
+                    "slug": "genserver"
+                  },
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-30T15:20:36.715Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-30T15:20:36.715Z",
+                "has_accepted_answer": false,
+                "reply_count": 4,
+                "slug": "is-it-possible-to-combine-liveview-and-gen-statem",
+                "title": "Is it possible to combine LiveView and gen_statem?",
+                "archived": false,
+                "created_at": "2024-10-13T18:21:52.666Z"
+              },
+              {
+                "highest_post_number": 6,
+                "bookmarked": null,
+                "posts_count": 6,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 14267
+                  },
+                  {
+                    "description": "Frequent Poster, Accepted Answer",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3078
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 15847
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 136,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "pojiro",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 1,
+                "closed": false,
+                "id": 75030,
+                "visible": true,
+                "fancy_title": "How do you verify assign propagation when updating a widely used LiveComponent?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-30T05:43:59.255Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-30T05:43:59.255Z",
+                "has_accepted_answer": true,
+                "reply_count": 3,
+                "slug": "how-do-you-verify-assign-propagation-when-updating-a-widely-used-livecomponent",
+                "title": "How do you verify assign propagation when updating a widely used LiveComponent?",
+                "archived": false,
+                "created_at": "2026-04-16T04:08:45.587Z"
+              },
+              {
+                "highest_post_number": 4,
+                "bookmarked": null,
+                "posts_count": 4,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 1342
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 30777
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3078
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 125,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "LostKobrakai",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 0,
+                "closed": false,
+                "id": 75156,
+                "visible": true,
+                "fancy_title": "Error handling liveview: keeps crashing during rendering and restarting repeatedly, generating a large number of errors",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 728,
+                    "name": "error-handling",
+                    "slug": "error-handling"
+                  },
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-28T10:28:21.036Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-28T10:28:21.036Z",
+                "has_accepted_answer": false,
+                "reply_count": 1,
+                "slug": "error-handling-liveview-keeps-crashing-during-rendering-and-restarting-repeatedly-generating-a-large-number-of-errors",
+                "title": "Error handling liveview: keeps crashing during rendering and restarting repeatedly, generating a large number of errors",
+                "archived": false,
+                "created_at": "2026-04-28T07:46:11.497Z"
+              },
+              {
+                "highest_post_number": 3,
+                "bookmarked": null,
+                "posts_count": 3,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 2347
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 2885
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3318
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 250,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "xinz",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 4,
+                "unpinned": null,
+                "like_count": 9,
+                "closed": false,
+                "id": 75147,
+                "visible": true,
+                "fancy_title": "CVE-2026-32688 &mdash; DoS: Atom table exhaustion via HTTP/2 :scheme pseudo-header in plug_cowboy",
+                "category_id": 30,
+                "tags": [
+                  {
+                    "id": 211,
+                    "name": "cowboy",
+                    "slug": "cowboy"
+                  },
+                  {
+                    "id": 4605,
+                    "name": "cve",
+                    "slug": "cve"
+                  },
+                  {
+                    "id": 1405,
+                    "name": "erlef",
+                    "slug": "erlef"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  },
+                  {
+                    "id": 88,
+                    "name": "plug",
+                    "slug": "plug"
+                  },
+                  {
+                    "id": 27,
+                    "name": "security",
+                    "slug": "security"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-28T07:37:39.863Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-28T07:37:39.863Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "cve-2026-32688-dos-atom-table-exhaustion-via-http-2-scheme-pseudo-header-in-plug-cowboy",
+                "title": "CVE-2026-32688 --- DoS: Atom table exhaustion via HTTP/2 :scheme pseudo-header in plug_cowboy",
+                "archived": false,
+                "created_at": "2026-04-27T14:06:44.530Z"
+              },
+              {
+                "highest_post_number": 4,
+                "bookmarked": null,
+                "posts_count": 4,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster, Accepted Answer",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 32062
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 18273
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 7510
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 218,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "dannymk",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 6,
+                "closed": false,
+                "id": 75141,
+                "visible": true,
+                "fancy_title": "Multiple root layouts in Phoenix?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-28T02:08:13.151Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-28T02:08:13.151Z",
+                "has_accepted_answer": true,
+                "reply_count": 1,
+                "slug": "multiple-root-layouts-in-phoenix",
+                "title": "Multiple root layouts in Phoenix?",
+                "archived": false,
+                "created_at": "2026-04-27T03:32:08.686Z"
+              },
+              {
+                "highest_post_number": 20,
+                "bookmarked": null,
+                "posts_count": 20,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 20209
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 12974
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 26536
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 2331
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 31688
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 305,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "Vidar",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 1,
+                "unpinned": null,
+                "like_count": 17,
+                "closed": false,
+                "id": 75122,
+                "visible": true,
+                "fancy_title": "Phoenix project statictis (LOC, file types, test, etc)",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-27T18:53:03.323Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-27T18:53:03.323Z",
+                "has_accepted_answer": false,
+                "reply_count": 15,
+                "slug": "phoenix-project-statictis-loc-file-types-test-etc",
+                "title": "Phoenix project statictis (LOC, file types, test, etc)",
+                "archived": false,
+                "created_at": "2026-04-24T08:02:41.776Z"
+              },
+              {
+                "highest_post_number": 2,
+                "bookmarked": null,
+                "posts_count": 2,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest single",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 22229
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 80,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "matt-savvy",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 1,
+                "unpinned": null,
+                "like_count": 1,
+                "closed": false,
+                "id": 75134,
+                "visible": true,
+                "fancy_title": "Honeybadger and Bandit, Phoenix, Plug errors",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 3388,
+                    "name": "bandit",
+                    "slug": "bandit"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-25T16:22:50.014Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-25T16:22:50.014Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "honeybadger-and-bandit-phoenix-plug-errors",
+                "title": "Honeybadger and Bandit, Phoenix, Plug errors",
+                "archived": false,
+                "created_at": "2026-04-25T16:16:55.439Z"
+              },
+              {
+                "highest_post_number": 23,
+                "bookmarked": null,
+                "posts_count": 23,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 15335
+                  },
+                  {
+                    "description": "Frequent Poster, Accepted Answer",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3078
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16212
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 20634
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 354,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "silverdr",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 2,
+                "unpinned": null,
+                "like_count": 20,
+                "closed": false,
+                "id": 75110,
+                "visible": true,
+                "fancy_title": "Phoenix LiveView over-the-wire payload optimisations for large selects",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-25T10:14:07.612Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-25T10:14:07.612Z",
+                "has_accepted_answer": true,
+                "reply_count": 21,
+                "slug": "phoenix-liveview-over-the-wire-payload-optimisations-for-large-selects",
+                "title": "Phoenix LiveView over-the-wire payload optimisations for large selects",
+                "archived": false,
+                "created_at": "2026-04-23T11:29:22.267Z"
+              },
+              {
+                "highest_post_number": 2,
+                "bookmarked": null,
+                "posts_count": 2,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster, Accepted Answer",
+                    "extras": "latest single",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 22388
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 69,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "joshua-bouv",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 0,
+                "closed": false,
+                "id": 75116,
+                "visible": true,
+                "fancy_title": "LiveView genserver crash errors not showing on elixir 19",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-23T19:12:31.311Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-23T19:12:31.311Z",
+                "has_accepted_answer": true,
+                "reply_count": 0,
+                "slug": "liveview-genserver-crash-errors-not-showing-on-elixir-19",
+                "title": "LiveView genserver crash errors not showing on elixir 19",
+                "archived": false,
+                "created_at": "2026-04-23T15:17:53.271Z"
+              },
+              {
+                "highest_post_number": 17,
+                "bookmarked": null,
+                "posts_count": 17,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 30518
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 24872
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 30789
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 9120
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 25351
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 1580,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "kish10",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 6,
+                "unpinned": null,
+                "like_count": 34,
+                "closed": false,
+                "id": 71951,
+                "visible": true,
+                "fancy_title": "DaisyUI modal in phoenix 1.8 - code example",
+                "category_id": 30,
+                "tags": [
+                  {
+                    "id": 3167,
+                    "name": "daisyui",
+                    "slug": "daisyui"
+                  },
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  },
+                  {
+                    "id": 1046,
+                    "name": "tailwindcss",
+                    "slug": "tailwindcss"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-23T04:02:07.588Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-23T04:02:07.588Z",
+                "has_accepted_answer": false,
+                "reply_count": 7,
+                "slug": "daisyui-modal-in-phoenix-1-8-code-example",
+                "title": "DaisyUI modal in phoenix 1.8 - code example",
+                "archived": false,
+                "created_at": "2025-08-04T11:36:01.331Z"
+              },
+              {
+                "highest_post_number": 13,
+                "bookmarked": null,
+                "posts_count": 12,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 15335
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 6500
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16512
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 22569
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 19207
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 1399,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "silverdr",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 10,
+                "closed": false,
+                "id": 53476,
+                "visible": true,
+                "fancy_title": "Serving Phoenix application - rev proxy?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 137,
+                    "name": "deployment",
+                    "slug": "deployment"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-22T21:07:01.068Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-22T21:07:01.068Z",
+                "has_accepted_answer": false,
+                "reply_count": 6,
+                "slug": "serving-phoenix-application-rev-proxy",
+                "title": "Serving Phoenix application - rev proxy?",
+                "archived": false,
+                "created_at": "2023-01-27T18:09:45.606Z"
+              },
+              {
+                "highest_post_number": 12,
+                "bookmarked": null,
+                "posts_count": 12,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 25435
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 27473
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 29710
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16512
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 680,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "ashkan117",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 7,
+                "unpinned": null,
+                "like_count": 17,
+                "closed": false,
+                "id": 74528,
+                "visible": true,
+                "fancy_title": "I built Alpen Planner - a weekly planner built w/ LiveView",
+                "category_id": 30,
+                "tags": [
+                  {
+                    "id": 1430,
+                    "name": "showcase",
+                    "slug": "showcase"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-18T16:25:01.690Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-18T16:25:01.690Z",
+                "has_accepted_answer": false,
+                "reply_count": 7,
+                "slug": "i-built-alpen-planner-a-weekly-planner-built-w-liveview",
+                "title": "I built Alpen Planner - a weekly planner built w/ LiveView",
+                "archived": false,
+                "created_at": "2026-03-05T18:58:33.398Z"
+              },
+              {
+                "highest_post_number": 1,
+                "bookmarked": null,
+                "posts_count": 1,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest single",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 32017
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 375,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "raa-ziq",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 2,
+                "unpinned": null,
+                "like_count": 2,
+                "closed": false,
+                "id": 75025,
+                "visible": true,
+                "fancy_title": "NowBlind - a random chat app (built with Elixir &amp; Phoenix LiveView)",
+                "category_id": 30,
+                "tags": [
+                  {
+                    "id": 1073,
+                    "name": "chat",
+                    "slug": "chat"
+                  },
+                  {
+                    "id": 7,
+                    "name": "ecto",
+                    "slug": "ecto"
+                  },
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 1833,
+                    "name": "oban",
+                    "slug": "oban"
+                  },
+                  {
+                    "id": 2517,
+                    "name": "phoenix-channel",
+                    "slug": "phoenix-channel"
+                  },
+                  {
+                    "id": 1430,
+                    "name": "showcase",
+                    "slug": "showcase"
+                  },
+                  {
+                    "id": 2852,
+                    "name": "web-app",
+                    "slug": "web-app"
+                  },
+                  {
+                    "id": 174,
+                    "name": "webrtc",
+                    "slug": "webrtc"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-15T20:23:24.711Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-15T20:23:24.711Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "nowblind-a-random-chat-app-built-with-elixir-phoenix-liveview",
+                "title": "NowBlind - a random chat app (built with Elixir & Phoenix LiveView)",
+                "archived": false,
+                "created_at": "2026-04-15T20:23:24.643Z"
+              },
+              {
+                "highest_post_number": 3,
+                "bookmarked": null,
+                "posts_count": 3,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 32008
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 9807
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 25336
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 158,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "rhcarvalho",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 1,
+                "closed": false,
+                "id": 74993,
+                "visible": true,
+                "fancy_title": "Strategies for dealing with stale JS hooks in a frequently deployed app",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  },
+                  {
+                    "id": 385,
+                    "name": "troubleshooting",
+                    "slug": "troubleshooting"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-15T09:31:37.203Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-15T09:31:37.203Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "strategies-for-dealing-with-stale-js-hooks-in-a-frequently-deployed-app",
+                "title": "Strategies for dealing with stale JS hooks in a frequently deployed app",
+                "archived": false,
+                "created_at": "2026-04-13T10:24:11.637Z"
+              },
+              {
+                "highest_post_number": 1,
+                "bookmarked": null,
+                "posts_count": 1,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest single",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 30916
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 182,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "marcxrand",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 2,
+                "unpinned": null,
+                "like_count": 2,
+                "closed": false,
+                "id": 75009,
+                "visible": true,
+                "fancy_title": "Rewriting Phoenix for Agent-Driven Development",
+                "category_id": 30,
+                "tags": [
+                  {
+                    "id": 37,
+                    "name": "agent",
+                    "slug": "agent"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-13T22:46:27.036Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-13T22:46:27.036Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "rewriting-phoenix-for-agent-driven-development",
+                "title": "Rewriting Phoenix for Agent-Driven Development",
+                "archived": false,
+                "created_at": "2026-04-13T22:46:26.946Z"
+              },
+              {
+                "highest_post_number": 7,
+                "bookmarked": null,
+                "posts_count": 7,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 12974
+                  },
+                  {
+                    "description": "Frequent Poster, Accepted Answer",
+                    "extras": null,
+                    "flair_group_id": 43,
+                    "primary_group_id": 43,
+                    "user_id": 17074
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 15117
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 24998
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 139,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "DaAnalyst",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 2,
+                "closed": false,
+                "id": 74957,
+                "visible": true,
+                "fancy_title": "Importing colocated JS (web component) from a library/dependency, anyone?",
+                "category_id": 126,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-13T08:27:34.213Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-13T08:27:34.213Z",
+                "has_accepted_answer": true,
+                "reply_count": 4,
+                "slug": "importing-colocated-js-web-component-from-a-library-dependency-anyone",
+                "title": "Importing colocated JS (web component) from a library/dependency, anyone?",
+                "archived": false,
+                "created_at": "2026-04-10T08:26:34.663Z"
+              },
+              {
+                "highest_post_number": 26,
+                "bookmarked": null,
+                "posts_count": 26,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster, Accepted Answer",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 23893
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16212
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 297
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3078
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 30740
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 989,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "manhvu",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 22,
+                "closed": false,
+                "id": 74581,
+                "visible": true,
+                "fancy_title": "How to replace JSON with TOON?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 4920,
+                    "name": "json-toon",
+                    "slug": "json-toon"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-11T01:15:45.413Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-11T01:15:45.413Z",
+                "has_accepted_answer": true,
+                "reply_count": 17,
+                "slug": "how-to-replace-json-with-toon",
+                "title": "How to replace JSON with TOON?",
+                "archived": false,
+                "created_at": "2026-03-10T06:41:46.832Z"
+              },
+              {
+                "highest_post_number": 4,
+                "bookmarked": null,
+                "posts_count": 4,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 12974
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 3078
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16411
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 92,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "sodapopcan",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 5,
+                "closed": false,
+                "id": 74940,
+                "visible": true,
+                "fancy_title": "Can function components be made to work properly with `defdelegate` somehow?",
+                "category_id": 126,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-08T17:37:34.798Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-08T17:37:34.798Z",
+                "has_accepted_answer": false,
+                "reply_count": 1,
+                "slug": "can-function-components-be-made-to-work-properly-with-defdelegate-somehow",
+                "title": "Can function components be made to work properly with `defdelegate` somehow?",
+                "archived": false,
+                "created_at": "2026-04-08T15:32:15.128Z"
+              },
+              {
+                "highest_post_number": 6,
+                "bookmarked": null,
+                "posts_count": 6,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 30263
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 5730
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 25962
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 26726
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 363,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "Hunterafi",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 1,
+                "unpinned": null,
+                "like_count": 6,
+                "closed": false,
+                "id": 74787,
+                "visible": true,
+                "fancy_title": "Any tips on creating a multi-user poker site?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 568,
+                    "name": "learning-elixir",
+                    "slug": "learning-elixir"
+                  },
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-08T16:35:02.214Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-08T16:35:02.214Z",
+                "has_accepted_answer": false,
+                "reply_count": 0,
+                "slug": "any-tips-on-creating-a-multi-user-poker-site",
+                "title": "Any tips on creating a multi-user poker site?",
+                "archived": false,
+                "created_at": "2026-03-25T23:15:26.042Z"
+              },
+              {
+                "highest_post_number": 14,
+                "bookmarked": null,
+                "posts_count": 14,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 21679
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 24878
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 16411
+                  },
+                  {
+                    "description": "Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 31981
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 977,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "UncountedSphere",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 5,
+                "closed": false,
+                "id": 57860,
+                "visible": true,
+                "fancy_title": "Form in live component not resetting on phx-submit",
+                "category_id": 30,
+                "tags": [
+                  {
+                    "id": 2299,
+                    "name": "liveview-form",
+                    "slug": "liveview-form"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-06T18:24:26.697Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-06T18:24:26.697Z",
+                "has_accepted_answer": false,
+                "reply_count": 9,
+                "slug": "form-in-live-component-not-resetting-on-phx-submit",
+                "title": "Form in live component not resetting on phx-submit",
+                "archived": false,
+                "created_at": "2023-08-25T13:19:31.114Z"
+              },
+              {
+                "highest_post_number": 10,
+                "bookmarked": null,
+                "posts_count": 9,
+                "tags_descriptions": {},
+                "posters": [
+                  {
+                    "description": "Original Poster, Most Recent Poster",
+                    "extras": "latest",
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 31965
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 11025
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 15847
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 20634
+                  },
+                  {
+                    "description": "Frequent Poster",
+                    "extras": null,
+                    "flair_group_id": null,
+                    "primary_group_id": null,
+                    "user_id": 25336
+                  }
+                ],
+                "unseen": false,
+                "bumped": true,
+                "views": 215,
+                "can_vote": false,
+                "has_summary": false,
+                "last_poster_username": "tmk",
+                "liked": null,
+                "pinned_globally": false,
+                "op_like_count": 0,
+                "unpinned": null,
+                "like_count": 0,
+                "closed": false,
+                "id": 74859,
+                "visible": true,
+                "fancy_title": "LiveView render hook for derived assigns - suggested approaches?",
+                "category_id": 31,
+                "tags": [
+                  {
+                    "id": 1036,
+                    "name": "liveview",
+                    "slug": "liveview"
+                  },
+                  {
+                    "id": 133,
+                    "name": "phoenix",
+                    "slug": "phoenix"
+                  }
+                ],
+                "image_url": null,
+                "pinned": false,
+                "last_posted_at": "2026-04-06T14:33:50.881Z",
+                "archetype": "regular",
+                "bumped_at": "2026-04-06T14:33:50.881Z",
+                "has_accepted_answer": false,
+                "reply_count": 3,
+                "slug": "liveview-render-hook-for-derived-assigns-suggested-approaches",
+                "title": "LiveView render hook for derived assigns - suggested approaches?",
+                "archived": false,
+                "created_at": "2026-04-01T19:53:49.516Z"
+              }
+            ]
+          },
+          "users": [
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/jhefreyzz/{size}/18075_2.png",
+              "id": 14789,
+              "name": "Jheffrey Tojas",
+              "trust_level": 2,
+              "username": "jhefreyzz"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/andreaseriksson/{size}/18213_2.png",
+              "id": 12674,
+              "name": "Andreas Eriksson - fullstackphoenix.com",
+              "trust_level": 2,
+              "username": "andreaseriksson"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/justincjohnson/{size}/23636_2.png",
+              "id": 4796,
+              "name": "Justin Johnson",
+              "trust_level": 2,
+              "username": "justincjohnson"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/waseigo/{size}/34129_2.png",
+              "id": 23507,
+              "name": "Isaak Tsalicoglou",
+              "trust_level": 2,
+              "username": "waseigo"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/davemccrea/{size}/22891_2.png",
+              "id": 18841,
+              "name": "David McCrea",
+              "trust_level": 1,
+              "username": "davemccrea"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/calebjosue/{size}/31577_2.png",
+              "id": 24827,
+              "name": "Caleb Josue Ruiz Torres",
+              "trust_level": 2,
+              "username": "calebjosue"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/andyl/{size}/3659_2.png",
+              "id": 2601,
+              "name": "Andy",
+              "trust_level": 3,
+              "username": "AndyL"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/ibarch/{size}/4469_2.png",
+              "id": 4384,
+              "name": "Igor Barchenkov",
+              "trust_level": 2,
+              "username": "ibarch"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/christhekeele/{size}/1039_2.png",
+              "id": 789,
+              "name": "Chris Keele",
+              "trust_level": 3,
+              "username": "christhekeele"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/lud/{size}/14382_2.png",
+              "id": 11631,
+              "name": "Lud",
+              "trust_level": 3,
+              "username": "lud"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/blquinn/{size}/14314_2.png",
+              "id": 11632,
+              "name": "Benjamin Quinn",
+              "trust_level": 1,
+              "username": "blquinn"
+            },
+            {
+              "admin": true,
+              "avatar_template": "/user_avatar/elixirforum.com/chrismccord/{size}/24233_2.png",
+              "flair_bg_color": "F26736",
+              "flair_group_id": 43,
+              "flair_name": "Phoenix-Core-Team",
+              "flair_url": "/uploads/default/original/2X/6/6b7bfd72866ebb0c3ee7a5616ba7031dfe29f22b.png",
+              "id": 676,
+              "name": "Chris McCord",
+              "primary_group_name": "Phoenix-Core-Team",
+              "trust_level": 3,
+              "username": "chrismccord"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/d/e56c9b/{size}.png",
+              "id": 11155,
+              "name": "Adonis Peralta",
+              "trust_level": 1,
+              "username": "donileo"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/jam/{size}/36266_2.png",
+              "id": 28667,
+              "name": null,
+              "trust_level": 3,
+              "username": "jam"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/alishir/{size}/34125_2.png",
+              "id": 14682,
+              "name": "Ali Shirvani",
+              "trust_level": 2,
+              "username": "alishir"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/bartotten/{size}/25440_2.png",
+              "id": 3262,
+              "name": "Bart Otten",
+              "trust_level": 2,
+              "username": "BartOtten"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/cmo/{size}/19618_2.png",
+              "id": 16212,
+              "name": "",
+              "trust_level": 3,
+              "username": "cmo"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/p/35a633/{size}.png",
+              "id": 27785,
+              "name": null,
+              "trust_level": 2,
+              "username": "pelopo"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/cpursley/{size}/25075_2.png",
+              "id": 20434,
+              "name": "Chase Pursley",
+              "trust_level": 2,
+              "username": "cpursley"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/rhcarvalho/{size}/32243_2.png",
+              "id": 25336,
+              "name": "Rodolfo Carvalho",
+              "trust_level": 3,
+              "username": "rhcarvalho"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/steffend/{size}/20548_2.png",
+              "flair_bg_color": "F26736",
+              "flair_group_id": 43,
+              "flair_name": "Phoenix-Core-Team",
+              "flair_url": "/uploads/default/original/2X/6/6b7bfd72866ebb0c3ee7a5616ba7031dfe29f22b.png",
+              "id": 17074,
+              "name": "",
+              "primary_group_name": "Phoenix-Core-Team",
+              "trust_level": 2,
+              "username": "steffend"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/mnkhod/{size}/40324_2.png",
+              "id": 32067,
+              "name": "Munkh-Od",
+              "trust_level": 1,
+              "username": "mnkhod"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/namxam/{size}/29270_2.png",
+              "id": 9490,
+              "name": "Max",
+              "trust_level": 2,
+              "username": "namxam"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/codeanpeace/{size}/10278_2.png",
+              "id": 5730,
+              "name": "H",
+              "trust_level": 2,
+              "username": "codeanpeace"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/lubien/{size}/4171_2.png",
+              "id": 3106,
+              "name": "Jo\u00e3o Ferreira",
+              "trust_level": 2,
+              "username": "lubien"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/p/65b543/{size}.png",
+              "id": 31947,
+              "name": "",
+              "trust_level": 1,
+              "username": "PaleWatcher"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/nobbz/{size}/27235_2.png",
+              "id": 40,
+              "moderator": true,
+              "name": "Norbert Melzer",
+              "trust_level": 3,
+              "username": "NobbZ"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/lostkobrakai/{size}/3072_2.png",
+              "id": 3078,
+              "moderator": true,
+              "name": "Benjamin Milde",
+              "trust_level": 2,
+              "username": "LostKobrakai"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/94ad74/{size}.png",
+              "id": 31782,
+              "name": "Alexey",
+              "trust_level": 0,
+              "username": "aac1122"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/adamu/{size}/31482_2.png",
+              "id": 9544,
+              "name": "Adam Millerchip",
+              "trust_level": 2,
+              "username": "adamu"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/c/ed8c4c/{size}.png",
+              "id": 32078,
+              "name": "Carol Ina",
+              "trust_level": 0,
+              "username": "Carol_Ina_Reaper"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/derek-zhou/{size}/19943_2.png",
+              "id": 16512,
+              "name": "Derek Zhou",
+              "trust_level": 2,
+              "username": "derek-zhou"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/arcanemachine/{size}/29109_2.png",
+              "id": 23201,
+              "name": "arcanemachine",
+              "trust_level": 3,
+              "username": "arcanemachine"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/thoughtarray/{size}/32760_2.png",
+              "id": 25678,
+              "name": "Kennedy",
+              "trust_level": 2,
+              "username": "thoughtarray"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/al2o3cr/{size}/3457_2.png",
+              "id": 3397,
+              "moderator": true,
+              "name": "Matt Jones",
+              "trust_level": 1,
+              "username": "al2o3cr"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/rudmanusachi/{size}/36091_2.png",
+              "id": 12902,
+              "name": "Rudolf Manusadzhian",
+              "trust_level": 2,
+              "username": "RudManusachi"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/pojiro/{size}/19420_2.png",
+              "id": 14267,
+              "name": "pojiro",
+              "trust_level": 2,
+              "username": "pojiro"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/krasenyp/{size}/39733_2.png",
+              "id": 15847,
+              "name": "Krasen Penchev",
+              "trust_level": 3,
+              "username": "krasenyp"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/marcuslankenau/{size}/8908_2.png",
+              "id": 1342,
+              "name": "Marcus Lankenau",
+              "trust_level": 2,
+              "username": "marcuslankenau"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/sigveh/{size}/38757_2.png",
+              "id": 30777,
+              "name": "Sigve Hansen",
+              "trust_level": 2,
+              "username": "sigveh"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/nicd/{size}/2357_2.png",
+              "id": 2347,
+              "name": "Mikko Ahlroth",
+              "trust_level": 2,
+              "username": "Nicd"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/hauleth/{size}/18942_2.png",
+              "id": 2885,
+              "name": "\u0141ukasz Jan Niemier",
+              "trust_level": 3,
+              "username": "hauleth"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/xinz/{size}/9916_2.png",
+              "id": 3318,
+              "name": "Xinz",
+              "trust_level": 2,
+              "username": "xinz"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/dannymk/{size}/40309_2.png",
+              "id": 32062,
+              "name": "Daniel Maldonado",
+              "trust_level": 0,
+              "username": "dannymk"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/soup/{size}/31425_2.png",
+              "id": 18273,
+              "name": "",
+              "trust_level": 2,
+              "username": "soup"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/elixircasts/{size}/7470_2.png",
+              "id": 7510,
+              "name": "ElixirCasts",
+              "trust_level": 2,
+              "username": "ElixirCasts"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/miguelcoba/{size}/24797_2.png",
+              "id": 20209,
+              "name": "Miguel Cob\u00e1",
+              "trust_level": 1,
+              "username": "miguelcoba"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/d/278dde/{size}.png",
+              "id": 12974,
+              "name": "",
+              "trust_level": 3,
+              "username": "DaAnalyst"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/scivi/{size}/33906_2.png",
+              "id": 26536,
+              "name": "Gwen Glaser",
+              "trust_level": 1,
+              "username": "scivi"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/dimitarvp/{size}/38664_2.png",
+              "id": 2331,
+              "name": "Dimitar Panayotov",
+              "trust_level": 3,
+              "username": "dimitarvp"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/v/e36b37/{size}.png",
+              "id": 31688,
+              "name": "Vidar",
+              "trust_level": 3,
+              "username": "Vidar"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/m/e9c0ed/{size}.png",
+              "id": 22229,
+              "name": "Matthew Savoia",
+              "trust_level": 2,
+              "username": "matt-savvy"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/silverdr/{size}/23771_2.png",
+              "id": 15335,
+              "name": "Patrycjusz \u0141ogiewa",
+              "trust_level": 2,
+              "username": "silverdr"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/zurga/{size}/38832_2.png",
+              "id": 20634,
+              "name": "Jim Lemmers",
+              "trust_level": 2,
+              "username": "Zurga"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/joshua-bouv/{size}/27787_2.png",
+              "id": 22388,
+              "name": "Joshua",
+              "trust_level": 2,
+              "username": "joshua-bouv"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/p/ea5d25/{size}.png",
+              "id": 30518,
+              "name": "",
+              "trust_level": 1,
+              "username": "ppff01"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/g/3bc359/{size}.png",
+              "id": 24872,
+              "name": null,
+              "trust_level": 2,
+              "username": "garrison"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/xir/{size}/38799_2.png",
+              "id": 30789,
+              "name": "",
+              "trust_level": 2,
+              "username": "xir"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/sreyansjain/{size}/16464_2.png",
+              "id": 9120,
+              "name": "Sreyans Jain",
+              "trust_level": 2,
+              "username": "sreyansjain"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/kish10/{size}/32272_2.png",
+              "id": 25351,
+              "name": "",
+              "trust_level": 1,
+              "username": "kish10"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/hermanverschooten/{size}/6447_2.png",
+              "id": 6500,
+              "name": "Herman verschooten",
+              "trust_level": 2,
+              "username": "Hermanverschooten"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/derpycoder/{size}/31388_2.png",
+              "id": 22569,
+              "name": "Abhijit Kar \u30c4",
+              "trust_level": 2,
+              "username": "derpycoder"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/johnnycurran/{size}/23380_2.png",
+              "id": 19207,
+              "name": "John Curran (John Elm)",
+              "trust_level": 2,
+              "username": "JohnnyCurran"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/ashkan117/{size}/32373_2.png",
+              "id": 25435,
+              "name": "Ashkan Faghihi",
+              "trust_level": 2,
+              "username": "ashkan117"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/hyperoceanic/{size}/35219_2.png",
+              "id": 27473,
+              "name": "Mark Smith",
+              "trust_level": 2,
+              "username": "hyperoceanic"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/netoum/{size}/37559_2.png",
+              "id": 29710,
+              "name": "",
+              "trust_level": 2,
+              "username": "netoum"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/raa-ziq/{size}/40252_2.png",
+              "id": 32017,
+              "name": "Razique",
+              "trust_level": 0,
+              "username": "raa-ziq"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/oddnugget/{size}/40220_2.png",
+              "id": 32008,
+              "name": "",
+              "trust_level": 0,
+              "username": "oddnugget"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/webuhu/{size}/11495_2.png",
+              "id": 9807,
+              "name": "",
+              "trust_level": 2,
+              "username": "webuhu"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/marcxrand/{size}/38914_2.png",
+              "id": 30916,
+              "name": "Marcxrand",
+              "trust_level": 1,
+              "username": "marcxrand"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/frankdugan3/{size}/39210_2.png",
+              "id": 15117,
+              "name": "Frank Dugan III",
+              "trust_level": 2,
+              "username": "frankdugan3"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/m/7993a0/{size}.png",
+              "id": 24998,
+              "name": "Morten",
+              "trust_level": 2,
+              "username": "mortenlund"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/manhvu/{size}/39832_2.png",
+              "id": 23893,
+              "name": "M\u1ea1nh V\u0169",
+              "trust_level": 3,
+              "username": "manhvu"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/mudasobwa/{size}/5298_2.png",
+              "id": 297,
+              "name": "Aleksei Matiushkin",
+              "trust_level": 3,
+              "username": "mudasobwa"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/xu-chris/{size}/38699_2.png",
+              "id": 30740,
+              "name": "Chris Xu",
+              "trust_level": 1,
+              "username": "xu-chris"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/sodapopcan/{size}/34668_2.png",
+              "id": 16411,
+              "name": "Andrew Haust",
+              "trust_level": 3,
+              "username": "sodapopcan"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/h/ed655f/{size}.png",
+              "id": 30263,
+              "name": "",
+              "trust_level": 1,
+              "username": "Hunterafi"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/samjowen/{size}/34530_2.png",
+              "id": 25962,
+              "name": "Samuel",
+              "trust_level": 2,
+              "username": "Samjowen"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/c68b51/{size}.png",
+              "id": 26726,
+              "name": "",
+              "trust_level": 3,
+              "username": "Asd"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/coen.bakker/{size}/39732_2.png",
+              "id": 21679,
+              "name": "Coen Bakker",
+              "trust_level": 2,
+              "username": "coen.bakker"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/ahallock/{size}/31647_2.png",
+              "id": 24878,
+              "name": "Andrew",
+              "trust_level": 1,
+              "username": "ahallock"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/f1d935/{size}.png",
+              "id": 31981,
+              "name": null,
+              "trust_level": 0,
+              "username": "UncountedSphere"
+            },
+            {
+              "avatar_template": "/letter_avatar_proxy/v4/letter/t/9d8465/{size}.png",
+              "id": 31965,
+              "name": "Tristan",
+              "trust_level": 1,
+              "username": "tmk"
+            },
+            {
+              "avatar_template": "/user_avatar/elixirforum.com/krishandley/{size}/27199_2.png",
+              "id": 11025,
+              "name": "Kris Handley",
+              "trust_level": 2,
+              "username": "krishandley"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "cache-control": [
+            "no-cache, no-store"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Sun, 17 May 2026 01:02:26 GMT"
+          ],
+          "referrer-policy": [
+            "strict-origin-when-cross-origin"
+          ],
+          "server": [
+            "nginx"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-discourse-cached": [
+            "true"
+          ],
+          "x-discourse-route": [
+            "list/category_latest"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-permitted-cross-domain-policies": [
+            "none"
+          ],
+          "x-request-id": [
+            "101e4dc9-ca8a-4841-86f4-22127f6f5e9b"
+          ],
+          "x-runtime": [
+            "0.000919"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

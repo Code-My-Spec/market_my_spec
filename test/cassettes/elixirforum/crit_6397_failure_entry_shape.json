@@ -1,0 +1,64 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-05-17T01:02:15.619582Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "market_my_spec/0.1 by /u/johns10davenport"
+          ]
+        },
+        "method": "GET",
+        "query_string": "limit=25&q=phoenix&restrict_sr=1&sort=new",
+        "uri": "https://www.reddit.com/r/elixir/search.json"
+      },
+      "response": {
+        "status": 429,
+        "headers": {
+          "content-type": [
+            "text/plain"
+          ],
+          "x-ratelimit-reset": [
+            "60"
+          ]
+        },
+        "body_type": "text",
+        "body": "Too Many Requests"
+      }
+    },
+    {
+      "recorded_at": "2026-05-17T01:02:28.090542Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "market_my_spec/0.1 (engagement-finder; contact: johns10@gmail.com)"
+          ]
+        },
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://elixirforum.com/c/phoenix-forum/20/l/latest.json"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "content-type": [
+            "text/plain"
+          ]
+        },
+        "body_type": "text",
+        "body": "Internal Server Error"
+      }
+    }
+  ],
+  "version": "2.0"
+}

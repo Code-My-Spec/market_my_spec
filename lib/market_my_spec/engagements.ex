@@ -217,6 +217,16 @@ defmodule MarketMySpec.Engagements do
   # ---------------------------------------------------------------------------
 
   @doc """
+  Fetches a single Touchpoint by id, scoped to the account.
+
+  Returns `{:ok, touchpoint}` or `{:error, :not_found}`. Cross-account
+  access returns `:not_found`.
+  """
+  @spec get_touchpoint_by_id(Scope.t(), term()) ::
+          {:ok, MarketMySpec.Engagements.Touchpoint.t()} | {:error, :not_found}
+  defdelegate get_touchpoint_by_id(scope, touchpoint_id), to: TouchpointsRepository
+
+  @doc """
   Persists a new Touchpoint for the account in the given scope.
 
   Returns `{:ok, touchpoint}` or `{:error, changeset}`.
@@ -243,6 +253,46 @@ defmodule MarketMySpec.Engagements do
   """
   @spec list_touchpoints(Scope.t()) :: [MarketMySpec.Engagements.Touchpoint.t()]
   defdelegate list_touchpoints(scope), to: TouchpointsRepository
+
+  @doc """
+  Returns all touchpoints for the account in the given scope, ordered by
+  `inserted_at` descending (newest first). Accepts optional keyword filters:
+
+    - `:state` — filter by state atom (`:staged`, `:posted`, `:abandoned`)
+    - `:preload` — list of associations to preload (e.g. `[:thread]`)
+
+  """
+  @spec list_touchpoints(Scope.t(), keyword()) :: [MarketMySpec.Engagements.Touchpoint.t()]
+  defdelegate list_touchpoints(scope, opts), to: TouchpointsRepository
+
+  @doc """
+  Transitions a Touchpoint's state (and optionally sets comment_url / posted_at).
+
+  This is the single context function used by both the LiveView paste-URL form
+  and the `update_touchpoint` MCP tool, ensuring UI and agent surfaces produce
+  identical persisted state.
+
+  Returns `{:ok, touchpoint}` on success, `{:error, :not_found}` when the
+  touchpoint doesn't belong to the scope's account, or `{:error, changeset}`
+  on validation failure.
+  """
+  @spec update_touchpoint(Scope.t(), term(), map()) ::
+          {:ok, MarketMySpec.Engagements.Touchpoint.t()}
+          | {:error, :not_found}
+          | {:error, Ecto.Changeset.t()}
+  defdelegate update_touchpoint(scope, touchpoint_id, attrs), to: TouchpointsRepository
+
+  @doc """
+  Hard-deletes a Touchpoint scoped to the account.
+
+  No soft-delete or tombstone — the row is removed entirely. Cross-account
+  access returns `:not_found` without modifying any row.
+
+  Returns `{:ok, touchpoint}` on success or `{:error, :not_found}`.
+  """
+  @spec delete_touchpoint(Scope.t(), term()) ::
+          {:ok, MarketMySpec.Engagements.Touchpoint.t()} | {:error, :not_found}
+  defdelegate delete_touchpoint(scope, touchpoint_id), to: TouchpointsRepository
 
   # ---------------------------------------------------------------------------
   # Source Credentials

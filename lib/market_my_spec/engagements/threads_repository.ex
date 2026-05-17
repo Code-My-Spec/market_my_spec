@@ -59,6 +59,39 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
   end
 
   @doc """
+  Upserts a Thread row from a search-time candidate map.
+
+  Inserts a new row keyed by (account_id, source, source_thread_id), or
+  updates title + url on conflict. Does NOT overwrite op_body, comment_tree,
+  raw_payload, or fetched_at — those are owned by get_thread (deep-read).
+
+  Returns `{:ok, thread}` on success, `{:error, changeset}` on failure.
+  """
+  @spec upsert_from_search(Scope.t(), atom(), map()) :: {:ok, Thread.t()} | {:error, term()}
+  def upsert_from_search(%Scope{active_account_id: account_id}, source, candidate)
+      when is_atom(source) do
+    source_thread_id = Map.get(candidate, "source_thread_id") || Map.get(candidate, :source_thread_id)
+    url = Map.get(candidate, "url") || Map.get(candidate, :url, "")
+    title = Map.get(candidate, "title") || Map.get(candidate, :title, "")
+
+    attrs = %{
+      account_id: account_id,
+      source: source,
+      source_thread_id: source_thread_id,
+      url: url,
+      title: title
+    }
+
+    changeset = Thread.changeset(%Thread{}, attrs)
+
+    Repo.insert(changeset,
+      on_conflict: {:replace, [:title, :url, :updated_at]},
+      conflict_target: [:account_id, :source, :source_thread_id],
+      returning: true
+    )
+  end
+
+  @doc """
   Returns all threads fetched for the account in the given scope, ordered by
   `fetched_at` descending (most recently fetched first).
   """
