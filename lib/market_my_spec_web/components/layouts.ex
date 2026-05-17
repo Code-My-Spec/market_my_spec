@@ -97,6 +97,16 @@ defmodule MarketMySpecWeb.Layouts do
                 <.icon name="hero-magnifying-glass" class="size-4" /> Saved searches
               </.link>
             </li>
+            <li :if={@current_scope && @current_scope.active_account_id}>
+              <.link navigate={~p"/accounts/#{@current_scope.active_account_id}/threads"}>
+                <.icon name="hero-chat-bubble-left-right" class="size-4" /> Threads
+              </.link>
+            </li>
+            <li :if={@current_scope && @current_scope.active_account_id}>
+              <.link navigate={~p"/accounts/#{@current_scope.active_account_id}/touchpoints"}>
+                <.icon name="hero-paper-airplane" class="size-4" /> Touchpoints
+              </.link>
+            </li>
             <li>
               <.link navigate={~p"/integrations"}>
                 <.icon name="hero-puzzle-piece" class="size-4" /> Integrations

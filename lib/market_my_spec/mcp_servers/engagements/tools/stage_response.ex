@@ -22,6 +22,8 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
     field :polished_body, :string, required: true, doc: "Polished comment body text"
     field :link_target, :string, required: false, doc: "URL to embed as a UTM-tracked link in the body"
     field :angle, :string, required: false, doc: "Agent's reasoning angle for this specific reply"
+    field :campaign, :string, required: false,
+      doc: "Optional utm_campaign override. Defaults to subreddit / category slug; pass a thread-specific slug here when you want GA4 to separate touchpoints within the same venue (e.g. 'claudeai-stress-testing-harness')."
   end
 
   @impl true
@@ -29,6 +31,7 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
     scope = frame.assigns.current_scope
     link_target = Map.get(params, :link_target)
     angle = Map.get(params, :angle)
+    campaign = Map.get(params, :campaign)
 
     case ThreadsRepository.get_thread_by_id(scope, thread_id) do
       {:error, :not_found} ->
@@ -40,7 +43,7 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
          frame}
 
       {:ok, thread} ->
-        {embedded_body, utm_link} = embed_utm(thread, polished_body, link_target)
+        {embedded_body, utm_link} = embed_utm(thread, polished_body, link_target, campaign)
 
         attrs = %{
           thread_id: thread.id,
@@ -69,10 +72,10 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
     end
   end
 
-  defp embed_utm(_thread, body, nil), do: {body, nil}
+  defp embed_utm(_thread, body, nil, _campaign), do: {body, nil}
 
-  defp embed_utm(thread, body, link_target) do
-    utm_url = Posting.build_utm_url(thread, link_target)
+  defp embed_utm(thread, body, link_target, campaign) do
+    utm_url = Posting.build_utm_url(thread, link_target, campaign)
     embedded = String.replace(body, link_target, utm_url)
     {embedded, utm_url}
   end
