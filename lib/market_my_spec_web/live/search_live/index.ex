@@ -398,8 +398,8 @@ defmodule MarketMySpecWeb.SearchLive.Index do
   defp truncate_query(query), do: query
 
   defp changeset_error_message(changeset) do
-    changeset.errors
-    |> Enum.map(fn {field, {message, _opts}} -> "#{field} #{message}" end)
-    |> Enum.join(", ")
+    Enum.map_join(changeset.errors, ", ", fn {field, {message, _opts}} ->
+      "#{field} #{message}"
+    end)
   end
 end

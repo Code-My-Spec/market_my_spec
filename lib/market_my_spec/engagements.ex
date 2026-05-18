@@ -212,6 +212,20 @@ defmodule MarketMySpec.Engagements do
   @spec list_threads(Scope.t()) :: [MarketMySpec.Engagements.Thread.t()]
   defdelegate list_threads(scope), to: ThreadsRepository
 
+  @doc """
+  Writes a synopsis to the thread only when its current synopsis is nil.
+
+  Used by `stage_response` so the first staged Touchpoint on a thread fixes
+  the synthesis; subsequent stages do not overwrite.
+  """
+  @spec set_thread_synopsis_if_blank(Scope.t(), Ecto.UUID.t(), String.t() | nil) ::
+          {:ok, MarketMySpec.Engagements.Thread.t()}
+          | {:error, :not_found}
+          | {:error, Ecto.Changeset.t()}
+  defdelegate set_thread_synopsis_if_blank(scope, thread_id, synopsis),
+    to: ThreadsRepository,
+    as: :set_synopsis_if_blank
+
   # ---------------------------------------------------------------------------
   # Touchpoints
   # ---------------------------------------------------------------------------

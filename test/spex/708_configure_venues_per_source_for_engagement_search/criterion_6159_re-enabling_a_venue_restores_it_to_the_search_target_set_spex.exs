@@ -13,8 +13,8 @@ defmodule MarketMySpecSpex.Story708.Criterion6159Spex do
   use MarketMySpecSpex.Case
 
   alias MarketMySpec.Engagements.Venue
-  alias MarketMySpec.Repo
   alias MarketMySpec.McpServers.Engagements.Tools.SearchEngagements
+  alias MarketMySpec.Repo
   alias MarketMySpecSpex.Fixtures
 
   spex "re-enabling a venue restores it to the search target set" do

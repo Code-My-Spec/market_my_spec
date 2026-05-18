@@ -13,6 +13,8 @@ defmodule MarketMySpec.GoogleAuthHelper do
   3. Raises with re-record instructions if none available.
   """
 
+  alias GoogleApi.AnalyticsAdmin.V1beta.Connection
+
   def get_token do
     cond do
       access_token = System.get_env("GOOGLE_ACCESS_TOKEN") ->
@@ -82,6 +84,6 @@ defmodule MarketMySpec.GoogleAuthHelper do
 
   def get_connection do
     token = get_token()
-    GoogleApi.AnalyticsAdmin.V1beta.Connection.new(token)
+    Connection.new(token)
   end
 end

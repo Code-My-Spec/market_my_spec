@@ -111,51 +111,55 @@ defmodule MarketMySpec.McpServers.AnalyticsAdmin.Tools.CreateCustomMetric do
     measurement_unit = Map.get(params, :measurement_unit)
     restricted_type = params[:restricted_metric_type]
 
-    cond do
-      scope not in @valid_scopes ->
-        {:error, :invalid_scope, scope}
-
-      measurement_unit not in @valid_measurement_units ->
-        {:error, :invalid_measurement_unit, measurement_unit}
-
-      # Validate that restricted_metric_type is only provided for CURRENCY metrics
-      restricted_type && measurement_unit != "CURRENCY" ->
-        {:error, :restricted_metric_type_requires_currency}
-
-      # Validate that CURRENCY metrics have restricted_metric_type
-      measurement_unit == "CURRENCY" && !restricted_type ->
-        {:error, :currency_requires_restricted_metric_type}
-
-      # Validate the restricted_metric_type value
-      restricted_type && restricted_type not in ["COST_DATA", "REVENUE_DATA"] ->
-        {:error, :invalid_restricted_metric_type, restricted_type}
-
-      true ->
-        custom_metric = %{
-          displayName: params.display_name,
-          parameterName: params.parameter_name,
-          measurementUnit: measurement_unit,
-          scope: scope
-        }
-
-        custom_metric =
-          if params[:description] do
-            Map.put(custom_metric, :description, params.description)
-          else
-            custom_metric
-          end
-
-        custom_metric =
-          if restricted_type && measurement_unit == "CURRENCY" do
-            # Convert single string to array for API
-            Map.put(custom_metric, :restrictedMetricType, [restricted_type])
-          else
-            custom_metric
-          end
-
-        {:ok, custom_metric}
+    with :ok <- check_scope(scope),
+         :ok <- check_measurement_unit(measurement_unit),
+         :ok <- check_restricted_type_pairing(restricted_type, measurement_unit) do
+      {:ok, build_custom_metric(params, scope, measurement_unit, restricted_type)}
     end
   end
+
+  defp check_scope(scope) when scope in @valid_scopes, do: :ok
+  defp check_scope(scope), do: {:error, :invalid_scope, scope}
+
+  defp check_measurement_unit(unit) when unit in @valid_measurement_units, do: :ok
+  defp check_measurement_unit(unit), do: {:error, :invalid_measurement_unit, unit}
+
+  defp check_restricted_type_pairing(restricted_type, "CURRENCY") do
+    check_currency_restricted_type(restricted_type)
+  end
+
+  defp check_restricted_type_pairing(nil, _measurement_unit), do: :ok
+
+  defp check_restricted_type_pairing(_restricted_type, _measurement_unit),
+    do: {:error, :restricted_metric_type_requires_currency}
+
+  defp check_currency_restricted_type(nil), do: {:error, :currency_requires_restricted_metric_type}
+
+  defp check_currency_restricted_type(restricted_type)
+       when restricted_type in ["COST_DATA", "REVENUE_DATA"],
+       do: :ok
+
+  defp check_currency_restricted_type(restricted_type),
+    do: {:error, :invalid_restricted_metric_type, restricted_type}
+
+  defp build_custom_metric(params, scope, measurement_unit, restricted_type) do
+    %{
+      displayName: params.display_name,
+      parameterName: params.parameter_name,
+      measurementUnit: measurement_unit,
+      scope: scope
+    }
+    |> maybe_put(:description, params[:description])
+    |> maybe_put_restricted_type(restricted_type, measurement_unit)
+  end
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  defp maybe_put_restricted_type(map, restricted_type, "CURRENCY") when not is_nil(restricted_type),
+    do: Map.put(map, :restrictedMetricType, [restricted_type])
+
+  defp maybe_put_restricted_type(map, _restricted_type, _unit), do: map
 
   defp get_property_id(scope) do
     case scope.active_account.google_analytics_property_id do

@@ -79,21 +79,27 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
 
     with {:ok, _} <- validate_at_least_one_selector(venue_ids, wildcards),
          {:ok, _} <- validate_venue_ids_belong_to_account(scope, venue_ids) do
-      scoped_attrs =
-        attrs
-        |> Map.put(:account_id, account_id)
-        |> Map.put(:source_wildcards, wildcards)
+      run_create(attrs, account_id, venue_ids, wildcards)
+    end
+  end
 
-      Repo.transaction(fn ->
-        case %SavedSearch{} |> SavedSearch.changeset(scoped_attrs) |> Repo.insert() do
-          {:ok, saved_search} ->
-            :ok = insert_venue_joins(saved_search, account_id, venue_ids)
-            Repo.preload(saved_search, :venues, force: true)
+  defp run_create(attrs, account_id, venue_ids, wildcards) do
+    scoped_attrs =
+      attrs
+      |> Map.put(:account_id, account_id)
+      |> Map.put(:source_wildcards, wildcards)
 
-          {:error, changeset} ->
-            Repo.rollback(changeset)
-        end
-      end)
+    Repo.transaction(fn -> do_create(scoped_attrs, account_id, venue_ids) end)
+  end
+
+  defp do_create(scoped_attrs, account_id, venue_ids) do
+    case %SavedSearch{} |> SavedSearch.changeset(scoped_attrs) |> Repo.insert() do
+      {:ok, saved_search} ->
+        :ok = insert_venue_joins(saved_search, account_id, venue_ids)
+        Repo.preload(saved_search, :venues, force: true)
+
+      {:error, changeset} ->
+        Repo.rollback(changeset)
     end
   end
 

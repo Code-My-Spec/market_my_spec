@@ -2,14 +2,18 @@ defmodule MarketMySpecWeb.TouchpointLive.Show do
   @moduledoc """
   Single-touchpoint detail view.
 
-  Renders polished_body, angle, state, comment_url, posted_at, link_target,
-  and parent thread context. Provides three actions:
+  Renders the parent thread context (synopsis + source URL), the editable
+  angle and polished_body, and lifecycle fields (state, comment_url,
+  posted_at, link_target). Provides four actions:
 
-    1. Mark posted — paste live comment URL + posted_at, transitions state to
+    1. Save edits — submits angle + polished_body changes via
+       `Engagements.update_touchpoint/3`. Rejects an empty polished_body
+       with a flash error; the previous value is preserved.
+    2. Mark posted — paste live comment URL + posted_at, transitions state to
        :posted via `Engagements.update_touchpoint/3`. Rejects without comment_url.
-    2. Abandon — transitions state to :abandoned via `Engagements.update_touchpoint/3`,
+    3. Abandon — transitions state to :abandoned via `Engagements.update_touchpoint/3`,
        preserving all other fields.
-    3. Delete — hard-removes the row via `Engagements.delete_touchpoint/2`.
+    4. Delete — hard-removes the row via `Engagements.delete_touchpoint/2`.
 
   The same context functions back the MCP `update_touchpoint` and
   `delete_touchpoint` tools so UI and agent surfaces produce identical
@@ -35,18 +39,65 @@ defmodule MarketMySpecWeb.TouchpointLive.Show do
           </:subtitle>
         </.header>
 
+        <div :if={@thread} class="card bg-base-100 border border-base-300" data-test="touchpoint-thread-context">
+          <div class="card-body space-y-3">
+            <div>
+              <p class="text-sm font-semibold text-base-content/70">Source Thread</p>
+              <a
+                href={@thread.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link link-primary text-sm break-all"
+                data-test="touchpoint-thread-link"
+              >
+                <%= @thread.url %>
+              </a>
+            </div>
+
+            <div :if={@thread.synopsis} data-test="touchpoint-thread-synopsis">
+              <p class="text-sm font-semibold text-base-content/70">Synopsis</p>
+              <p class="mt-1 whitespace-pre-line"><%= @thread.synopsis %></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 border border-base-300">
+          <div class="card-body">
+            <.form
+              for={@edit_form}
+              id="edit-touchpoint-form"
+              data-test="edit-touchpoint-form"
+              phx-submit="save_edits"
+            >
+              <div class="space-y-4">
+                <div data-test="touchpoint-angle-field">
+                  <.input
+                    field={@edit_form[:angle]}
+                    type="textarea"
+                    label="Angle"
+                    rows="3"
+                  />
+                </div>
+
+                <div data-test="touchpoint-body-field">
+                  <.input
+                    field={@edit_form[:polished_body]}
+                    type="textarea"
+                    label="Polished Body"
+                    rows="8"
+                  />
+                </div>
+
+                <.button type="submit" variant="primary" phx-disable-with="Saving...">
+                  Save
+                </.button>
+              </div>
+            </.form>
+          </div>
+        </div>
+
         <div class="card bg-base-100 border border-base-300">
           <div class="card-body space-y-4">
-            <div :if={@touchpoint.angle} data-test="touchpoint-angle">
-              <p class="text-sm font-semibold text-base-content/70">Angle</p>
-              <p class="mt-1"><%= @touchpoint.angle %></p>
-            </div>
-
-            <div data-test="touchpoint-body">
-              <p class="text-sm font-semibold text-base-content/70">Polished Body</p>
-              <textarea class="textarea textarea-bordered w-full mt-1" readonly rows="6"><%= @touchpoint.polished_body %></textarea>
-            </div>
-
             <div :if={@touchpoint.link_target} data-test="touchpoint-link-target">
               <p class="text-sm font-semibold text-base-content/70">Link Target</p>
               <p class="mt-1 text-sm font-mono break-all"><%= @touchpoint.link_target %></p>
@@ -139,14 +190,73 @@ defmodule MarketMySpecWeb.TouchpointLive.Show do
          |> push_navigate(to: "/accounts")}
 
       {:ok, touchpoint} ->
+        thread = load_thread(scope, touchpoint.thread_id)
+        if connected?(socket), do: subscribe_to_updates(touchpoint, thread)
+
         {:ok,
          socket
          |> assign(:touchpoint, touchpoint)
+         |> assign(:thread, thread)
+         |> assign(:edit_form, edit_form(touchpoint))
          |> assign(:mark_posted_form, mark_posted_form(touchpoint))}
     end
   end
 
+  defp subscribe_to_updates(touchpoint, nil) do
+    Phoenix.PubSub.subscribe(MarketMySpec.PubSub, "touchpoint:#{touchpoint.id}")
+  end
+
+  defp subscribe_to_updates(touchpoint, thread) do
+    Phoenix.PubSub.subscribe(MarketMySpec.PubSub, "touchpoint:#{touchpoint.id}")
+    Phoenix.PubSub.subscribe(MarketMySpec.PubSub, "thread:#{thread.id}")
+  end
+
   @impl true
+  def handle_info({:touchpoint_updated, %{id: id} = updated}, %{assigns: %{touchpoint: %{id: id}}} = socket) do
+    {:noreply,
+     socket
+     |> assign(:touchpoint, updated)
+     |> assign(:edit_form, edit_form(updated))
+     |> assign(:mark_posted_form, mark_posted_form(updated))}
+  end
+
+  def handle_info({:thread_updated, %{id: id} = updated}, %{assigns: %{thread: %{id: id}}} = socket) do
+    {:noreply, assign(socket, :thread, updated)}
+  end
+
+  def handle_info(_msg, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("save_edits", %{"touchpoint" => params}, socket) do
+    scope = socket.assigns.current_scope
+    touchpoint = socket.assigns.touchpoint
+
+    attrs = %{
+      polished_body: Map.get(params, "polished_body", ""),
+      angle: Map.get(params, "angle"),
+      state: touchpoint.state
+    }
+
+    case Engagements.update_touchpoint(scope, touchpoint.id, attrs) do
+      {:ok, updated} ->
+        {:noreply,
+         socket
+         |> assign(:touchpoint, updated)
+         |> assign(:edit_form, edit_form(updated))
+         |> assign(:mark_posted_form, mark_posted_form(updated))
+         |> put_flash(:info, "Saved")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign(:edit_form, to_form(changeset, as: :touchpoint))
+         |> put_flash(:error, "Could not save — see field errors below")}
+
+      {:error, :not_found} ->
+        {:noreply, put_flash(socket, :error, "Touchpoint not found")}
+    end
+  end
+
   def handle_event("mark_posted", %{"touchpoint" => params}, socket) do
     scope = socket.assigns.current_scope
     touchpoint = socket.assigns.touchpoint
@@ -215,6 +325,20 @@ defmodule MarketMySpecWeb.TouchpointLive.Show do
   defp mark_posted_form(%Touchpoint{} = touchpoint) do
     changeset = Touchpoint.update_changeset(touchpoint, %{})
     to_form(changeset, as: :touchpoint)
+  end
+
+  defp edit_form(%Touchpoint{} = touchpoint) do
+    changeset = Touchpoint.update_changeset(touchpoint, %{})
+    to_form(changeset, as: :touchpoint)
+  end
+
+  defp load_thread(_scope, nil), do: nil
+
+  defp load_thread(scope, thread_id) do
+    case Engagements.get_thread_by_id(scope, thread_id) do
+      {:ok, thread} -> thread
+      {:error, :not_found} -> nil
+    end
   end
 
   defp parse_posted_at(""), do: nil

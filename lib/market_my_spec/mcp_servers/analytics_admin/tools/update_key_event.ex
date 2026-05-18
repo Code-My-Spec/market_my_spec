@@ -106,51 +106,64 @@ defmodule MarketMySpec.McpServers.AnalyticsAdmin.Tools.UpdateKeyEvent do
   defp validate_params(params) do
     counting_method = params[:counting_method]
 
-    cond do
-      counting_method && counting_method not in @valid_counting_methods ->
-        {:error, :invalid_counting_method, counting_method}
+    with :ok <- validate_counting_method(counting_method),
+         :ok <- validate_default_value_pairing(params) do
+      build_update_payload(params, counting_method)
+    end
+  end
 
-      # Validate that default_value requires currency_code
-      params[:default_value] && !params[:currency_code] ->
-        {:error, :default_value_requires_currency_code}
+  defp validate_counting_method(nil), do: :ok
+  defp validate_counting_method(method) when method in @valid_counting_methods, do: :ok
+  defp validate_counting_method(method), do: {:error, :invalid_counting_method, method}
 
-      # Validate that currency_code requires default_value
-      params[:currency_code] && !params[:default_value] ->
-        {:error, :currency_code_requires_default_value}
+  defp validate_default_value_pairing(params) do
+    has_value? = !is_nil(params[:default_value])
+    has_currency? = !is_nil(params[:currency_code])
+    do_validate_default_value_pairing(has_value?, has_currency?)
+  end
 
-      true ->
-        # Build the key event map with only the fields that are being updated
-        key_event = %{name: params.name}
+  defp do_validate_default_value_pairing(true, false),
+    do: {:error, :default_value_requires_currency_code}
 
-        key_event =
-          if counting_method do
-            Map.put(key_event, :countingMethod, counting_method)
-          else
-            key_event
-          end
+  defp do_validate_default_value_pairing(false, true),
+    do: {:error, :currency_code_requires_default_value}
 
-        key_event =
-          if params[:default_value] do
-            default_value = %{numericValue: params.default_value}
+  defp do_validate_default_value_pairing(_, _), do: :ok
 
-            default_value =
-              if params[:currency_code] do
-                Map.put(default_value, :currencyCode, params.currency_code)
-              else
-                default_value
-              end
+  defp build_update_payload(params, counting_method) do
+    params
+    |> build_key_event_map(counting_method)
+    |> finalize_update_payload(params.update_mask)
+  end
 
-            Map.put(key_event, :defaultValue, default_value)
-          else
-            key_event
-          end
+  defp build_key_event_map(params, counting_method) do
+    %{name: params.name}
+    |> maybe_put(:countingMethod, counting_method)
+    |> maybe_put_default_value(params)
+  end
 
-        # Check if any fields besides name were added
-        if map_size(key_event) == 1 and params.update_mask != "*" do
-          {:error, :no_fields_to_update}
-        else
-          {:ok, key_event}
-        end
+  defp finalize_update_payload(key_event, update_mask) do
+    if map_size(key_event) == 1 and update_mask != "*" do
+      {:error, :no_fields_to_update}
+    else
+      {:ok, key_event}
+    end
+  end
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  defp maybe_put_default_value(map, params) do
+    case params[:default_value] do
+      nil ->
+        map
+
+      value ->
+        default_value =
+          %{numericValue: value}
+          |> maybe_put(:currencyCode, params[:currency_code])
+
+        Map.put(map, :defaultValue, default_value)
     end
   end
 

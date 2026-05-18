@@ -166,33 +166,13 @@ defmodule MarketMySpecWeb.VenueLive.Index do
     identifier = Map.get(venue_params, "identifier", "")
     weight = parse_weight(Map.get(venue_params, "weight", "1.0"))
 
-    cond do
-      source == "" ->
-        {:noreply, assign(socket, :form_error, "Source is required")}
+    case validate_save_venue_form(source, identifier) do
+      {:error, message} ->
+        {:noreply, assign(socket, :form_error, message)}
 
-      identifier == "" ->
-        {:noreply, assign(socket, :form_error, "Identifier is required")}
-
-      not valid_identifier?(source, identifier) ->
-        {:noreply, assign(socket, :form_error, validation_error(source, identifier))}
-
-      true ->
+      :ok ->
         attrs = %{source: source, identifier: identifier, weight: weight, enabled: true}
-
-        case Engagements.create_venue(socket.assigns.current_scope, attrs) do
-          {:ok, venue} ->
-            {:noreply,
-             socket
-             |> assign(:venues, socket.assigns.venues ++ [venue])
-             |> assign(:show_add_form, false)
-             |> assign(:form_error, nil)
-             |> put_flash(:info, "Venue added successfully")}
-
-          {:error, changeset} ->
-            error_message = changeset_error_message(changeset)
-
-            {:noreply, assign(socket, :form_error, error_message)}
-        end
+        create_venue_and_reply(socket, attrs)
     end
   end
 
@@ -210,11 +190,7 @@ defmodule MarketMySpecWeb.VenueLive.Index do
 
     case Engagements.update_venue(scope, id, %{enabled: !current_enabled}) do
       {:ok, updated_venue} ->
-        venues =
-          Enum.map(socket.assigns.venues, fn venue ->
-            if venue.id == id, do: updated_venue, else: venue
-          end)
-
+        venues = replace_venue(socket.assigns.venues, id, updated_venue)
         {:noreply, assign(socket, :venues, venues)}
 
       {:error, _reason} ->
@@ -242,6 +218,36 @@ defmodule MarketMySpecWeb.VenueLive.Index do
 
   # --- Private helpers ----------------------------------------------------
 
+  defp validate_save_venue_form(source, identifier) do
+    cond do
+      source == "" -> {:error, "Source is required"}
+      identifier == "" -> {:error, "Identifier is required"}
+      not valid_identifier?(source, identifier) -> {:error, validation_error(source, identifier)}
+      true -> :ok
+    end
+  end
+
+  defp create_venue_and_reply(socket, attrs) do
+    case Engagements.create_venue(socket.assigns.current_scope, attrs) do
+      {:ok, venue} ->
+        {:noreply,
+         socket
+         |> assign(:venues, socket.assigns.venues ++ [venue])
+         |> assign(:show_add_form, false)
+         |> assign(:form_error, nil)
+         |> put_flash(:info, "Venue added successfully")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, :form_error, changeset_error_message(changeset))}
+    end
+  end
+
+  defp replace_venue(venues, id, updated_venue) do
+    Enum.map(venues, fn venue ->
+      if venue.id == id, do: updated_venue, else: venue
+    end)
+  end
+
   defp parse_weight(weight_str) when is_binary(weight_str) do
     case Float.parse(weight_str) do
       {float, _} -> float
@@ -268,8 +274,8 @@ defmodule MarketMySpecWeb.VenueLive.Index do
   end
 
   defp changeset_error_message(changeset) do
-    changeset.errors
-    |> Enum.map(fn {field, {message, _opts}} -> "#{field} #{message}" end)
-    |> Enum.join(", ")
+    Enum.map_join(changeset.errors, ", ", fn {field, {message, _opts}} ->
+      "#{field} #{message}"
+    end)
   end
 end

@@ -19,18 +19,23 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
 
   schema do
     field :thread_id, :string, required: true, doc: "UUID of the persisted Thread record"
-    field :polished_body, :string, required: true, doc: "Polished comment body text"
+    field :polished_body, :string, required: false,
+      doc: "Polished comment body text. Optional at stage time — the agent often stages a touchpoint before Sam dictates his rough draft. Add or revise the body later via update_touchpoint or the LiveView edit form."
     field :link_target, :string, required: false, doc: "URL to embed as a UTM-tracked link in the body"
     field :angle, :string, required: false, doc: "Agent's reasoning angle for this specific reply"
+    field :synopsis, :string, required: false,
+      doc: "One-paragraph synthesis of the thread (the agent's summary of what the discussion is about). Written to the parent Thread on the FIRST stage; subsequent stages do not overwrite. Shared across all touchpoints on the thread."
     field :campaign, :string, required: false,
       doc: "Optional utm_campaign override. Defaults to subreddit / category slug; pass a thread-specific slug here when you want GA4 to separate touchpoints within the same venue (e.g. 'claudeai-stress-testing-harness')."
   end
 
   @impl true
-  def execute(%{thread_id: thread_id, polished_body: polished_body} = params, frame) do
+  def execute(%{thread_id: thread_id} = params, frame) do
     scope = frame.assigns.current_scope
+    polished_body = Map.get(params, :polished_body)
     link_target = Map.get(params, :link_target)
     angle = Map.get(params, :angle)
+    synopsis = Map.get(params, :synopsis)
     campaign = Map.get(params, :campaign)
 
     case ThreadsRepository.get_thread_by_id(scope, thread_id) do
@@ -55,6 +60,8 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
 
         case TouchpointsRepository.create_staged_touchpoint(scope, attrs) do
           {:ok, touchpoint} ->
+            _ = ThreadsRepository.set_synopsis_if_blank(scope, thread.id, synopsis)
+
             payload =
               %{"touchpoint_id" => touchpoint.id, "staged" => true}
               |> maybe_put("utm_link", utm_link)
@@ -73,6 +80,7 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
   end
 
   defp embed_utm(_thread, body, nil, _campaign), do: {body, nil}
+  defp embed_utm(_thread, nil, _link_target, _campaign), do: {nil, nil}
 
   defp embed_utm(thread, body, link_target, campaign) do
     utm_url = Posting.build_utm_url(thread, link_target, campaign)

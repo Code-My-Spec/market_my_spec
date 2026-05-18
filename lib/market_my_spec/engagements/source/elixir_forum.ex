@@ -129,22 +129,19 @@ defmodule MarketMySpec.Engagements.Source.ElixirForum do
   # in :persistent_term, and serves all subsequent lookups from memory.
   defp resolve_category_id(slug) do
     case lookup_cached(slug) do
-      {:ok, id} ->
-        {:ok, id}
+      {:ok, id} -> {:ok, id}
+      :miss -> resolve_category_id_uncached(slug)
+    end
+  end
 
-      :miss ->
-        case fetch_categories() do
-          {:ok, map} ->
-            :persistent_term.put(@categories_key, map)
+  defp resolve_category_id_uncached(slug) do
+    with {:ok, map} <- fetch_categories() do
+      :persistent_term.put(@categories_key, map)
 
-            case Map.fetch(map, slug) do
-              {:ok, id} -> {:ok, id}
-              :error -> {:error, {:unknown_category, slug}}
-            end
-
-          {:error, reason} ->
-            {:error, reason}
-        end
+      case Map.fetch(map, slug) do
+        {:ok, id} -> {:ok, id}
+        :error -> {:error, {:unknown_category, slug}}
+      end
     end
   end
 
@@ -164,17 +161,7 @@ defmodule MarketMySpec.Engagements.Source.ElixirForum do
   defp fetch_categories do
     case Req.get(HTTP.elixirforum_client(), url: "/categories.json") do
       {:ok, %Req.Response{status: 200, body: body}} ->
-        map =
-          body
-          |> get_in(["category_list", "categories"])
-          |> List.wrap()
-          |> Enum.reduce(%{}, fn cat, acc ->
-            slug = Map.get(cat, "slug")
-            id = Map.get(cat, "id")
-            if is_binary(slug) and is_integer(id), do: Map.put(acc, slug, id), else: acc
-          end)
-
-        {:ok, map}
+        {:ok, build_categories_map(body)}
 
       {:ok, %Req.Response{status: status}} ->
         {:error, {:http_status, status}}
@@ -182,6 +169,19 @@ defmodule MarketMySpec.Engagements.Source.ElixirForum do
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  defp build_categories_map(body) do
+    body
+    |> get_in(["category_list", "categories"])
+    |> List.wrap()
+    |> Enum.reduce(%{}, &put_category/2)
+  end
+
+  defp put_category(cat, acc) do
+    slug = Map.get(cat, "slug")
+    id = Map.get(cat, "id")
+    if is_binary(slug) and is_integer(id), do: Map.put(acc, slug, id), else: acc
   end
 
   @doc """

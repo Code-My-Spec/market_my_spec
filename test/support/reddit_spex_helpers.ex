@@ -77,9 +77,10 @@ defmodule MarketMySpecSpex.RedditHelpers do
   end
 
   defp tls_transport_opts do
-    cond do
-      Code.ensure_loaded?(CAStore) -> [cacertfile: CAStore.file_path()]
-      true -> [cacerts: :public_key.cacerts_get()]
+    if Code.ensure_loaded?(CAStore) do
+      [cacertfile: CAStore.file_path()]
+    else
+      [cacerts: :public_key.cacerts_get()]
     end
   rescue
     _ -> []
@@ -513,10 +514,8 @@ defmodule MarketMySpecSpex.RedditHelpers do
     {page_comments, auto_cursor} =
       if length(comments) > limit do
         page = Enum.take(comments, limit)
-        last_id = page |> List.last() |> (fn spec ->
-          m = stringify_keys(spec)
-          Map.get(m, "id", "c#{limit - 1}")
-        end).()
+        last_spec = List.last(page)
+        last_id = last_spec |> stringify_keys() |> Map.get("id", "c#{limit - 1}")
         {page, "t1_#{last_id}"}
       else
         {comments, nil}

@@ -29,7 +29,7 @@ mix run priv/repo/qa_seeds_696.exs
 Creates:
 - `qa-owner@marketmyspec.test` — account owner with an individual account ("QA Owner Account")
 - `qa-member@marketmyspec.test` — member-role user in the owner's account
-- `qa-invited@marketmyspec.test` — existing user with a pending invitation (for duplicate-invite test)
+- `qa-existing@marketmyspec.test` — existing user with a pending invitation (for duplicate-invite test)
 - Pending invitation to `pending-invite@example.com` (admin role, for list display test)
 
 Key IDs from a sample run (re-run to get fresh tokens and actual IDs):
@@ -60,7 +60,7 @@ Key IDs from a sample run (re-run to get fresh tokens and actual IDs):
 ### Scenario 4 — Email already has a pending invitation (Criterion 6106)
 1. Sign in as `qa-owner@marketmyspec.test`
 2. Navigate to the invitations page
-3. Click "Invite Member" and submit `qa-invited@marketmyspec.test` (already has a pending invite)
+3. Click "Invite Member" and submit `qa-existing@marketmyspec.test` (already has a pending invite)
 4. Expect: error message containing "An invitation is already pending for this email" or similar
 
 ### Scenario 5 — Invalid email rejected (Criterion 6107)
@@ -72,7 +72,7 @@ Key IDs from a sample run (re-run to get fresh tokens and actual IDs):
 ### Scenario 6 — Owner sees pending invitations (Criterion 6108)
 1. Sign in as `qa-owner@marketmyspec.test`
 2. Navigate to the invitations page
-3. Expect: pending invitations table shows `pending-invite@example.com` (admin role) and `qa-invited@marketmyspec.test` (member role) with their details including Expires At column
+3. Expect: pending invitations table shows `pending-invite@example.com` (admin role) and `qa-existing@marketmyspec.test` (member role) with their details including Expires At column
 
 ### Scenario 7 — Non-member sees nothing (Criterion 6109)
 1. Sign in as `qa@marketmyspec.test` (the standard QA user from `qa_seeds.exs`, not a member of the owner's account)
@@ -88,9 +88,9 @@ Key IDs from a sample run (re-run to get fresh tokens and actual IDs):
 4. Expect: redirect to `/users/log-in` with success flash
 
 ### Scenario 9 — Existing user accepts an invitation (Criterion 6111)
-1. Navigate (without signing in) to `/invitations/accept/<invitation_token>` for `qa-invited@marketmyspec.test`
+1. Navigate (without signing in) to `/invitations/accept/<invitation_token>` for `qa-existing@marketmyspec.test`
    - Get the token from the DB or by creating a fresh invitation
-2. Expect: page shows "Welcome back!" section (since qa-invited@marketmyspec.test has an account)
+2. Expect: page shows "Welcome back!" section (since qa-existing@marketmyspec.test has an account)
 3. Click "Accept Invitation"
 4. Expect: redirect to `/users/log-in`
 
@@ -115,7 +115,7 @@ Key IDs from a sample run (re-run to get fresh tokens and actual IDs):
 3. Expect: "Expired Invitation" error message
 
 ### Scenario 14 — Signed-in matching user accepts (Criterion 6116)
-1. Sign in as `qa-invited@marketmyspec.test`
+1. Sign in as `qa-existing@marketmyspec.test`
 2. Navigate to `/invitations/accept/<token>` for their pending invitation
 3. Expect: "Welcome back!" card is visible, with the account name shown
 4. Click "Accept Invitation"

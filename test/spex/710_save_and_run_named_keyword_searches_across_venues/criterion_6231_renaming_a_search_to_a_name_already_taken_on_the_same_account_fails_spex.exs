@@ -18,7 +18,7 @@ defmodule MarketMySpecSpex.Story710.Criterion6231Spex do
 
   spex "Renaming a search to a name already taken on the same account fails" do
     scenario "update_saved_search rejects rename collision and preserves original" do
-      given_ "Sam has two SavedSearches \"elixir testing\" and \"credo nitpicks\"",
+      given_ ~s(Sam has two SavedSearches "elixir testing" and "credo nitpicks"),
              context do
         scope = Fixtures.account_scoped_user_fixture()
         venue = Fixtures.venue_fixture(scope, %{source: :reddit, identifier: "elixir"})
@@ -41,7 +41,7 @@ defmodule MarketMySpecSpex.Story710.Criterion6231Spex do
          Map.merge(context, %{scope: scope, first: first, second: second})}
       end
 
-      when_ "Sam renames \"credo nitpicks\" to \"elixir testing\"", context do
+      when_ ~s(Sam renames "credo nitpicks" to "elixir testing"), context do
         result =
           SavedSearchesRepository.update_saved_search(context.scope, context.second.id, %{
             name: "elixir testing"

@@ -29,7 +29,12 @@ defmodule MarketMySpec.Engagements.TouchpointsRepository do
   end
 
   @doc """
-  Updates an existing Touchpoint's state (and optionally comment_url / posted_at).
+  Updates an existing Touchpoint's state and/or fields (comment_url, posted_at,
+  polished_body, angle).
+
+  On success, broadcasts `{:touchpoint_updated, touchpoint}` on PubSub topic
+  `"touchpoint:<id>"` so any open TouchpointLive.Show page reflects the new
+  values without a refresh.
 
   Returns `{:ok, touchpoint}` on success, `{:error, changeset}` on validation failure,
   or `{:error, :not_found}` when the touchpoint doesn't belong to the scope's account.
@@ -45,8 +50,21 @@ defmodule MarketMySpec.Engagements.TouchpointsRepository do
         touchpoint
         |> Touchpoint.update_changeset(attrs)
         |> Repo.update()
+        |> broadcast_touchpoint_updated()
     end
   end
+
+  defp broadcast_touchpoint_updated({:ok, %Touchpoint{id: id} = touchpoint} = result) do
+    Phoenix.PubSub.broadcast(
+      MarketMySpec.PubSub,
+      "touchpoint:#{id}",
+      {:touchpoint_updated, touchpoint}
+    )
+
+    result
+  end
+
+  defp broadcast_touchpoint_updated(other), do: other
 
   @doc """
   Hard-deletes a Touchpoint scoped to the account.

@@ -52,6 +52,7 @@ defmodule MarketMySpecSpex.OAuthHelpers do
   import Plug.Conn
   import ReqCassette
 
+  alias Assent.JWTAdapter.AssentJWT
   alias MarketMySpec.Integrations.OAuthStateStore
 
   @cassette_dir "test/cassettes/oauth"
@@ -103,39 +104,35 @@ defmodule MarketMySpecSpex.OAuthHelpers do
   defp merge_token_response(cassette, overrides) when overrides == %{}, do: cassette
 
   defp merge_token_response(cassette, overrides) do
-    update_in(cassette, ["interactions"], fn interactions ->
-      Enum.map(interactions, fn interaction ->
-        if get_in(interaction, ["request", "uri"]) == @token_endpoint do
-          update_in(interaction, ["response", "body_json"], &Map.merge(&1, overrides))
-        else
-          interaction
-        end
-      end)
+    map_matching_interactions(cassette, @token_endpoint, fn interaction ->
+      update_in(interaction, ["response", "body_json"], &Map.merge(&1, overrides))
     end)
   end
 
   defp inject_id_token(cassette, id_token) do
-    update_in(cassette, ["interactions"], fn interactions ->
-      Enum.map(interactions, fn interaction ->
-        if get_in(interaction, ["request", "uri"]) == @token_endpoint do
-          put_in(interaction, ["response", "body_json", "id_token"], id_token)
-        else
-          interaction
-        end
-      end)
+    map_matching_interactions(cassette, @token_endpoint, fn interaction ->
+      put_in(interaction, ["response", "body_json", "id_token"], id_token)
     end)
   end
 
   defp inject_jwks(cassette, jwks) do
-    update_in(cassette, ["interactions"], fn interactions ->
-      Enum.map(interactions, fn interaction ->
-        if get_in(interaction, ["request", "uri"]) == @jwks_uri do
-          put_in(interaction, ["response", "body_json", "keys"], jwks)
-        else
-          interaction
-        end
-      end)
+    map_matching_interactions(cassette, @jwks_uri, fn interaction ->
+      put_in(interaction, ["response", "body_json", "keys"], jwks)
     end)
+  end
+
+  defp map_matching_interactions(cassette, target_uri, transform) do
+    update_in(cassette, ["interactions"], fn interactions ->
+      Enum.map(interactions, &transform_if_matches(&1, target_uri, transform))
+    end)
+  end
+
+  defp transform_if_matches(interaction, target_uri, transform) do
+    if get_in(interaction, ["request", "uri"]) == target_uri do
+      transform.(interaction)
+    else
+      interaction
+    end
   end
 
   @github_shape_cassette_path "test/cassettes/oauth/github_login_shape.json"
@@ -166,14 +163,8 @@ defmodule MarketMySpecSpex.OAuthHelpers do
   end
 
   defp inject_response_body(cassette, target_uri, body) do
-    update_in(cassette, ["interactions"], fn interactions ->
-      Enum.map(interactions, fn interaction ->
-        if get_in(interaction, ["request", "uri"]) == target_uri do
-          put_in(interaction, ["response", "body_json"], body)
-        else
-          interaction
-        end
-      end)
+    map_matching_interactions(cassette, target_uri, fn interaction ->
+      put_in(interaction, ["response", "body_json"], body)
     end)
   end
 
@@ -270,7 +261,7 @@ defmodule MarketMySpecSpex.OAuthHelpers do
       |> Map.put("exp", now + 3600)
 
     {:ok, jwt} =
-      Assent.JWTAdapter.AssentJWT.sign(
+      AssentJWT.sign(
         id_token_claims,
         "RS256",
         pem,

@@ -121,59 +121,54 @@ defmodule MarketMySpec.McpServers.AnalyticsAdmin.Tools.UpdateCustomMetric do
     measurement_unit = params[:measurement_unit]
     restricted_type = params[:restricted_metric_type]
 
-    # Validate measurement unit if provided
-    cond do
-      measurement_unit && measurement_unit not in @valid_measurement_units ->
-        {:error, :invalid_measurement_unit, measurement_unit}
-
-      # If updating to CURRENCY, require restricted_metric_type
-      measurement_unit == "CURRENCY" && !restricted_type ->
-        {:error, :currency_requires_restricted_metric_type}
-
-      # Validate the restricted_metric_type value
-      restricted_type && restricted_type not in ["COST_DATA", "REVENUE_DATA"] ->
-        {:error, :invalid_restricted_metric_type, restricted_type}
-
-      true ->
-        # Build the custom metric map with only the fields that are being updated
-        custom_metric = %{}
-
-        custom_metric =
-          if params[:display_name] do
-            Map.put(custom_metric, :displayName, params.display_name)
-          else
-            custom_metric
-          end
-
-        custom_metric =
-          if params[:description] do
-            Map.put(custom_metric, :description, params.description)
-          else
-            custom_metric
-          end
-
-        custom_metric =
-          if measurement_unit do
-            Map.put(custom_metric, :measurementUnit, measurement_unit)
-          else
-            custom_metric
-          end
-
-        custom_metric =
-          if restricted_type do
-            # Convert single string to array for API
-            Map.put(custom_metric, :restrictedMetricType, [restricted_type])
-          else
-            custom_metric
-          end
-
-        if map_size(custom_metric) == 0 and params.update_mask != "*" do
-          {:error, :no_fields_to_update}
-        else
-          {:ok, custom_metric}
-        end
+    with :ok <- validate_measurement_unit(measurement_unit, restricted_type),
+         :ok <- validate_restricted_type(restricted_type) do
+      build_update_payload(params, measurement_unit, restricted_type)
     end
   end
+
+  defp validate_measurement_unit(nil, _restricted_type), do: :ok
+
+  defp validate_measurement_unit(unit, _restricted_type)
+       when unit not in @valid_measurement_units,
+       do: {:error, :invalid_measurement_unit, unit}
+
+  defp validate_measurement_unit("CURRENCY", nil),
+    do: {:error, :currency_requires_restricted_metric_type}
+
+  defp validate_measurement_unit(_unit, _restricted_type), do: :ok
+
+  defp validate_restricted_type(nil), do: :ok
+  defp validate_restricted_type(type) when type in ["COST_DATA", "REVENUE_DATA"], do: :ok
+  defp validate_restricted_type(type), do: {:error, :invalid_restricted_metric_type, type}
+
+  defp build_update_payload(params, measurement_unit, restricted_type) do
+    params
+    |> build_custom_metric_map(measurement_unit, restricted_type)
+    |> finalize_update_payload(params.update_mask)
+  end
+
+  defp build_custom_metric_map(params, measurement_unit, restricted_type) do
+    %{}
+    |> maybe_put(:displayName, params[:display_name])
+    |> maybe_put(:description, params[:description])
+    |> maybe_put(:measurementUnit, measurement_unit)
+    |> maybe_put_restricted(restricted_type)
+  end
+
+  defp finalize_update_payload(custom_metric, update_mask) do
+    if map_size(custom_metric) == 0 and update_mask != "*" do
+      {:error, :no_fields_to_update}
+    else
+      {:ok, custom_metric}
+    end
+  end
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  defp maybe_put_restricted(map, nil), do: map
+  defp maybe_put_restricted(map, type), do: Map.put(map, :restrictedMetricType, [type])
 
   defp format_response(metric) do
     restricted_type =

@@ -139,23 +139,24 @@ defmodule MarketMySpec.Engagements.Search do
   # globally (first occurrence wins).
   defp deduplicate_across_venues(venue_candidate_lists) do
     {deduped_lists, _seen} =
-      Enum.map_reduce(venue_candidate_lists, MapSet.new(), fn {venue, candidates}, seen ->
-        {unique, new_seen} =
-          Enum.reduce(candidates, {[], seen}, fn c, {acc, seen_acc} ->
-            url = Map.get(c, "url") || Map.get(c, :url)
-
-            if url && MapSet.member?(seen_acc, url) do
-              {acc, seen_acc}
-            else
-              new_seen_acc = if url, do: MapSet.put(seen_acc, url), else: seen_acc
-              {acc ++ [c], new_seen_acc}
-            end
-          end)
-
-        {{venue, unique}, new_seen}
-      end)
+      Enum.map_reduce(venue_candidate_lists, MapSet.new(), &dedup_venue/2)
 
     deduped_lists
+  end
+
+  defp dedup_venue({venue, candidates}, seen) do
+    {unique, new_seen} = Enum.reduce(candidates, {[], seen}, &dedup_candidate/2)
+    {{venue, unique}, new_seen}
+  end
+
+  defp dedup_candidate(candidate, {acc, seen_acc}) do
+    url = Map.get(candidate, "url") || Map.get(candidate, :url)
+
+    cond do
+      url && MapSet.member?(seen_acc, url) -> {acc, seen_acc}
+      url -> {acc ++ [candidate], MapSet.put(seen_acc, url)}
+      true -> {acc ++ [candidate], seen_acc}
+    end
   end
 
   # Interleave per-venue candidate lists by round-robin, with venues ordered

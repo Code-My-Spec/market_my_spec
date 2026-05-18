@@ -84,49 +84,48 @@ defmodule MarketMySpec.McpServers.AnalyticsAdmin.Tools.CreateKeyEvent do
   defp validate_params(params) do
     counting_method = Map.get(params, :counting_method, "ONCE_PER_EVENT")
 
-    cond do
-      counting_method && counting_method not in @valid_counting_methods ->
-        {:error, :invalid_counting_method, counting_method}
-
-      # Validate that default_value requires currency_code
-      params[:default_value] && !params[:currency_code] ->
-        {:error, :default_value_requires_currency_code}
-
-      # Validate that currency_code requires default_value
-      params[:currency_code] && !params[:default_value] ->
-        {:error, :currency_code_requires_default_value}
-
-      true ->
-        key_event = %{
-          eventName: params.event_name
-        }
-
-        key_event =
-          if counting_method do
-            Map.put(key_event, :countingMethod, counting_method)
-          else
-            key_event
-          end
-
-        key_event =
-          if params[:default_value] do
-            default_value = %{numericValue: params.default_value}
-
-            default_value =
-              if params[:currency_code] do
-                Map.put(default_value, :currencyCode, params.currency_code)
-              else
-                default_value
-              end
-
-            Map.put(key_event, :defaultValue, default_value)
-          else
-            key_event
-          end
-
-        {:ok, key_event}
+    with :ok <- check_counting_method(counting_method),
+         :ok <- check_value_currency_pairing(params) do
+      {:ok, build_key_event(params, counting_method)}
     end
   end
+
+  defp check_counting_method(method) do
+    cond do
+      is_nil(method) -> :ok
+      method in @valid_counting_methods -> :ok
+      true -> {:error, :invalid_counting_method, method}
+    end
+  end
+
+  defp check_value_currency_pairing(params) do
+    has_value? = !is_nil(params[:default_value])
+    has_currency? = !is_nil(params[:currency_code])
+    do_check_value_currency_pairing(has_value?, has_currency?)
+  end
+
+  defp do_check_value_currency_pairing(true, false), do: {:error, :default_value_requires_currency_code}
+  defp do_check_value_currency_pairing(false, true), do: {:error, :currency_code_requires_default_value}
+  defp do_check_value_currency_pairing(_, _), do: :ok
+
+  defp build_key_event(params, counting_method) do
+    %{eventName: params.event_name}
+    |> maybe_put(:countingMethod, counting_method)
+    |> maybe_put_default_value(params)
+  end
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  defp maybe_put_default_value(map, %{default_value: value} = params) when not is_nil(value) do
+    default_value =
+      %{numericValue: value}
+      |> maybe_put(:currencyCode, params[:currency_code])
+
+    Map.put(map, :defaultValue, default_value)
+  end
+
+  defp maybe_put_default_value(map, _params), do: map
 
   defp get_property_id(scope) do
     case scope.active_account.google_analytics_property_id do

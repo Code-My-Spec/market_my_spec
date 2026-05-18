@@ -119,9 +119,10 @@ defmodule MarketMySpecSpex.ElixirForumHelpers do
   end
 
   defp tls_transport_opts do
-    cond do
-      Code.ensure_loaded?(CAStore) -> [cacertfile: CAStore.file_path()]
-      true -> [cacerts: :public_key.cacerts_get()]
+    if Code.ensure_loaded?(CAStore) do
+      [cacertfile: CAStore.file_path()]
+    else
+      [cacerts: :public_key.cacerts_get()]
     end
   rescue
     _ -> []

@@ -10,6 +10,7 @@ defmodule MarketMySpecSpex.Story695.Criterion6001Spex do
 
   use MarketMySpecSpex.Case
 
+  alias MarketMySpec.Agencies.HostResolver
   alias MarketMySpecSpex.Fixtures
 
   spex "owner attempts to claim a subdomain already taken" do
@@ -20,7 +21,7 @@ defmodule MarketMySpecSpex.Story695.Criterion6001Spex do
         beta = Fixtures.agency_account_fixture(beta_owner)
         acme = Fixtures.agency_account_fixture(alice)
 
-        {:ok, _} = MarketMySpec.Agencies.HostResolver.claim_subdomain(beta, "acme")
+        {:ok, _} = HostResolver.claim_subdomain(beta, "acme")
         {token, _} = Fixtures.generate_user_magic_link_token(alice)
 
         {:ok, Map.merge(context, %{beta: beta, alice: alice, acme: acme, token: token})}

@@ -92,6 +92,56 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
   end
 
   @doc """
+  Writes `synopsis` to the thread only when its current synopsis is nil.
+
+  Used by `stage_response` so the first staged Touchpoint on a thread fixes
+  the synthesis. Subsequent stages do not overwrite — the synopsis is a
+  per-thread record, not a per-touchpoint one.
+
+  When a write occurs, broadcasts `{:thread_updated, thread}` on PubSub
+  topic `"thread:<id>"` so any open TouchpointLive.Show page rendering this
+  thread's synopsis reflects the new value without a refresh.
+
+  Returns `{:ok, thread}` with the updated row when the write occurred,
+  `{:ok, thread}` with the unchanged row when synopsis was already set,
+  `{:error, :not_found}` when the thread doesn't belong to the account, or
+  `{:error, changeset}` on validation failure.
+  """
+  @spec set_synopsis_if_blank(Scope.t(), Ecto.UUID.t(), String.t() | nil) ::
+          {:ok, Thread.t()} | {:error, :not_found} | {:error, Ecto.Changeset.t()}
+  def set_synopsis_if_blank(%Scope{} = scope, thread_id, synopsis)
+      when is_binary(thread_id) do
+    case get_thread_by_id(scope, thread_id) do
+      {:error, :not_found} ->
+        {:error, :not_found}
+
+      {:ok, %Thread{synopsis: existing} = thread} when not is_nil(existing) ->
+        {:ok, thread}
+
+      {:ok, %Thread{} = thread} when is_binary(synopsis) and synopsis != "" ->
+        thread
+        |> Thread.changeset(%{synopsis: synopsis})
+        |> Repo.update()
+        |> broadcast_thread_updated()
+
+      {:ok, %Thread{} = thread} ->
+        {:ok, thread}
+    end
+  end
+
+  defp broadcast_thread_updated({:ok, %Thread{id: id} = thread} = result) do
+    Phoenix.PubSub.broadcast(
+      MarketMySpec.PubSub,
+      "thread:#{id}",
+      {:thread_updated, thread}
+    )
+
+    result
+  end
+
+  defp broadcast_thread_updated(other), do: other
+
+  @doc """
   Returns all threads fetched for the account in the given scope, ordered by
   `fetched_at` descending (most recently fetched first).
   """
@@ -122,9 +172,8 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
   defp fetch_and_persist(account_id, venue, thread_id) do
     adapter = adapter_for(venue.source)
 
-    with {:ok, raw_map} <- adapter.get_thread(venue, thread_id),
-         {:ok, thread} <- upsert_thread(account_id, venue.source, thread_id, raw_map) do
-      {:ok, thread}
+    with {:ok, raw_map} <- adapter.get_thread(venue, thread_id) do
+      upsert_thread(account_id, venue.source, thread_id, raw_map)
     end
   end
 

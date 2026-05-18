@@ -96,8 +96,13 @@ defmodule MarketMySpec.Engagements.Touchpoint do
   @doc """
   Changeset for creating a staged Touchpoint (no comment_url or posted_at yet).
 
-  Required: account_id, thread_id, polished_body.
-  Optional: link_target (the bare URL embedded as a UTM link in polished_body).
+  Required: account_id, thread_id.
+  Optional: polished_body, angle, link_target.
+
+  `polished_body` is intentionally optional at stage time — the agent often
+  stages a touchpoint with just the angle and link, before Sam dictates his
+  rough draft. The body is filled in later via `update_touchpoint` or the
+  LiveView edit form.
 
   Use this when the agent stages a draft via the stage_response MCP tool.
   The touchpoint transitions to posted via `changeset/2` when the user
@@ -108,7 +113,7 @@ defmodule MarketMySpec.Engagements.Touchpoint do
     touchpoint
     |> cast(attrs, [:account_id, :thread_id, :state, :angle, :polished_body, :link_target])
     |> put_default_state(:staged)
-    |> validate_required([:account_id, :thread_id, :polished_body])
+    |> validate_required([:account_id, :thread_id])
     |> validate_url(:link_target)
     |> foreign_key_constraint(:account_id)
     |> foreign_key_constraint(:thread_id)
@@ -122,19 +127,25 @@ defmodule MarketMySpec.Engagements.Touchpoint do
   end
 
   @doc """
-  Changeset for transitioning a Touchpoint's state.
+  Changeset for transitioning a Touchpoint's state and/or editing its
+  polished_body / angle.
 
   Allowed transitions: any state → :staged | :posted | :abandoned.
   Transitioning to :posted requires comment_url and posted_at.
   Transitioning to :staged or :abandoned does not.
 
-  Use this from `update_touchpoint` MCP tool.
+  `polished_body` may be saved empty — staged touchpoints often exist with
+  no body yet while the agent and Sam iterate on what to post. The body
+  fills in over time.
+
+  Use this from the `update_touchpoint` MCP tool and the TouchpointLive.Show
+  edit form.
   """
   @spec update_changeset(t(), map()) :: Ecto.Changeset.t()
   def update_changeset(touchpoint, attrs) do
     changeset =
       touchpoint
-      |> cast(attrs, [:state, :comment_url, :posted_at])
+      |> cast(attrs, [:state, :comment_url, :posted_at, :polished_body, :angle])
 
     state = get_field(changeset, :state)
 

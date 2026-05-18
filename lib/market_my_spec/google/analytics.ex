@@ -21,10 +21,11 @@ defmodule MarketMySpec.Google.Analytics do
       {:ok, %GoogleApi.AnalyticsAdmin.V1beta.Model.GoogleAnalyticsAdminV1betaListAccountsResponse{}}
   """
 
+  alias GoogleApi.AnalyticsAdmin.V1beta.Api.Accounts
+  alias GoogleApi.AnalyticsAdmin.V1beta.Api.Properties
+  alias GoogleApi.AnalyticsAdmin.V1beta.Connection
   alias MarketMySpec.Integrations
   alias MarketMySpec.Users.Scope
-  alias GoogleApi.AnalyticsAdmin.V1beta.Api.{Accounts, Properties}
-  alias GoogleApi.AnalyticsAdmin.V1beta.Connection
 
   @doc """
   Builds a Google Analytics Admin API connection for the scoped user.

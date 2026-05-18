@@ -159,7 +159,9 @@ remove_membership_for_email.("qa-existing@marketmyspec.test", owner_account.id)
 # Reset accepted invitations for this user so we can re-invite
 reset_invitations_for_email.("qa-existing@marketmyspec.test", owner_account.id)
 
-# Create a pending invitation to qa-existing@marketmyspec.test (if not already pending)
+# Cancel any existing pending invite so we can produce a fresh token on every seed run.
+# (Tokens are hashed in the DB — the raw encoded_token is only available on the in-memory
+# struct returned by Accounts.invite_user/4, never recoverable from a re-read.)
 existing_user_invite =
   Repo.one(
     from i in Invitation,
@@ -170,9 +172,14 @@ existing_user_invite =
       limit: 1
   )
 
-unless existing_user_invite do
-  {:ok, _} = Accounts.invite_user(owner_scope, owner_account.id, existing_user.email, :member)
+if existing_user_invite do
+  {:ok, _} = MarketMySpec.Accounts.InvitationRepository.cancel(owner_scope, existing_user_invite)
 end
+
+{:ok, existing_user_invitation} =
+  Accounts.invite_user(owner_scope, owner_account.id, existing_user.email, :member)
+
+existing_user_invite_token = existing_user_invitation.token
 
 # ---------------------------------------------------------------------------
 # "pending-invite@example.com" — generic pending invite for new-user accept test
@@ -186,7 +193,8 @@ remove_membership_for_email.("pending-invite@example.com", owner_account.id)
 # Reset accepted invitations for pending-invite@example.com so we can re-invite
 reset_invitations_for_email.("pending-invite@example.com", owner_account.id)
 
-# Create a pending invitation to "pending-invite@example.com" (if not already pending)
+# Same fresh-token strategy for pending-invite@example.com — cancel any pending,
+# then re-invite so we can capture and print the raw token.
 generic_invite_exists =
   Repo.one(
     from i in Invitation,
@@ -197,23 +205,17 @@ generic_invite_exists =
       limit: 1
   )
 
-unless generic_invite_exists do
-  {:ok, _} = Accounts.invite_user(owner_scope, owner_account.id, "pending-invite@example.com", :admin)
+if generic_invite_exists do
+  {:ok, _} = MarketMySpec.Accounts.InvitationRepository.cancel(owner_scope, generic_invite_exists)
 end
+
+{:ok, generic_invitation} =
+  Accounts.invite_user(owner_scope, owner_account.id, "pending-invite@example.com", :admin)
+
+generic_invite_token = generic_invitation.token
 
 # Reload owner_user to get updated active_account_id
 owner_user = Users.get_user_by_email(owner_user.email)
-
-# Reload existing user invite to get the token for display
-existing_user_invite =
-  Repo.one(
-    from i in Invitation,
-      where:
-        i.account_id == ^owner_account.id and
-          i.email == ^existing_user.email and
-          i.status == :pending,
-      limit: 1
-  )
 
 IO.puts("""
 
@@ -238,12 +240,14 @@ Email:        #{existing_user.email}
 User id:      #{existing_user.id}
 Magic-link:   http://localhost:4008/users/log-in/#{existing_user_token}
 
-NOTE: Invitation tokens are stored hashed — get raw tokens from /dev/mailbox after
-sending an invitation via the UI, or retrieve via the accept page URL in the email.
+=== Pending invitation tokens (raw, single-use, expire in 7 days) ===
 
-Pending invitations already created for:
-  - #{existing_user.email} (for duplicate invite + existing user accept tests)
-  - pending-invite@example.com (for pending invite display + new user accept tests)
+Existing-user invite (#{existing_user.email}):
+  http://localhost:4008/invitations/accept/#{existing_user_invite_token}
 
-Tokens are single-use and expire in 20 minutes. Re-run to refresh.
+Generic invite (pending-invite@example.com):
+  http://localhost:4008/invitations/accept/#{generic_invite_token}
+
+Tokens are stored hashed in the DB; raw values above are only printable at create-time.
+Re-run this seed to cancel + regenerate both invites with fresh tokens.
 """)

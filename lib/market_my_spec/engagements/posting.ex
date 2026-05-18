@@ -36,36 +36,43 @@ defmodule MarketMySpec.Engagements.Posting do
   """
   @spec build_utm_url(map(), String.t(), String.t() | nil) :: String.t()
   def build_utm_url(thread, link_target, campaign_override \\ nil) do
+    utm_params = utm_params_for_thread(thread, campaign_override)
+    "#{link_target}#{separator(link_target)}#{utm_params}"
+  end
+
+  defp utm_params_for_thread(thread, campaign_override) do
     source = Map.get(thread, :source)
     url = Map.get(thread, :url, "")
     explicit_campaign = sanitize_campaign(campaign_override)
+    utm_params_for(source, url, thread, explicit_campaign)
+  end
 
-    utm_params =
-      case source do
-        :reddit ->
-          campaign =
-            explicit_campaign ||
-              extract_subreddit(url) ||
-              to_string(Map.get(thread, :source_thread_id, "reddit"))
+  defp separator(link_target) do
+    if String.contains?(link_target, "?"), do: "&", else: "?"
+  end
 
-          "utm_source=reddit&utm_medium=comment&utm_campaign=#{campaign}"
+  defp utm_params_for(:reddit, url, thread, explicit_campaign) do
+    campaign =
+      explicit_campaign ||
+        extract_subreddit(url) ||
+        to_string(Map.get(thread, :source_thread_id, "reddit"))
 
-        :elixirforum ->
-          campaign =
-            explicit_campaign ||
-              extract_ef_category(url) ||
-              to_string(Map.get(thread, :source_thread_id, "elixirforum"))
+    "utm_source=reddit&utm_medium=comment&utm_campaign=#{campaign}"
+  end
 
-          "utm_source=elixirforum&utm_medium=reply&utm_campaign=#{campaign}"
+  defp utm_params_for(:elixirforum, url, thread, explicit_campaign) do
+    campaign =
+      explicit_campaign ||
+        extract_ef_category(url) ||
+        to_string(Map.get(thread, :source_thread_id, "elixirforum"))
 
-        other ->
-          src = to_string(other || "unknown")
-          base = "utm_source=#{src}&utm_medium=engagement"
-          if explicit_campaign, do: base <> "&utm_campaign=#{explicit_campaign}", else: base
-      end
+    "utm_source=elixirforum&utm_medium=reply&utm_campaign=#{campaign}"
+  end
 
-    separator = if String.contains?(link_target, "?"), do: "&", else: "?"
-    "#{link_target}#{separator}#{utm_params}"
+  defp utm_params_for(other, _url, _thread, explicit_campaign) do
+    src = to_string(other || "unknown")
+    base = "utm_source=#{src}&utm_medium=engagement"
+    if explicit_campaign, do: base <> "&utm_campaign=#{explicit_campaign}", else: base
   end
 
   # Strip whitespace; nil out empty values so the fallback chain triggers.

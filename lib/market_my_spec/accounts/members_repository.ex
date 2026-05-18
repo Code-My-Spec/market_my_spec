@@ -102,7 +102,7 @@ defmodule MarketMySpec.Accounts.MembersRepository do
       join: m in Member,
       on: m.account_id == a.id,
       where: m.user_id == ^user_id,
-      order_by: [desc: a.inserted_at]
+      order_by: [desc: a.inserted_at, desc: a.id]
     )
     |> Repo.all()
   end

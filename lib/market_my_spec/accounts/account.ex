@@ -22,7 +22,6 @@ defmodule MarketMySpec.Accounts.Account do
   @reserved_slugs ~w(admin api www help support docs blog)
   @hex_color_format ~r/^#[0-9a-fA-F]{6}$/
 
-
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "accounts" do
     field :name, :string

@@ -5,6 +5,7 @@ defmodule MarketMySpec.Integrations do
 
   require Logger
 
+  alias Assent.Strategy.OAuth2
   alias MarketMySpec.Integrations.Integration
   alias MarketMySpec.Integrations.IntegrationRepository
   alias MarketMySpec.Users.Scope
@@ -119,7 +120,7 @@ defmodule MarketMySpec.Integrations do
       |> strategy.default_config()
       |> Keyword.merge(user_config)
 
-    Assent.Strategy.OAuth2.refresh_access_token(config, %{"refresh_token" => refresh_token})
+    OAuth2.refresh_access_token(config, %{"refresh_token" => refresh_token})
   end
 
   defp persist_refreshed_token(scope, provider, integration, token_response) do
