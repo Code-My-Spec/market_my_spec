@@ -54,8 +54,6 @@ defmodule MarketMySpecSpex.ElixirForumHelpers do
   into the production Engagements.HTTP modules for client config.
   """
 
-  use Boundary, deps: [MarketMySpec]
-
   import ReqCassette
 
   @cassette_dir "test/cassettes/elixirforum"

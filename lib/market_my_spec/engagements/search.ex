@@ -12,6 +12,11 @@ defmodule MarketMySpec.Engagements.Search do
   of the result envelope so callers (LLM or UI) can surface which venues
   errored without crashing the whole call.
 
+  When a Reddit venue is searched without an online MMS Agent the search
+  falls back to anonymous public Reddit access and emits an informational
+  `notices` entry (distinct from `failures`) so the caller knows agent
+  pairing would enable authenticated OAuth access.
+
   ## Failure envelope shape
 
   Each failure entry carries flat keys:
@@ -20,6 +25,7 @@ defmodule MarketMySpec.Engagements.Search do
   - `reason` — a human-readable string describing the failure
   """
 
+  alias MarketMySpec.Agents.Presence
   alias MarketMySpec.Engagements.Source.ElixirForum
   alias MarketMySpec.Engagements.Source.Reddit
   alias MarketMySpec.Engagements.ThreadsRepository
@@ -38,6 +44,7 @@ defmodule MarketMySpec.Engagements.Search do
   @type result :: %{
           candidates: [candidate()],
           failures: [failure()],
+          notices: [String.t()],
           next_cursor: nil | String.t()
         }
 
@@ -55,6 +62,7 @@ defmodule MarketMySpec.Engagements.Search do
   Returns a map with:
   - `:candidates` — deduplicated list interleaved by venue weight descending
   - `:failures` — list of `%{source, venue_identifier, reason}` for source errors
+  - `:notices` — informational strings (e.g. agent-offline fallback notice)
   - `:next_cursor` — opaque pagination token (or `nil` at end of listing)
   """
   @spec search(Scope.t(), String.t(), keyword()) :: result()
@@ -68,7 +76,7 @@ defmodule MarketMySpec.Engagements.Search do
       |> Enum.filter(& &1.enabled)
       |> maybe_filter_venue(venue_filter)
 
-    {venue_candidates, failures, next_cursor} = fan_out(venues, query, cursor)
+    {venue_candidates, failures, notices, next_cursor} = fan_out(venues, query, cursor, scope)
 
     ranked =
       venue_candidates
@@ -76,54 +84,93 @@ defmodule MarketMySpec.Engagements.Search do
       |> interleave_by_weight()
       |> persist_and_enrich(scope)
 
-    %{candidates: ranked, failures: failures, next_cursor: next_cursor}
+    %{candidates: ranked, failures: failures, notices: notices, next_cursor: next_cursor}
   end
 
   # Fan out to each venue in parallel via Task.async_stream.
   # Each adapter returns either `{:ok, %{candidates: [...], next_cursor: ...}}`
   # or `{:error, reason}`. We collect per-venue candidate lists (keeping venue
-  # metadata attached for interleaving), failures, and the first non-nil cursor.
-  defp fan_out(venues, query, cursor) do
+  # metadata attached for interleaving), failures, informational notices, and
+  # the first non-nil cursor.
+  defp fan_out(venues, query, cursor, scope) do
     venues
     |> Task.async_stream(
-      fn venue -> {venue, search_venue(venue, query, cursor)} end,
+      fn venue -> {venue, search_venue(venue, query, cursor, scope)} end,
       on_timeout: :kill_task,
       timeout: 15_000
     )
-    |> Enum.reduce({[], [], nil}, fn
+    |> Enum.reduce({[], [], [], nil}, fn
       {:ok, {venue, {:ok, %{candidates: raw_candidates, next_cursor: nc}}}},
-      {acc_venue_lists, acc_failures, acc_cursor} ->
+      {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
         venue_entry = {venue, raw_candidates}
-        {acc_venue_lists ++ [venue_entry], acc_failures, acc_cursor || nc}
+        {acc_venue_lists ++ [venue_entry], acc_failures, acc_notices, acc_cursor || nc}
 
-      {:ok, {venue, {:error, reason}}}, {acc_venue_lists, acc_failures, acc_cursor} ->
+      # Anonymous Reddit fallback — returns results but adds an informational
+      # notice so the caller knows agent pairing enables authenticated access.
+      {:ok, {venue, {:ok_anon, %{candidates: raw_candidates, next_cursor: nc}}}},
+      {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
+        venue_entry = {venue, raw_candidates}
+
+        notice =
+          "No online MMS Agent for #{venue.identifier}. " <>
+            "Pair or start an agent at /agents for authenticated Reddit access."
+
+        {acc_venue_lists ++ [venue_entry], acc_failures, acc_notices ++ [notice],
+         acc_cursor || nc}
+
+      {:ok, {venue, {:error, reason}}}, {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
         failure = %{
           source: venue.source,
           venue_identifier: venue.identifier,
           reason: format_reason(venue.source, reason)
         }
 
-        {acc_venue_lists, acc_failures ++ [failure], acc_cursor}
+        {acc_venue_lists, acc_failures ++ [failure], acc_notices, acc_cursor}
 
-      {:exit, reason}, {acc_venue_lists, acc_failures, acc_cursor} ->
+      {:exit, reason}, {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
         failure = %{
           source: nil,
           venue_identifier: nil,
           reason: "Task exited: #{inspect(reason)}"
         }
 
-        {acc_venue_lists, acc_failures ++ [failure], acc_cursor}
+        {acc_venue_lists, acc_failures ++ [failure], acc_notices, acc_cursor}
     end)
   end
 
-  defp search_venue(venue, query, cursor) do
+  # Returns `{:ok, result}` for agent-authenticated Reddit search,
+  # `{:ok_anon, result}` when falling back to anonymous (no agent online),
+  # or `{:error, reason}` on failure. The `{:ok_anon, _}` tag lets fan_out
+  # add an informational notice without adding a failure entry.
+  defp search_venue(venue, query, cursor, scope) do
     adapter = adapter_for(venue.source)
-    adapter.search(venue, query, cursor: cursor)
+    opts = [cursor: cursor]
+
+    if venue.source == :reddit do
+      search_reddit_venue(venue, query, opts, scope)
+    else
+      adapter.search(venue, query, opts)
+    end
   rescue
     error -> {:error, error}
   end
 
+  defp search_reddit_venue(venue, query, opts, scope) do
+    if is_nil(Presence.most_recently_connected(scope.user.id)) do
+      # No agent online: fall back to anonymous read and signal the caller.
+      case Reddit.search(venue, query, opts) do
+        {:ok, result} -> {:ok_anon, result}
+        error -> error
+      end
+    else
+      Reddit.search(venue, query, [{:scope, scope} | opts])
+    end
+  end
+
   # Format a failure reason into a human-readable string.
+  defp format_reason(:reddit, :agent_offline),
+    do: "No online MMS Agent. Pair or start an agent at /agents."
+
   defp format_reason(_source, {:http_status, 429}),
     do: "Rate limited (HTTP 429 Too Many Requests)"
 

@@ -46,14 +46,12 @@ defmodule MarketMySpecSpex.OAuthHelpers do
   with credentials and PII scrubbed; they are not bound to either project.
   """
 
-  use Boundary, deps: [MarketMySpec]
-
   import Phoenix.ConnTest
   import Plug.Conn
-  import ReqCassette
 
   alias Assent.JWTAdapter.AssentJWT
   alias MarketMySpec.Integrations.OAuthStateStore
+  alias MarketMySpecSpex.OAuthTestMutex
 
   @cassette_dir "test/cassettes/oauth"
   @endpoint MarketMySpecWeb.Endpoint
@@ -171,18 +169,30 @@ defmodule MarketMySpecSpex.OAuthHelpers do
   @doc """
   Temporarily replaces the Assent HTTP adapter with the given ReqCassette plug
   for the duration of `fun/0`.
+
+  Uses `OAuthTestMutex` — a GenServer-backed serialization lock — to ensure
+  only one test at a time mutates the global Assent HTTP adapter in Application
+  env. GenServer mailbox queuing guarantees FIFO serialization without any
+  dependency on `:global.trans`, which can behave unexpectedly under some OTP
+  configurations and scheduling patterns.
   """
   def with_assent_plug(plug, fun) do
-    previous = Application.get_env(:assent, :http_adapter)
-    Application.put_env(:assent, :http_adapter, {Assent.HTTPAdapter.Req, [plug: plug]})
+    OAuthTestMutex.exclusive(fn ->
+      previous = Application.get_env(:assent, :http_adapter)
+      Application.put_env(:assent, :http_adapter, {Assent.HTTPAdapter.Req, [plug: plug]})
 
-    try do
-      fun.()
-    after
-      case previous do
-        nil -> Application.delete_env(:assent, :http_adapter)
-        adapter -> Application.put_env(:assent, :http_adapter, adapter)
+      try do
+        fun.()
+      after
+        case previous do
+          nil -> Application.delete_env(:assent, :http_adapter)
+          adapter -> Application.put_env(:assent, :http_adapter, adapter)
+        end
       end
+    end)
+    |> case do
+      {:__mutex_exception__, e, stacktrace} -> reraise e, stacktrace
+      result -> result
     end
   end
 
@@ -195,14 +205,14 @@ defmodule MarketMySpecSpex.OAuthHelpers do
   def do_google_callback(base_conn, cassette_name, state \\ "google-state") do
     OAuthStateStore.store(state, %{state: state})
 
-    with_cassette cassette_name, cassette_opts(), fn plug ->
+    ReqCassette.with_cassette(cassette_name, cassette_opts(), fn plug ->
       with_assent_plug(plug, fn ->
         base_conn
         |> Phoenix.ConnTest.init_test_session(%{})
         |> put_session(:sign_in_oauth_provider, :google)
         |> get("/auth/google/callback", %{"code" => "google-replay-code", "state" => state})
       end)
-    end
+    end)
   end
 
   @doc """
@@ -214,14 +224,14 @@ defmodule MarketMySpecSpex.OAuthHelpers do
   def do_github_callback(base_conn, cassette_name, state \\ "github-state") do
     OAuthStateStore.store(state, %{state: state})
 
-    with_cassette cassette_name, cassette_opts(), fn plug ->
+    ReqCassette.with_cassette(cassette_name, cassette_opts(), fn plug ->
       with_assent_plug(plug, fn ->
         base_conn
         |> Phoenix.ConnTest.init_test_session(%{})
         |> put_session(:sign_in_oauth_provider, :github)
         |> get("/auth/github/callback", %{"code" => "github-replay-code", "state" => state})
       end)
-    end
+    end)
   end
 
   @doc """

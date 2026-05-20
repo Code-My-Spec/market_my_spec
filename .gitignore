@@ -59,3 +59,4 @@ diagnostics.jsonl
 /.code_my_spec/architecture/.proposal_pre_existed_at_session_start
 /.code_my_spec/internal/agent_test_events.json
 
+burrito_out/

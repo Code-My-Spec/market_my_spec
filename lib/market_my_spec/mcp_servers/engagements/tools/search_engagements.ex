@@ -9,6 +9,11 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.SearchEngagements do
   Failing sources degrade gracefully — their errors are surfaced in the
   `failures` field of the response envelope without crashing the tool.
 
+  When a Reddit venue is searched without an online MMS Agent, the tool falls
+  back to anonymous public Reddit access and includes an informational `notices`
+  list in the payload so the caller knows agent pairing enables authenticated
+  OAuth access (e.g. `Pair or start an agent at /agents`).
+
   Pass `cursor` (returned as `next_cursor` from a prior call) to fetch the
   next page of results.
   """
@@ -33,12 +38,13 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.SearchEngagements do
     opts = if Map.has_key?(params, :venue), do: [{:venue, params.venue} | opts], else: opts
     opts = if Map.has_key?(params, :cursor), do: [{:cursor, params.cursor} | opts], else: opts
 
-    %{candidates: candidates, failures: failures, next_cursor: next_cursor} =
+    %{candidates: candidates, failures: failures, notices: notices, next_cursor: next_cursor} =
       Search.search(scope, query, opts)
 
     payload = %{
       candidates: candidates,
       failures: encode_failures(failures),
+      notices: notices,
       next_cursor: next_cursor
     }
 

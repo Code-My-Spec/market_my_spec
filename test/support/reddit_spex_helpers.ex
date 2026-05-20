@@ -29,8 +29,6 @@ defmodule MarketMySpecSpex.RedditHelpers do
   Cassettes are anonymous-read so there are no auth headers to scrub.
   """
 
-  use Boundary, deps: [MarketMySpec]
-
   import ReqCassette
 
   @cassette_dir "test/cassettes/reddit"

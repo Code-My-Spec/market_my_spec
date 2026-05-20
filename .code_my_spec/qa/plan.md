@@ -82,6 +82,99 @@ PORT=4007 mix phx.server                          # start the dev server on 4007
 
 Note: PORT must be passed explicitly until the dotenvy loading is verified — the `envs/dev.env` PORT=4007 entry was not picked up during this probe (server tried to bind 4000 and conflicted with another beam). See System Issues.
 
+### `just agent` — MMS Agent binary, running in-tree
+
+When to use: any QA touching the locally-installed MMS Agent — story 731 (pair flow), story 732 (channel join + presence), story 733 (Reddit-via-agent HTTP transport).
+
+The agent ships as a self-contained Burrito binary, but for QA we run it as a plain Mix application instead — boots faster, gives an `iex` REPL for inspection, no rebuild loop. Same OTP supervision tree (`MarketMySpecAgent.Application`), same code paths, just no Burrito wrap.
+
+```
+just agent                                        # start the agent in iex (MIX_ENV=dev_agent)
+just server                                       # in a second terminal — the server it talks to
+```
+
+What boots: `MarketMySpecAgent.Auth.Store` (reads `~/.mms-agent/auth.json` if it exists) and `MarketMySpecAgent.Channel.Client`. The `server_url` is `http://localhost:4007` in `:dev_agent` (matches the dev Phoenix port).
+
+**Implementation status note (2026-05-19, updated):** All three components are now wired — pairing LiveView, server-side AgentChannel + Presence + Dispatcher, and the binary's `Channel.Client` Slipstream join loop. Manual end-to-end verification (server + binary running together, pair flow → channel join → Reddit dispatch round-trip) has not yet been exercised in a single session; the QA stories 731/732/733 cover the pieces.
+
+#### Story 731 — pair flow (testable today)
+
+In a first terminal, boot the server:
+```
+just server                                       # PORT=4007 iex -S mix phx.server
+```
+
+In a second terminal, run the agent:
+```
+just agent                                        # MIX_ENV=dev_agent iex -S mix run --no-halt
+iex> MarketMySpecAgent.Pairing.run()
+# opens browser to http://localhost:4007/agents/pair?state=...&port=...&name=...
+# blocks on the loopback callback
+```
+
+In the browser, log in (use `mix run priv/repo/qa_seeds.exs` to get a magic-link URL), then click Approve on the pairing screen. The agent terminal prints `:ok`.
+
+Verify:
+```
+ls -l ~/.mms-agent/auth.json                      # must exist, -rw------- (mode 0600)
+jq . ~/.mms-agent/auth.json                       # agent_id, user_id, token, server_url, paired_at
+```
+
+Negative paths to exercise:
+- Click Deny instead → agent terminal prints `{:error, :denied}`, no auth.json created
+- Refresh the /agents/pair URL after approve → "Pairing session unavailable" rendered, no second Agent record
+- Open /agents/pair without a state param → "Invalid pairing link"
+
+#### Story 732 — channel + presence (deferred until Channel.Client lands)
+
+Once `MarketMySpecAgent.Channel.Client` is implemented (Slipstream-based join + auto-reconnect):
+```
+# server iex (just server)
+iex> MarketMySpec.Agents.Presence.online_agent_ids(<user_id>)
+# expect a MapSet with the agent_id once the binary has joined
+```
+
+For now this can be exercised via the BDD spex only — `mix spex test/spex/732_*` runs through Phoenix.ChannelTest with a real channel join, which is the same code path the binary will hit.
+
+The Agents page at `http://localhost:4007/agents` shows the current presence state — once the binary's Channel.Client joins, the Online pill should flip without a refresh.
+
+#### Story 733 — Reddit-via-agent dispatch (deferred until Channel.Client lands)
+
+Once Channel.Client is live and joined, from the server iex:
+```
+iex> {:ok, agent} = ... # find the agent for your user
+iex> user = MarketMySpec.Users.get_user!(<user_id>)
+iex> MarketMySpec.Agents.Dispatcher.dispatch_http(user, %{
+  method: :get,
+  url: "https://oauth.reddit.com/r/elixir/about.json",
+  headers: [],
+  body: ""
+})
+# {:ok, %{status: 200, headers: ..., body: ...}}
+```
+
+Expected error shapes:
+- `{:error, :host_not_allowed}` for a URL outside the allowlist
+- `{:error, :agent_offline}` when no agent is connected
+- `{:error, :timeout}` if the binary doesn't respond within 30s
+- `{:error, :agent_disconnected}` if the binary drops mid-flight
+
+The user-facing surface for "no online agent" is the SearchEngagements MCP tool — if no agent is paired+joined for a reddit venue, the response text contains "Pair or start an agent at /agents."
+
+To validate the **packaged** binary instead of the in-tree app, use `just build-agent` once, then run the produced executable from `burrito_out/` directly. Day-to-day QA does NOT need this — only worth doing right before a release.
+
+### Burrito binary release
+
+When to use: shipping a release to Homebrew. Day-to-day QA uses `just agent` above.
+
+```
+just build-agent                                  # MIX_ENV=prod_agent mix release market_my_spec_agent
+ls burrito_out/                                   # output binary per target
+./burrito_out/market_my_spec_agent_macos_m1 pair  # smoke-test the packaged form
+```
+
+Output target name is `market_my_spec_agent_<target>`. Default target is `macos_m1` locally; override with `BURRITO_TARGET=macos|linux|linux_aarch64` for cross-builds (CI).
+
 ### iex (interactive inspection)
 
 When to use: poking at live state during a QA session — fetching a user, verifying a token, inspecting OAuth state store contents.

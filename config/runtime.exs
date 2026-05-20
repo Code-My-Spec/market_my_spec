@@ -18,9 +18,15 @@ if config_env() in [:dev, :test] do
     System.get_env()
   ])
 else
-  app_env = System.get_env("APP_ENV") || raise "APP_ENV must be set (prod|uat)"
-  MarketMySpec.Secrets.load!(app_env)
-  source!([System.get_env()])
+  if config_env() in [:dev_agent, :prod_agent] do
+    # MMS Agent binary — no SSM, no server secrets. Just pull whatever
+    # is in System env (server_url override, log level, etc.).
+    source!([System.get_env()])
+  else
+    app_env = System.get_env("APP_ENV") || raise "APP_ENV must be set (prod|uat)"
+    MarketMySpec.Secrets.load!(app_env)
+    source!([System.get_env()])
+  end
 end
 
 # config/runtime.exs is executed for all environments, including
@@ -46,11 +52,17 @@ end
 config :market_my_spec, MarketMySpecWeb.Endpoint,
   http: [port: env!("PORT", :integer, 4000)]
 
-config :market_my_spec,
-  google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),
-  google_client_secret: env!("GOOGLE_CLIENT_SECRET", :string, nil),
-  github_client_id: env!("GITHUB_CLIENT_ID", :string, nil),
-  github_client_secret: env!("GITHUB_CLIENT_SECRET", :string, nil)
+# OAuth creds live in env files for :dev and SSM for :prod. :test gets
+# them from config/test.exs so cassettes stay deterministic across
+# machines. :dev_agent and :prod_agent (the MMS Agent binary) don't do
+# OAuth at all, so they're skipped here.
+if config_env() in [:dev, :prod] do
+  config :market_my_spec,
+    google_client_id: env!("GOOGLE_CLIENT_ID"),
+    google_client_secret: env!("GOOGLE_CLIENT_SECRET"),
+    github_client_id: env!("GITHUB_CLIENT_ID"),
+    github_client_secret: env!("GITHUB_CLIENT_SECRET")
+end
 
 # Cloudflare named tunnel for dev — exposes the local Phoenix dev server
 # at https://dev.marketmyspec.com via `ClientUtils.CloudflareTunnel`. The

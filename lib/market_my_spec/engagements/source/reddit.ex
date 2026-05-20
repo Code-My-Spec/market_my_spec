@@ -14,6 +14,11 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   recency, snippet`). `recency` is `created_utc` for v1 (last-activity
   requires a per-thread API call — see story 706 follow-up).
 
+  When a `scope` opt is provided, the search is attempted via the user's
+  online agent first (story 733). If no agent is online, the call falls back
+  to the anonymous direct path so search_engagements still works without
+  an agent connected.
+
   ## get_thread/2, post/3
 
   Still scaffolds — implemented in stories 706 and 707.
@@ -21,6 +26,7 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
 
   @behaviour MarketMySpec.Engagements.Source
 
+  alias MarketMySpec.Agents.Dispatcher
   alias MarketMySpec.Engagements.HTTP
 
   @snippet_length 280
@@ -56,6 +62,21 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @spec search(map(), String.t(), keyword()) ::
           {:ok, %{candidates: [map()], next_cursor: nil | String.t()}} | {:error, term()}
   def search(venue, query, opts \\ []) when is_binary(query) do
+    case Keyword.get(opts, :scope) do
+      nil -> search_direct(venue, query, opts)
+      scope -> search_with_agent_fallback(venue, query, opts, scope)
+    end
+  end
+
+  # Tries agent dispatch; falls back to direct HTTP if no agent is online.
+  defp search_with_agent_fallback(venue, query, opts, scope) do
+    case search_via_agent(venue, query, opts, scope) do
+      {:error, :agent_offline} -> search_direct(venue, query, opts)
+      other -> other
+    end
+  end
+
+  defp search_direct(venue, query, opts) do
     cursor = Keyword.get(opts, :cursor)
     params = [q: query, restrict_sr: 1, sort: "new", limit: 25]
     params = if is_binary(cursor) and cursor != "", do: params ++ [after: cursor], else: params
@@ -65,15 +86,7 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
            params: params
          ) do
       {:ok, %Req.Response{status: 200, body: body}} ->
-        candidates =
-          body
-          |> get_in(["data", "children"])
-          |> List.wrap()
-          |> Enum.map(&normalize_child/1)
-          |> Enum.reject(&is_nil/1)
-
-        next_cursor = get_in(body, ["data", "after"])
-        {:ok, %{candidates: candidates, next_cursor: next_cursor}}
+        {:ok, normalize_listing(body)}
 
       {:ok, %Req.Response{status: status}} ->
         {:error, {:http_status, status}}
@@ -81,6 +94,43 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  defp search_via_agent(venue, query, opts, scope) do
+    cursor = Keyword.get(opts, :cursor)
+    qs = [q: query, restrict_sr: 1, sort: "new", limit: 25]
+    qs = if is_binary(cursor) and cursor != "", do: qs ++ [after: cursor], else: qs
+
+    url =
+      "https://oauth.reddit.com/r/#{venue.identifier}/search.json?" <> URI.encode_query(qs)
+
+    case Dispatcher.dispatch_http(scope.user, %{
+           method: :get,
+           url: url,
+           headers: [{"user-agent", "market_my_spec/0.1 by /u/johns10davenport"}],
+           body: ""
+         }) do
+      {:ok, %{status: 200, body: body}} ->
+        decoded = if is_binary(body), do: Jason.decode!(body), else: body
+        {:ok, normalize_listing(decoded)}
+
+      {:ok, %{status: status}} ->
+        {:error, {:http_status, status}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp normalize_listing(body) do
+    candidates =
+      body
+      |> get_in(["data", "children"])
+      |> List.wrap()
+      |> Enum.map(&normalize_child/1)
+      |> Enum.reject(&is_nil/1)
+
+    %{candidates: candidates, next_cursor: get_in(body, ["data", "after"])}
   end
 
   defp normalize_child(%{"data" => data}) when is_map(data) do

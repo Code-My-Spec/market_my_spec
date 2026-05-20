@@ -13,8 +13,10 @@ defmodule MarketMySpecWeb.Application do
         MarketMySpec.Repo,
         MarketMySpec.Vault,
         MarketMySpec.Integrations.OAuthStateStore,
+        MarketMySpec.Agents.Pairing.StateStore,
         {DNSCluster, query: Application.get_env(:market_my_spec, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: MarketMySpec.PubSub},
+        MarketMySpec.Agents.Presence,
         # MCP server — mounted via Anubis StreamableHTTP plug in the router
         {MarketMySpec.McpServers.MarketingStrategyServer, transport: :streamable_http},
         # Start to serve requests, typically the last entry

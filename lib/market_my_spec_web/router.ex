@@ -30,6 +30,15 @@ defmodule MarketMySpecWeb.Router do
     get "/.well-known/oauth-authorization-server", OauthController, :authorization_server_metadata
   end
 
+  # MMS Agent version-check endpoint — public, queried by the binary on
+  # every CLI invocation to surface a "brew upgrade mms-agent" notice
+  # when a newer version is available.
+  scope "/api/agent", MarketMySpecWeb do
+    pipe_through :api
+
+    get "/version", AgentVersionController, :show
+  end
+
   # OAuth token/revoke/register endpoints (public API, bearer auth inside)
   scope "/", MarketMySpecWeb do
     pipe_through :api
@@ -117,6 +126,9 @@ defmodule MarketMySpecWeb.Router do
       live "/mcp-setup", McpSetupLive, :index
 
       live "/oauth/authorize", McpAuthorizationLive, :index
+
+      live "/agents", AgentLive.Index, :index
+      live "/agents/pair", AgentLive.Pair, :index
     end
 
     post "/users/update-password", UserSessionController, :update_password
