@@ -24,9 +24,6 @@ jobs:
           - burrito_target: macos_m1
             runner: macos-14
             output_name: market_my_spec_agent_macos_m1
-          - burrito_target: macos
-            runner: macos-13
-            output_name: market_my_spec_agent_macos
 
     env:
       MIX_ENV: prod_agent
@@ -88,7 +85,6 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       sha_macos_m1: ${{ steps.shas.outputs.macos_m1 }}
-      sha_macos: ${{ steps.shas.outputs.macos }}
 
     steps:
       - name: Resolve tag
@@ -111,7 +107,7 @@ jobs:
       - name: Read per-asset SHA256s
         id: shas
         run: |
-          for target in macos_m1 macos; do
+          for target in macos_m1; do
             sha=$(cat "artifacts/market_my_spec_agent_${target}.sha256")
             echo "$target=$sha" >> "$GITHUB_OUTPUT"
           done
@@ -120,7 +116,7 @@ jobs:
         run: |
           cd artifacts
           {
-            for target in macos_m1 macos; do
+            for target in macos_m1; do
               sha=$(cat "market_my_spec_agent_${target}.sha256")
               echo "$sha  market_my_spec_agent_${target}"
             done
@@ -133,11 +129,10 @@ jobs:
         run: |
           gh release create "${{ steps.version.outputs.tag }}" \
             artifacts/market_my_spec_agent_macos_m1 \
-            artifacts/market_my_spec_agent_macos \
             artifacts/SHA256SUMS.txt \
             --repo "${{ github.repository }}" \
             --title "MMS Agent ${{ steps.version.outputs.tag }}" \
-            --notes "MMS Agent ${{ steps.version.outputs.tag }} — macOS only for v0.1.0. Install: \`brew install code-my-spec/mms-agent/mms-agent\` once the formula bumps."
+            --notes "MMS Agent ${{ steps.version.outputs.tag }} — Apple Silicon only for v0.1.0. Install: \`brew install code-my-spec/mms-agent/mms-agent\` once the formula bumps."
 
   update_formula:
     name: Update Homebrew formula
@@ -157,7 +152,6 @@ jobs:
         env:
           VERSION: ${{ needs.release.outputs.version }}
           SHA_MACOS_M1: ${{ needs.release.outputs.sha_macos_m1 }}
-          SHA_MACOS: ${{ needs.release.outputs.sha_macos }}
           BASE_URL: https://github.com/${{ github.repository }}/releases/download
         run: |
           mkdir -p tap/Formula
@@ -169,16 +163,10 @@ jobs:
             license "Proprietary"
 
             depends_on :macos
+            depends_on arch: :arm64
 
-            on_macos do
-              if Hardware::CPU.arm?
-                url "${BASE_URL}/v${VERSION}/market_my_spec_agent_macos_m1"
-                sha256 "${SHA_MACOS_M1}"
-              else
-                url "${BASE_URL}/v${VERSION}/market_my_spec_agent_macos"
-                sha256 "${SHA_MACOS}"
-              end
-            end
+            url "${BASE_URL}/v${VERSION}/market_my_spec_agent_macos_m1"
+            sha256 "${SHA_MACOS_M1}"
 
             def install
               src = stable.url.split("/").last
