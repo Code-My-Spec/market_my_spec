@@ -27,12 +27,6 @@ jobs:
           - burrito_target: macos
             runner: macos-13
             output_name: market_my_spec_agent_macos
-          - burrito_target: linux
-            runner: ubuntu-22.04
-            output_name: market_my_spec_agent_linux
-          - burrito_target: linux_aarch64
-            runner: ubuntu-22.04-arm
-            output_name: market_my_spec_agent_linux_aarch64
 
     env:
       MIX_ENV: prod_agent
@@ -95,8 +89,6 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       sha_macos_m1: ${{ steps.shas.outputs.macos_m1 }}
       sha_macos: ${{ steps.shas.outputs.macos }}
-      sha_linux: ${{ steps.shas.outputs.linux }}
-      sha_linux_aarch64: ${{ steps.shas.outputs.linux_aarch64 }}
 
     steps:
       - name: Resolve tag
@@ -119,7 +111,7 @@ jobs:
       - name: Read per-asset SHA256s
         id: shas
         run: |
-          for target in macos_m1 macos linux linux_aarch64; do
+          for target in macos_m1 macos; do
             sha=$(cat "artifacts/market_my_spec_agent_${target}.sha256")
             echo "$target=$sha" >> "$GITHUB_OUTPUT"
           done
@@ -128,7 +120,7 @@ jobs:
         run: |
           cd artifacts
           {
-            for target in macos_m1 macos linux linux_aarch64; do
+            for target in macos_m1 macos; do
               sha=$(cat "market_my_spec_agent_${target}.sha256")
               echo "$sha  market_my_spec_agent_${target}"
             done
@@ -142,12 +134,10 @@ jobs:
           gh release create "${{ steps.version.outputs.tag }}" \
             artifacts/market_my_spec_agent_macos_m1 \
             artifacts/market_my_spec_agent_macos \
-            artifacts/market_my_spec_agent_linux \
-            artifacts/market_my_spec_agent_linux_aarch64 \
             artifacts/SHA256SUMS.txt \
             --repo "${{ github.repository }}" \
             --title "MMS Agent ${{ steps.version.outputs.tag }}" \
-            --notes "MMS Agent ${{ steps.version.outputs.tag }} — installable via \`brew install code-my-spec/mms-agent/mms-agent\` once the formula bumps."
+            --notes "MMS Agent ${{ steps.version.outputs.tag }} — macOS only for v0.1.0. Install: \`brew install code-my-spec/mms-agent/mms-agent\` once the formula bumps."
 
   update_formula:
     name: Update Homebrew formula
@@ -168,8 +158,6 @@ jobs:
           VERSION: ${{ needs.release.outputs.version }}
           SHA_MACOS_M1: ${{ needs.release.outputs.sha_macos_m1 }}
           SHA_MACOS: ${{ needs.release.outputs.sha_macos }}
-          SHA_LINUX: ${{ needs.release.outputs.sha_linux }}
-          SHA_LINUX_AARCH64: ${{ needs.release.outputs.sha_linux_aarch64 }}
           BASE_URL: https://github.com/${{ github.repository }}/releases/download
         run: |
           mkdir -p tap/Formula
@@ -180,6 +168,8 @@ jobs:
             version "${VERSION}"
             license "Proprietary"
 
+            depends_on :macos
+
             on_macos do
               if Hardware::CPU.arm?
                 url "${BASE_URL}/v${VERSION}/market_my_spec_agent_macos_m1"
@@ -187,16 +177,6 @@ jobs:
               else
                 url "${BASE_URL}/v${VERSION}/market_my_spec_agent_macos"
                 sha256 "${SHA_MACOS}"
-              end
-            end
-
-            on_linux do
-              if Hardware::CPU.arm?
-                url "${BASE_URL}/v${VERSION}/market_my_spec_agent_linux_aarch64"
-                sha256 "${SHA_LINUX_AARCH64}"
-              else
-                url "${BASE_URL}/v${VERSION}/market_my_spec_agent_linux"
-                sha256 "${SHA_LINUX}"
               end
             end
 

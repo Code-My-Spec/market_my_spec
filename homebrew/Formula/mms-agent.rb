@@ -18,6 +18,8 @@ class MmsAgent < Formula
   version "0.1.0"
   license "Proprietary"
 
+  depends_on :macos
+
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/Code-My-Spec/market_my_spec/releases/download/v0.1.0/market_my_spec_agent_macos_m1"
@@ -25,16 +27,6 @@ class MmsAgent < Formula
     else
       url "https://github.com/Code-My-Spec/market_my_spec/releases/download/v0.1.0/market_my_spec_agent_macos"
       sha256 "REPLACE_ME_MACOS"
-    end
-  end
-
-  on_linux do
-    if Hardware::CPU.arm?
-      url "https://github.com/Code-My-Spec/market_my_spec/releases/download/v0.1.0/market_my_spec_agent_linux_aarch64"
-      sha256 "REPLACE_ME_LINUX_AARCH64"
-    else
-      url "https://github.com/Code-My-Spec/market_my_spec/releases/download/v0.1.0/market_my_spec_agent_linux"
-      sha256 "REPLACE_ME_LINUX"
     end
   end
 
