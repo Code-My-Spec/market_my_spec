@@ -22,7 +22,7 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
 
   @type search_result :: %{
           candidates: [map()],
-          failures: [%{venue: map() | nil, reason: term()}]
+          failures: [%{source: atom() | nil, venue_identifier: String.t() | nil, reason: String.t()}]
         }
 
   @doc """
@@ -277,13 +277,18 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
   defp fan_out_search(_scope, "", _venues), do: %{candidates: [], failures: []}
 
   defp fan_out_search(scope, query, venues) when is_binary(query) do
+    # Timeout is intentionally above the Dispatcher's 30s ceiling so a
+    # slow agent-routed Reddit call surfaces a precise reason
+    # (`:agent_disconnected` / `:timeout`) instead of getting clipped by
+    # the outer Task and showing up as the catch-all `{:task_exit,
+    # :timeout}`.
     venues
     |> Task.async_stream(
       fn venue ->
         {venue, Search.search(scope, query, venue: venue.identifier)}
       end,
       on_timeout: :kill_task,
-      timeout: 15_000
+      timeout: 35_000
     )
     |> Enum.reduce({[], []}, fn
       {:ok, {_venue, %{candidates: candidates, failures: failures}}},
@@ -291,7 +296,11 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
         {acc_candidates ++ candidates, acc_failures ++ failures}
 
       {:exit, reason}, {acc_candidates, acc_failures} ->
-        {acc_candidates, acc_failures ++ [%{venue: nil, reason: {:task_exit, reason}}]}
+        # Match the failure shape that `Search.fan_out/4` emits so the
+        # LiveView template can use one set of keys for everything.
+        {acc_candidates,
+         acc_failures ++
+           [%{source: nil, venue_identifier: nil, reason: "Task exited: #{inspect(reason)}"}]}
     end)
     |> then(fn {candidates, failures} ->
       ranked =

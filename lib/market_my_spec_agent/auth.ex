@@ -2,7 +2,14 @@ defmodule MarketMySpecAgent.Auth do
   @moduledoc """
   Reads and writes the paired-agent credential file.
 
-  Path: `~/.mms-agent/auth.json` (mode 0600).
+  Path is configured per env via `config :market_my_spec, :agent_token_path`:
+
+    * `prod_agent` → `~/.mms-agent/auth.json` (shipped Burrito binary)
+    * `dev_agent`  → `~/.mms-agent/auth.dev.json` (in-tree `just agent`)
+
+  Separate files mean a developer can pair against `http://localhost:4007`
+  without clobbering production credentials, and vice versa. `~` is
+  expanded against the current user's home.
 
   Shape:
 
@@ -14,15 +21,17 @@ defmodule MarketMySpecAgent.Auth do
       }
   """
 
-  @doc "Absolute path to the credential file."
+  @default_path "~/.mms-agent/auth.json"
+
+  @doc "Absolute path to the credential file (env-configured)."
   def path do
-    Path.join(System.user_home!(), ".mms-agent/auth.json")
+    :market_my_spec
+    |> Application.get_env(:agent_token_path, @default_path)
+    |> Path.expand()
   end
 
-  @doc "Absolute path to the credential directory."
-  def dir do
-    Path.join(System.user_home!(), ".mms-agent")
-  end
+  @doc "Absolute path to the credential directory (parent of `path/0`)."
+  def dir, do: Path.dirname(path())
 
   @doc """
   Reads the credential file. Returns `{:ok, map}` or

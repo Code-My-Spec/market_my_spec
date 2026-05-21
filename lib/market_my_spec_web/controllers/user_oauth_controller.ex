@@ -60,7 +60,18 @@ defmodule MarketMySpecWeb.UserOAuthController do
   creates a user by email, then logs them in via the standard session mechanism.
   """
   def callback(conn, params) do
-    provider = get_session(conn, :sign_in_oauth_provider)
+    # The `:provider` path param is the source of truth — the session
+    # value set in `request/2` is unreliable when the OAuth redirect
+    # comes back on a different host than where Sign-in started (e.g.
+    # localhost:4007 → dev.marketmyspec.com via the Cloudflare tunnel),
+    # because the session cookie's domain doesn't follow. Fall back to
+    # the session for hosts that DO share a cookie domain.
+    provider =
+      case Map.get(params, "provider") do
+        str when is_binary(str) and str != "" -> safe_to_atom(str)
+        _ -> get_session(conn, :sign_in_oauth_provider)
+      end
+
     conn = delete_session(conn, :sign_in_oauth_provider)
 
     state = Map.get(params, "state")
@@ -191,6 +202,16 @@ defmodule MarketMySpecWeb.UserOAuthController do
 
   defp callback_url(provider) do
     MarketMySpecWeb.Endpoint.url() <> ~p"/auth/#{provider}/callback"
+  end
+
+  # Safely converts a provider string to its atom form. Returns `nil`
+  # for unknown providers so the with-pipeline below rejects them with
+  # `:unsupported_provider` rather than crashing on
+  # `String.to_existing_atom/1`.
+  defp safe_to_atom(str) when is_binary(str) do
+    String.to_existing_atom(str)
+  rescue
+    ArgumentError -> nil
   end
 
   defp format_provider(:google), do: "Google"

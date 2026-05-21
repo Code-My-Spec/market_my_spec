@@ -22,7 +22,12 @@ defmodule MarketMySpecAgent.Pairing do
   or the listener times out.
 
   Opts:
-    * `:server_url`   — defaults to `Application.get_env(:market_my_spec, :server_url)`
+    * `:server_url`   — defaults to `MMS_SERVER_URL` env var, then
+      `Application.get_env(:market_my_spec, :server_url)`. The env-var
+      override lets a developer pair through the Cloudflare tunnel
+      (`MMS_SERVER_URL=https://dev.marketmyspec.com just agent pair`)
+      so browser cookies match and the LiveView's redirect to
+      `http://localhost:<port>/callback` isn't blocked as mixed content.
     * `:agent_name`   — defaults to the system hostname
     * `:open_browser` — fun/1 that takes the URL and opens it. Default
       shells out to `open` / `xdg-open` / `start`. Override in tests.
@@ -30,6 +35,8 @@ defmodule MarketMySpecAgent.Pairing do
   def run(opts \\ []) do
     server_url = Keyword.get(opts, :server_url) || default_server_url()
     agent_name = Keyword.get(opts, :agent_name) || default_hostname()
+
+    IO.puts("[Pairing] server_url = #{server_url}")
     open_browser = Keyword.get(opts, :open_browser, &open_url/1)
 
     state = generate_state()

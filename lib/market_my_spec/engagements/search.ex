@@ -25,8 +25,8 @@ defmodule MarketMySpec.Engagements.Search do
   - `reason` — a human-readable string describing the failure
   """
 
-  alias MarketMySpec.Agents.Presence
   alias MarketMySpec.Engagements.Source.ElixirForum
+  alias MarketMySpec.Agents.Presence
   alias MarketMySpec.Engagements.Source.Reddit
   alias MarketMySpec.Engagements.ThreadsRepository
   alias MarketMySpec.Engagements.TouchpointsRepository
@@ -105,15 +105,14 @@ defmodule MarketMySpec.Engagements.Search do
         venue_entry = {venue, raw_candidates}
         {acc_venue_lists ++ [venue_entry], acc_failures, acc_notices, acc_cursor || nc}
 
-      # Anonymous Reddit fallback — returns results but adds an informational
-      # notice so the caller knows agent pairing enables authenticated access.
-      {:ok, {venue, {:ok_anon, %{candidates: raw_candidates, next_cursor: nc}}}},
+      {:ok, {venue, {:ok_no_agent, %{candidates: raw_candidates, next_cursor: nc}}}},
       {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
         venue_entry = {venue, raw_candidates}
 
         notice =
           "No online MMS Agent for #{venue.identifier}. " <>
-            "Pair or start an agent at /agents for authenticated Reddit access."
+            "Reddit blocks datacenter IPs — pair or start an agent at /agents " <>
+            "so searches route through your residential IP."
 
         {acc_venue_lists ++ [venue_entry], acc_failures, acc_notices ++ [notice],
          acc_cursor || nc}
@@ -138,38 +137,52 @@ defmodule MarketMySpec.Engagements.Search do
     end)
   end
 
-  # Returns `{:ok, result}` for agent-authenticated Reddit search,
-  # `{:ok_anon, result}` when falling back to anonymous (no agent online),
-  # or `{:error, reason}` on failure. The `{:ok_anon, _}` tag lets fan_out
-  # add an informational notice without adding a failure entry.
+  # Reddit dispatches through the user's paired agent when one is online
+  # (datacenter IPs are blocked by Reddit; residential is the whole point).
+  # When no agent is paired+online, the orchestrator hits Reddit directly —
+  # that's a 403 in prod but the test suite stubs Req via cassettes for
+  # this code path. The 403 surfaces as a per-venue failure in the
+  # response envelope.
   defp search_venue(venue, query, cursor, scope) do
     adapter = adapter_for(venue.source)
     opts = [cursor: cursor]
 
-    if venue.source == :reddit do
-      search_reddit_venue(venue, query, opts, scope)
-    else
-      adapter.search(venue, query, opts)
+    case venue.source do
+      :reddit -> search_reddit_venue(venue, query, opts, scope)
+      _ -> adapter.search(venue, query, opts)
     end
   rescue
     error -> {:error, error}
   end
 
+  # Wraps the Reddit adapter call so the orchestrator can attach a
+  # `:no_agent` tag to direct-path results. The tag becomes a top-level
+  # notice in the response envelope so the LiveView (and the agent
+  # surface) can tell the user "pair an agent to avoid 403s" without
+  # turning a successful cassette-backed test into a failure.
   defp search_reddit_venue(venue, query, opts, scope) do
-    if is_nil(Presence.most_recently_connected(scope.user.id)) do
-      # No agent online: fall back to anonymous read and signal the caller.
+    if Presence.most_recently_connected(scope.user.id) do
+      Reddit.search(venue, query, [{:scope, scope} | opts])
+    else
       case Reddit.search(venue, query, opts) do
-        {:ok, result} -> {:ok_anon, result}
+        {:ok, result} -> {:ok_no_agent, result}
         error -> error
       end
-    else
-      Reddit.search(venue, query, [{:scope, scope} | opts])
     end
   end
 
   # Format a failure reason into a human-readable string.
   defp format_reason(:reddit, :agent_offline),
     do: "No online MMS Agent. Pair or start an agent at /agents."
+
+  defp format_reason(:reddit, :agent_disconnected),
+    do: "MMS Agent disconnected mid-request. Check /agents and try again."
+
+  defp format_reason(:reddit, :timeout),
+    do: "MMS Agent didn't respond within 30s. Check /agents."
+
+  defp format_reason(:reddit, :host_not_allowed),
+    do: "Refused by binary-side host allowlist."
 
   defp format_reason(_source, {:http_status, 429}),
     do: "Rate limited (HTTP 429 Too Many Requests)"

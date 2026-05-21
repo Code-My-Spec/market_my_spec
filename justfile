@@ -8,14 +8,30 @@ server:
 
 # Run the MMS Agent locally as a plain Mix app (no Burrito wrap).
 # Boots MarketMySpecAgent.Application's supervision tree — Auth.Store
-# reads ~/.mms-agent/auth.json, Channel.Client tries to join the user
-# topic on the configured server_url (see config/dev_agent.exs).
+# reads ~/.mms-agent/auth.dev.json (dev_agent uses its own credential
+# file so a dev pairing doesn't clobber prod), Channel.Client tries to
+# join the user topic on the configured server_url
+# (see config/dev_agent.exs — defaults to http://localhost:4007).
 #
-# QA flow: `just agent` to get an iex session, then call
-# `MarketMySpecAgent.Pairing.run/0` to exercise the pairing flow,
-# or inspect supervisor state, or pattern-match on messages.
-agent *args:
-    MIX_ENV=dev_agent iex -S mix run --no-halt {{args}}
+# Subcommands:
+#   `just agent`       → iex session for poking at supervisor state etc.
+#   `just agent pair`  → boots the tree, calls MarketMySpecAgent.Pairing.run/0,
+#                        and exits (one-shot pairing flow against the dev server).
+agent ACTION="run":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ACTION}}" in
+      run)
+        MIX_ENV=dev_agent iex -S mix run --no-halt
+        ;;
+      pair)
+        MIX_ENV=dev_agent mix run --no-halt -e 'MarketMySpecAgent.Pairing.run()'
+        ;;
+      *)
+        echo "unknown action: {{ACTION}} (want: run | pair)" >&2
+        exit 1
+        ;;
+    esac
 
 # Build the Burrito binary. Only needed before shipping or to verify
 # the packaged binary actually launches — day-to-day QA uses `just agent`.

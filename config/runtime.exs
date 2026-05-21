@@ -9,24 +9,39 @@ import Dotenvy
 # In all cases, env!/3 below reads from the Dotenvy process dict that
 # source! populates — so SSM values must be in System env BEFORE source!
 # runs, then source! pulls them in via System.get_env().
-if config_env() in [:dev, :test] do
-  env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
+cond do
+  config_env() in [:dev, :test] ->
+    env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
-  source!([
-    Path.absname(".env", env_dir_prefix),
-    Path.absname("#{config_env()}.env", env_dir_prefix),
-    System.get_env()
-  ])
-else
-  if config_env() in [:dev_agent, :prod_agent] do
-    # MMS Agent binary — no SSM, no server secrets. Just pull whatever
-    # is in System env (server_url override, log level, etc.).
+    source!([
+      Path.absname(".env", env_dir_prefix),
+      Path.absname("#{config_env()}.env", env_dir_prefix),
+      System.get_env()
+    ])
+
+  config_env() == :dev_agent ->
+    # In-tree dev agent (`just agent`) — share `envs/dev.env` with the
+    # server so a developer can set `MMS_SERVER_URL` (and anything else)
+    # in one place. `System.get_env()` still wins on conflict, so a
+    # one-shot CLI override like `MMS_SERVER_URL=… just agent pair`
+    # still works.
+    env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
+
+    source!([
+      Path.absname(".env", env_dir_prefix),
+      Path.absname("dev.env", env_dir_prefix),
+      System.get_env()
+    ])
+
+  config_env() == :prod_agent ->
+    # Shipped Burrito binary — runs on user machines that have no env
+    # files. Only pull from real System env.
     source!([System.get_env()])
-  else
+
+  true ->
     app_env = System.get_env("APP_ENV") || raise "APP_ENV must be set (prod|uat)"
     MarketMySpec.Secrets.load!(app_env)
     source!([System.get_env()])
-  end
 end
 
 # config/runtime.exs is executed for all environments, including
@@ -62,6 +77,17 @@ if config_env() in [:dev, :prod] do
     google_client_secret: env!("GOOGLE_CLIENT_SECRET"),
     github_client_id: env!("GITHUB_CLIENT_ID"),
     github_client_secret: env!("GITHUB_CLIENT_SECRET")
+end
+
+# Let `envs/dev.env` (or any real env var) override the compile-time
+# `:server_url` default baked into `config/dev_agent.exs` /
+# `config/prod_agent.exs`. Setting `MMS_SERVER_URL=https://dev.marketmyspec.com`
+# in `envs/dev.env` makes `just agent pair` route through the
+# Cloudflare tunnel without a CLI flag.
+if config_env() in [:dev_agent, :prod_agent] do
+  if url = env!("MMS_SERVER_URL", :string, nil) do
+    config :market_my_spec, server_url: url
+  end
 end
 
 # Cloudflare named tunnel for dev — exposes the local Phoenix dev server

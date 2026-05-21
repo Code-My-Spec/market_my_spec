@@ -67,6 +67,16 @@ defmodule MarketMySpecAgent.Channel.Client do
     end
   end
 
+  def handle_info({:agent_response, topic, response}, socket) do
+    Logger.info(
+      "[Agent.Channel.Client] http_response status=#{inspect(response["status"])} " <>
+        "request_id=#{inspect(response["request_id"])}"
+    )
+
+    push(socket, topic, "http_response", response)
+    {:noreply, socket}
+  end
+
   @impl Slipstream
   def handle_connect(socket) do
     %{topic: topic, agent_id: agent_id, token: token} = socket.assigns
@@ -89,7 +99,22 @@ defmodule MarketMySpecAgent.Channel.Client do
   @impl Slipstream
   def handle_message(topic, "http_request", payload, socket) do
     if payload["agent_id"] == socket.assigns.agent_id do
-      Task.start(fn -> handle_http_request(topic, payload, socket) end)
+      # Execute the HTTP request in a Task so the channel process stays
+      # responsive to heartbeats (a slow Req call would otherwise block
+      # the GenServer mailbox and the server would tear down the
+      # connection as missed-heartbeat). The Task hands the response
+      # back via a message so `push/4` runs inside the channel process
+      # — calling push from a foreign process leaves Slipstream's
+      # internal frame queue in a state that has stranded responses
+      # for us before.
+      channel_pid = self()
+      url = payload["url"]
+      Logger.info("[Agent.Channel.Client] http_request → #{inspect(url)}")
+
+      Task.start(fn ->
+        response = execute_request(payload)
+        send(channel_pid, {:agent_response, topic, response})
+      end)
     end
 
     {:ok, socket}
@@ -107,11 +132,6 @@ defmodule MarketMySpecAgent.Channel.Client do
   # ---------------------------------------------------------------------------
   # HTTP execution
   # ---------------------------------------------------------------------------
-
-  defp handle_http_request(topic, payload, socket) do
-    response = execute_request(payload)
-    push(socket, topic, "http_response", response)
-  end
 
   defp execute_request(%{"url" => url} = req) do
     request_id = req["request_id"]
@@ -132,7 +152,7 @@ defmodule MarketMySpecAgent.Channel.Client do
 
   defp do_req(url, req, request_id, agent_id) do
     method = req["method"] |> to_string() |> String.downcase() |> String.to_atom()
-    headers = req["headers"] || []
+    headers = headers_for_req(req["headers"] || [])
     body = req["body"] || ""
 
     case Req.request(method: method, url: url, headers: headers, body: body) do
@@ -164,6 +184,21 @@ defmodule MarketMySpecAgent.Channel.Client do
       _, acc -> acc
     end)
   end
+
+  # The dispatcher serializes headers as `[["key", "value"]]` (JSON-safe;
+  # tuples don't implement Jason.Encoder). Req wants either tuples or a
+  # map, so convert back here before dispatching.
+  defp headers_for_req(headers) when is_map(headers), do: headers
+
+  defp headers_for_req(headers) when is_list(headers) do
+    Enum.flat_map(headers, fn
+      [k, v] -> [{to_string(k), to_string(v)}]
+      {k, v} -> [{to_string(k), to_string(v)}]
+      _ -> []
+    end)
+  end
+
+  defp headers_for_req(_), do: []
 
   defp stringify_body(body) when is_binary(body), do: body
   defp stringify_body(body), do: Jason.encode!(body)

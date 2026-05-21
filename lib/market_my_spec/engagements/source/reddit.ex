@@ -2,22 +2,27 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @moduledoc """
   Reddit Source adapter.
 
-  v1 uses anonymous read against `https://www.reddit.com/r/<sub>/search.json`
-  with a descriptive User-Agent — no OAuth, no bearer (see knowledge/reddit-api.md
-  for the OAuth path, deferred to story 707 when the agent needs `submit`).
+  Reddit blocks searches from datacenter IPs (we get HTTP 403 from prod's
+  Hetzner host), so all `search/3` calls funnel through the user's paired
+  MMS Agent over the channel transport. The binary lives on the user's
+  residential network — that IP isn't on Reddit's block list. No OAuth
+  involved; we just hit the public `www.reddit.com/r/<sub>/search.json`
+  endpoint from a non-datacenter IP.
 
   ## search/3
 
   Issues `GET /r/{sub}/search.json?q=<q>&restrict_sr=1&sort=new&limit=25`
-  (plus `&after=<cursor>` when paginating). Maps Reddit's Listing JSON to
-  the canonical candidate shape (`title, source, url, score, reply_count,
-  recency, snippet`). `recency` is `created_utc` for v1 (last-activity
-  requires a per-thread API call — see story 706 follow-up).
+  (plus `&after=<cursor>` when paginating). When called with a `scope`,
+  the request is dispatched to the user's online agent. When called
+  without a scope (test fixtures only), the request hits Reddit directly.
+  There is no anonymous fallback from a `scope` call — if the agent isn't
+  available, the error propagates so the caller surfaces a clear
+  "pair an agent" message instead of silently 403'ing.
 
-  When a `scope` opt is provided, the search is attempted via the user's
-  online agent first (story 733). If no agent is online, the call falls back
-  to the anonymous direct path so search_engagements still works without
-  an agent connected.
+  Maps Reddit's Listing JSON to the canonical candidate shape
+  (`title, source, url, score, reply_count, recency, snippet`). `recency`
+  is `created_utc` for v1 (last-activity requires a per-thread API call —
+  see story 706 follow-up).
 
   ## get_thread/2, post/3
 
@@ -64,15 +69,7 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   def search(venue, query, opts \\ []) when is_binary(query) do
     case Keyword.get(opts, :scope) do
       nil -> search_direct(venue, query, opts)
-      scope -> search_with_agent_fallback(venue, query, opts, scope)
-    end
-  end
-
-  # Tries agent dispatch; falls back to direct HTTP if no agent is online.
-  defp search_with_agent_fallback(venue, query, opts, scope) do
-    case search_via_agent(venue, query, opts, scope) do
-      {:error, :agent_offline} -> search_direct(venue, query, opts)
-      other -> other
+      scope -> search_via_agent(venue, query, opts, scope)
     end
   end
 
@@ -96,13 +93,19 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
     end
   end
 
+  # Dispatches the anonymous public `www.reddit.com/r/<sub>/search.json`
+  # endpoint THROUGH the agent. Reddit blocks this endpoint from datacenter
+  # IPs (we see 403 from prod's Hetzner host); the agent lives on the
+  # user's residential network, which isn't on Reddit's block list. We
+  # deliberately do NOT hit `oauth.reddit.com` — the binary has no
+  # Reddit OAuth credentials, that'd just 401.
   defp search_via_agent(venue, query, opts, scope) do
     cursor = Keyword.get(opts, :cursor)
     qs = [q: query, restrict_sr: 1, sort: "new", limit: 25]
     qs = if is_binary(cursor) and cursor != "", do: qs ++ [after: cursor], else: qs
 
     url =
-      "https://oauth.reddit.com/r/#{venue.identifier}/search.json?" <> URI.encode_query(qs)
+      "https://www.reddit.com/r/#{venue.identifier}/search.json?" <> URI.encode_query(qs)
 
     case Dispatcher.dispatch_http(scope.user, %{
            method: :get,

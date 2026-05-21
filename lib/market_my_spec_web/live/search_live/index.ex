@@ -171,10 +171,31 @@ defmodule MarketMySpecWeb.SearchLive.Index do
                   <%= if @run_results[search.id] do %>
                     <tr data-test={"search-results-#{search.id}"}>
                       <td colspan="4">
-                        <div class="bg-base-200 rounded p-3 mt-1">
-                          <p class="text-sm font-medium mb-2">
+                        <div class="bg-base-200 rounded p-3 mt-1 space-y-3">
+                          <p class="text-sm font-medium">
                             Results: <%= length(@run_results[search.id].candidates) %> candidate(s)
                           </p>
+
+                          <%= for notice <- (@run_results[search.id][:notices] || []) do %>
+                            <div class="alert alert-info text-xs py-2" data-test={"search-notice-#{search.id}"}>
+                              <%= notice %>
+                            </div>
+                          <% end %>
+
+                          <%= if (@run_results[search.id][:failures] || []) != [] do %>
+                            <div class="alert alert-warning text-xs py-2" data-test={"search-failures-#{search.id}"}>
+                              <div class="font-medium mb-1">Some venues failed:</div>
+                              <ul class="list-disc pl-5 space-y-0.5">
+                                <%= for f <- @run_results[search.id].failures do %>
+                                  <li>
+                                    <span class="font-mono"><%= f.source %>:<%= f.venue_identifier %></span>
+                                    — <%= f.reason %>
+                                  </li>
+                                <% end %>
+                              </ul>
+                            </div>
+                          <% end %>
+
                           <%= if @run_results[search.id].candidates == [] do %>
                             <p class="text-sm text-base-content/50">No candidates found.</p>
                           <% else %>

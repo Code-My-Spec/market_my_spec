@@ -64,9 +64,9 @@ defmodule MarketMySpec.Agents.Dispatcher do
       payload: %{
         "request_id" => request_id,
         "agent_id" => agent_id,
-        "method" => Map.get(req, :method, :get),
+        "method" => to_string(Map.get(req, :method, :get)),
         "url" => req.url,
-        "headers" => Map.get(req, :headers, []),
+        "headers" => normalize_headers(Map.get(req, :headers, [])),
         "body" => Map.get(req, :body, "")
       }
     })
@@ -101,4 +101,25 @@ defmodule MarketMySpec.Agents.Dispatcher do
   end
 
   defp generate_request_id, do: :crypto.strong_rand_bytes(12) |> Base.url_encode64(padding: false)
+
+  # Phoenix channels serialize the broadcast payload as JSON before pushing
+  # to the binary. Tuples don't implement `Jason.Encoder`, so a raw
+  # `[{"user-agent", "…"}]` list crashes the channel mid-`handle_out/3`
+  # (presence_diff fires, Dispatcher sees `:agent_disconnected` — but the
+  # real cause is right here). Coerce header entries to two-element lists
+  # so they JSON-encode as `["user-agent", "…"]`; the binary's `Req` call
+  # accepts the same shape.
+  defp normalize_headers(headers) when is_map(headers) do
+    Enum.map(headers, fn {k, v} -> [to_string(k), to_string(v)] end)
+  end
+
+  defp normalize_headers(headers) when is_list(headers) do
+    Enum.map(headers, fn
+      {k, v} -> [to_string(k), to_string(v)]
+      [k, v] -> [to_string(k), to_string(v)]
+      other -> other
+    end)
+  end
+
+  defp normalize_headers(_), do: []
 end

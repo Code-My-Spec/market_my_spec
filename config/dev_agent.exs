@@ -7,7 +7,7 @@ config :market_my_spec, env: :dev_agent
 
 config :market_my_spec,
   server_url: "http://localhost:4007",
-  agent_token_path: "~/.mms-agent/auth.json"
+  agent_token_path: "~/.mms-agent/auth.dev.json"
 
 # Server-side stack is unused in agent builds. Repo and the Phoenix
 # Endpoint are silenced so an `:ex_aws_ssm` boot doesn't try to
