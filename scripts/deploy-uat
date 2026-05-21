@@ -36,6 +36,17 @@ set -a
 source <("$DEVOPS_DIR/scripts/render-env" market_my_spec uat)
 set +a
 
+# The shell that invoked this script likely has AWS_SESSION_TOKEN (and
+# friends) set from an active SSO session. render-env's output sets the
+# long-term IAM user credentials from SSM into AWS_ACCESS_KEY_ID /
+# AWS_SECRET_ACCESS_KEY, but the SSO session token from the parent shell
+# survives. Kamal's `env.secret` then ships all three into the container,
+# AWS SDK treats the keys as STS creds (because session_token is present),
+# and AWS rejects them with "UnrecognizedClientException: The security
+# token included in the request is invalid." Clear them so the container
+# sees only the long-term IAM pair.
+unset AWS_SESSION_TOKEN AWS_SECURITY_TOKEN AWS_PROFILE
+
 # Migrate against the NEW image before swapping traffic. See scripts/deploy
 # for the full rationale.
 echo "==> running migrations against $SHA before swapping traffic..."
