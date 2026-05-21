@@ -1,0 +1,6 @@
+extends: existence
+message: "'leverage' as a verb is corporate diction. Use 'use' or rephrase. (Noun usage like 'the most leverage' is fine.)"
+ignorecase: true
+level: warning
+raw:
+  - '\bleverag(?:e|ed|es|ing)\s+(?:our|the|this|that|these|those|your|their|its|my|a|an|all|any|some|every|each|key|core|existing|new|advanced)\b'

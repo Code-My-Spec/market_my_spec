@@ -1,0 +1,12 @@
+extends: existence
+message: "Superlative hype: '%s'. Often LLM-shape marketing prefix. Replace with a concrete claim."
+ignorecase: true
+level: warning
+# Multi-pattern: Vale's `existence` rule with multiple entries under `raw:` doesn't
+# combine them properly (verified empirically -- only the first pattern fires).
+# Use `tokens:` instead, which supports regex syntax and merges correctly.
+tokens:
+  - 'fastest[-\s]+(?:rising|growing|moving|adopted|expanding)'
+  - 'best[-\s]+(?:loved|kept|known|in-class)'
+  - 'most[-\s]+(?:powerful|advanced|innovative|comprehensive|sophisticated|cutting-edge)'
+  - 'the\s+(?:hottest|biggest|fastest|smartest|sharpest)\s+(?:tool|product|app|company|startup|platform|framework)'

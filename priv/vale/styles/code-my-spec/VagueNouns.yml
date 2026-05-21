@@ -1,0 +1,9 @@
+extends: existence
+message: "Vague-noun filler: '%s'. LLM-shape phrase. Replace with the specific noun or cut."
+ignorecase: true
+level: suggestion
+# Suggestion-level because these CAN be load-bearing in some contexts.
+tokens:
+  - 'the\s+(?:journey|experience)'
+  - "it's\\s+a\\s+(?:journey|process|experience|thing|moment)"
+  - "on\\s+a\\s+journey"

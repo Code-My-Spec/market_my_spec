@@ -1,0 +1,32 @@
+extends: existence
+message: "LinkedIn-bro opener: '%s'. Tone guide rejects this register."
+ignorecase: true
+level: error
+tokens:
+  - in today's fast-paced world
+  - in today's fast paced world
+  - in today's digital age
+  - in this digital age
+  - more than ever before
+  - now more than ever
+  - the future of \w+ is
+  - this changes everything
+  - this is a game-changer
+  - this is the future
+  - mind-blowing
+  - mind blown
+  - jaw-dropping
+  - the bottom line
+  - bottom line is
+  - what if I told you
+  - here's a secret
+  - the secret to
+  - the key to success
+  - keys to success
+  - keys to unlocking
+  - take your \w+ to the next level
+  - changed the game
+  - changed everything
+  - game-changer for
+  - changed how I think about
+  - completely changed

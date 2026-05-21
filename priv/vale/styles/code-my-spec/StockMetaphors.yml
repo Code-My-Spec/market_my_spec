@@ -1,0 +1,39 @@
+extends: existence
+message: "Stock metaphor: '%s'. Use a specific, concrete image instead."
+ignorecase: true
+level: warning
+tokens:
+  - double-edged sword
+  - low-hanging fruit
+  - elephant in the room
+  - tip of the iceberg
+  - moving the needle
+  - move the needle
+  - boil the ocean
+  - drinking the kool-aid
+  - kicking the tires
+  - kick the tires
+  - drinking from the firehose
+  - firehose of
+  - silver bullet
+  - magic bullet
+  - holy grail
+  - secret sauce
+  - rabbit hole
+  - 800-pound gorilla
+  - paradigm shift
+  - moving target
+  - apples to oranges
+  - back to the drawing board
+  - bite the bullet
+  - cut to the chase
+  - dot the i's
+  - hit the ground running
+  - icing on the cake
+  - level the playing field
+  - on the same page
+  - out of the box thinking
+  - outside the box
+  - take it to the next level
+  - think outside the box
+  - touch base

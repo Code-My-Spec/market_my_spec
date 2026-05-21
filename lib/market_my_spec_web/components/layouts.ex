@@ -107,6 +107,14 @@ defmodule MarketMySpecWeb.Layouts do
                 <.icon name="hero-paper-airplane" class="size-4" /> Touchpoints
               </.link>
             </li>
+            <li :if={@current_scope && @current_scope.active_account_id}>
+              <.link
+                navigate={~p"/accounts/#{@current_scope.active_account_id}/style-guide"}
+                data-test="nav-style-guide"
+              >
+                <.icon name="hero-book-open" class="size-4" /> Style guide
+              </.link>
+            </li>
             <li>
               <.link navigate={~p"/agents"} data-test="nav-agents">
                 <.icon name="hero-cpu-chip" class="size-4" /> Agents

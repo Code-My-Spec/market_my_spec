@@ -1,0 +1,9 @@
+{
+  "name": "code-my-spec",
+  "description": "CodeMySpec brand voice style. Encodes the John Davenport tone guide: anti-hype diction, no em-dashes, no LLM filler, first-person voice. Pair with write-good for general prose hygiene.",
+  "feed": "",
+  "homepage": "https://codemyspec.com",
+  "issues": "",
+  "license": "MIT",
+  "vale_version": ">=3.0.0"
+}

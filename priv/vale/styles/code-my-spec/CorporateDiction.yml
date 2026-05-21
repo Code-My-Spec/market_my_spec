@@ -1,0 +1,36 @@
+extends: existence
+message: "Corporate / hype diction: '%s'. The tone guide forbids this vocabulary. Rephrase concretely."
+ignorecase: true
+level: error
+# Tokens listed are unambiguous tone-guide violations. "Leverage" and "transformative" are
+# context-dependent (noun usage is natural, "transformative" is in John's positive vocabulary)
+# and handled by LeverageVerb.yml + manual review.
+tokens:
+  - revolutionize
+  - revolutionary
+  - revolutionizing
+  - revolutionizes
+  - synergize
+  - synergy
+  - synergies
+  - empower
+  - empowering
+  - empowerment
+  - unleash
+  - unleashing
+  - game-changing
+  - game-changer
+  - cutting-edge
+  - state-of-the-art
+  - world-class
+  - best-in-class
+  - paradigm shift
+  - thought leader
+  - thought leadership
+  - groundbreaking
+  - next-generation
+  - next-gen
+  - turnkey
+  - bleeding-edge
+  - mission-critical
+  - robust ecosystem

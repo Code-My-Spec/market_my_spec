@@ -1,0 +1,38 @@
+extends: existence
+message: "AI-output tell: '%s'. Reads as LLM filler. Rewrite or cut."
+ignorecase: true
+level: error
+tokens:
+  - delve into
+  - delves into
+  - delving into
+  - in the realm of
+  - in the world of
+  - in the landscape of
+  - navigate the landscape
+  - navigating the landscape
+  - the landscape of
+  - in the era of
+  - in the age of
+  - in this digital age
+  - in today's digital
+  - tapestry of
+  - intricate dance
+  - delicate balance
+  - vibrant ecosystem
+  - robust framework
+  - comprehensive solution
+  - innovative approach
+  - cutting-edge solution
+  - holistic approach
+  - it's a journey
+  - on a journey
+  - embark on
+  - embarking on
+  - foster a culture
+  - fostering a culture
+  - moreover
+  - furthermore
+  - in essence
+  - in summary
+  - in a nutshell

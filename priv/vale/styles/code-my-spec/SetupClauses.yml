@@ -1,0 +1,28 @@
+extends: existence
+message: "Setup clause: '%s'. Cut and start with the substantive claim."
+ignorecase: true
+level: warning
+tokens:
+  - at the end of the day
+  - when you think about it
+  - when all is said and done
+  - truth be told
+  - to be honest
+  - to be perfectly honest
+  - if I'm being honest
+  - if we're being honest
+  - to tell you the truth
+  - the bottom line is
+  - here's the deal
+  - the reality is
+  - the fact of the matter is
+  - needless to say
+  - that being said
+  - that said
+  - having said that
+  - with that said
+  - the key insight is
+  - the catch nobody talks about
+  - 'the most (?:\w+\s+)+I''ve (?:ever )?(?:seen|encountered|witnessed)'
+  - 'the (?:hardest|trickiest|messiest) part is'
+  - "here's what nobody (?:tells you|talks about|mentions)"

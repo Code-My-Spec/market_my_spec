@@ -1,0 +1,9 @@
+extends: existence
+message: "Dash-as-punctuation forbidden. Use actual punctuation -- comma, semicolon, period, or parens. Bare hyphens, em-dashes, and en-dashes all included."
+level: error
+nonword: true
+tokens:
+  - '—'
+  - '–'
+  - ' -- '
+  - ' - '

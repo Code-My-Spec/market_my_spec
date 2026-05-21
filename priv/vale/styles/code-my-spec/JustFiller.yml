@@ -1,0 +1,9 @@
+extends: existence
+message: "'%s' often functions as filler in tech writing. Audit -- is it doing work?"
+ignorecase: true
+level: suggestion
+nonword: false
+# 'Just' is a common AI/operator tic when used as a softener ("just write better instructions",
+# "just use X"). It often weakens the claim. Not always wrong, hence suggestion-level.
+raw:
+  - '\bjust\s+(?:write|use|do|make|run|add|put|tell|ask|let|try|need|want|think|read|grab|see|drop|throw|stick|wire|hook)\b'

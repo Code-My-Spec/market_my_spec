@@ -1,0 +1,20 @@
+extends: existence
+message: "Reader-deciding judgment: '%s'. The reader decides what's clear / obvious. Cut or rephrase as a specific claim."
+ignorecase: true
+level: warning
+# Super-tight list. Only the words where the writer is telling the reader how to feel
+# about a claim (the reader decides what's clearly true). Intensifier weasels (very,
+# really) and filler qualifiers (actually, basically) are too context-dependent --
+# they generate noise on legitimate conversational prose. Reviewer agent handles those.
+tokens:
+  - clearly
+  - obviously
+  - undoubtedly
+  - of course
+  - naturally
+  - it goes without saying
+  - needless to say
+  - undeniably
+# "certainly" is excluded because "almost certainly" / "nearly certainly" are normal
+# calibrated hedges in CMS voice, and Go's RE2 regex can't negative-lookbehind to exclude
+# those prefixes. Reviewer agent catches bare "certainly" as a weasel.

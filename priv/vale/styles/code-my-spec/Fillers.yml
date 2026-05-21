@@ -1,0 +1,27 @@
+extends: existence
+message: "Filler transition: '%s'. Cut or replace with a substantive sentence."
+ignorecase: true
+level: warning
+tokens:
+  - let's explore
+  - let's dive in
+  - let's dive into
+  - let me start by
+  - let me begin by
+  - here's the thing
+  - it's important to note
+  - it is important to note
+  - it's worth noting
+  - it is worth noting
+  - it's worth mentioning
+  - it is worth mentioning
+  - in conclusion
+  - to recap
+  - to summarize
+  - to sum up
+  - imagine if
+  - imagine this
+  - picture this
+  - what's interesting is
+  - what's fascinating is
+  - the interesting thing is

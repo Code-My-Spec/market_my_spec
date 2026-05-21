@@ -1,0 +1,25 @@
+extends: existence
+message: "Hedging: '%s'. John writes direct, opinionated takes. Pick a side."
+ignorecase: true
+level: warning
+tokens:
+  - it could be argued
+  - it might be argued
+  - it's worth considering
+  - it is worth considering
+  - some might say
+  - some would argue
+  - many people find
+  - many developers find
+  - some developers prefer
+  - some users prefer
+  - it might be worth
+  - it may be worth
+  - arguably
+  - perhaps somewhat
+  - relatively speaking
+  - by and large
+  - more or less
+  - generally speaking
+  - in many cases
+  - it depends

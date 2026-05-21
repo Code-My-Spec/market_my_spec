@@ -1,0 +1,10 @@
+extends: existence
+message: "Intensifier-as-filler: '%s'. Common in LLM output; usually weakens the claim. Cut or replace with a specific."
+ignorecase: true
+level: warning
+# Multi-pattern needs `tokens:` (regex works in tokens; `raw:` multi-pattern is broken
+# in Vale's existence rule).
+tokens:
+  - 'fundamentally\s+(?:different|new|broken|wrong|right|changed|important|sound|flawed)'
+  - 'real\s+(?:credibility|value|flexibility|results|impact|power|insight|truth|gains)'
+  - '(?:shockingly|incredibly|extraordinarily|remarkably)\s+(?:good|bad|fast|slow|simple|complex|easy|hard|effective|powerful)'

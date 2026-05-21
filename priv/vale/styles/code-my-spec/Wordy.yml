@@ -1,0 +1,37 @@
+extends: substitution
+message: "Try '%s' instead of '%s'."
+ignorecase: true
+level: warning
+nonword: false
+# Only multi-word, unambiguous wordy phrases. Single-word picks (equivalent / previously /
+# multiple) are normal English and were too noisy in write-good's default TooWordy.
+swap:
+  "\\ball of\\b": "all"
+  "\\bin order to\\b": "to"
+  "\\bin between\\b": "between"
+  "\\bin the process of\\b": ""
+  "\\bin the event that\\b": "if"
+  "\\bin the near future\\b": "soon"
+  "\\bin spite of the fact that\\b": "although"
+  "\\bdue to the fact that\\b": "because"
+  "\\bfor the purpose of\\b": "for"
+  "\\bat this point in time\\b": "now"
+  "\\bat the present time\\b": "now"
+  "\\bas a matter of fact\\b": "in fact"
+  "\\bit is the case that\\b": ""
+  "\\bit would appear that\\b": "apparently"
+  "\\bis able to\\b": "can"
+  "\\bare able to\\b": "can"
+  "\\bhave the ability to\\b": "can"
+  "\\bhas the ability to\\b": "can"
+  "\\bby means of\\b": "by"
+  "\\bwith regard to\\b": "about"
+  "\\bin terms of\\b": ""
+  "\\ba lot of\\b": "many"
+  "\\bin addition to\\b": "besides"
+  "\\bdespite the fact that\\b": "although"
+  "\\beach and every\\b": "every"
+  "\\bthe majority of\\b": "most"
+  "\\bgiven the fact that\\b": "since"
+  "\\bowing to the fact that\\b": "because"
+  "\\bin the case of\\b": "for"
