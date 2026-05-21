@@ -46,10 +46,46 @@ gh run watch "$RUN_ID" --exit-status --interval 10
 export KAMAL_REGISTRY_PASSWORD
 KAMAL_REGISTRY_PASSWORD=$(gh auth token)
 
+# Render SSM bootstrap creds to a temp file with an explicit exit-code
+# check. Process substitution (`source <(render-env …)`) swallows the
+# inner command's failure — if SSO is stale, render-env prints nothing,
+# source consumes nothing, and the deploy proceeds with empty AWS keys.
+# That empty-creds state then propagates into kamal's per-host env-file
+# and survives across every subsequent `kamal app exec` (which reuses
+# the stale file without re-pushing). The temp-file approach makes the
+# failure loud and immediate. See
+# memory/feedback_deploy_render_env_silent_fail.md.
+ENV_FILE=$(mktemp -t market_my_spec_prod_env.XXXXXX)
+trap 'rm -f "$ENV_FILE"' EXIT
+
+echo "==> rendering env from SSM (/market_my_spec/prod/*)..."
+if ! "$DEVOPS_DIR/scripts/render-env" market_my_spec prod --out "$ENV_FILE"; then
+  echo "ERROR: render-env failed. Run 'aws sso login' and retry." >&2
+  exit 1
+fi
+
 set -a
 # shellcheck disable=SC1091
-source <("$DEVOPS_DIR/scripts/render-env" market_my_spec prod)
+source "$ENV_FILE"
 set +a
+
+# Clear any STS/SSO leftovers from the operator's shell. The container
+# only needs the long-term IAM pair shipped from SSM; AWS_SESSION_TOKEN
+# from the operator's session has no business in the container.
+unset AWS_SESSION_TOKEN AWS_SECURITY_TOKEN AWS_PROFILE
+
+# Hard-fail before kamal sees empty creds. Without this, kamal pushes
+# an empty env-file to the host, the container crashes on boot, and
+# every subsequent `kamal app exec` reuses the stale empty file.
+for required in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+  if [[ -z "${!required:-}" ]]; then
+    echo "ERROR: $required is empty after render-env. Refusing to deploy" >&2
+    echo "       — kamal would push an empty env-file and brick prod secrets." >&2
+    exit 1
+  fi
+done
+
+echo "==> bootstrap creds OK (AWS_ACCESS_KEY_ID ends ${AWS_ACCESS_KEY_ID: -4})"
 
 # 3. Migrate the database against the NEW image, BEFORE swapping traffic.
 # `kamal app exec --version=<sha>` boots a one-off container with the new
