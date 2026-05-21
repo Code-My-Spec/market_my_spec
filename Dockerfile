@@ -72,14 +72,23 @@ FROM ${RUNNER_IMAGE}
 # .code_my_spec/knowledge/vale-cli.md.
 ARG VALE_VERSION=3.14.2
 
+# TARGETARCH is set by buildx for multi-arch builds (amd64 | arm64).
+# Vale releases name the amd64 asset "64-bit" and the arm64 asset "arm64".
+ARG TARGETARCH
+
 RUN apt-get update -y && \
     apt-get install -y libstdc++6 openssl libncurses6 locales ca-certificates curl tar \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-# Install Vale prose-lint binary (arm64 — Hetzner cax11). Vendored styles
-# are shipped inside the release at priv/vale/styles; the binary itself
+# Install Vale prose-lint binary for the build platform. Vendored styles
+# ship inside the Elixir release at priv/vale/styles; the binary itself
 # is platform-specific and lives outside the BEAM release.
-RUN curl -sSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_arm64.tar.gz" -o /tmp/vale.tar.gz \
+RUN case "${TARGETARCH:-amd64}" in \
+      amd64) VALE_ARCH=64-bit ;; \
+      arm64) VALE_ARCH=arm64 ;; \
+      *) echo "unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && curl -sSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_${VALE_ARCH}.tar.gz" -o /tmp/vale.tar.gz \
     && tar -xzf /tmp/vale.tar.gz -C /usr/local/bin vale \
     && rm /tmp/vale.tar.gz \
     && vale --version
