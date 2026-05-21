@@ -48,7 +48,7 @@ context
 - get_or_fetch_thread/3 — returns cached Thread when fresh, otherwise fetches from source adapter and persists; delegates to ThreadsRepository
 - get_thread_by_id/2 — fetches Thread by UUID (account-scoped); delegates to ThreadsRepository
 - list_threads/1 — lists account threads ordered by fetched_at desc; delegates to ThreadsRepository
-- set_thread_synopsis_if_blank/3 — writes synopsis only when current is nil (used by stage_response); delegates to ThreadsRepository.set_synopsis_if_blank
+- set_thread_synopsis/3 — overwrites the thread synopsis on every call (used by stage_response so the agent can iterate); blank/nil is a no-op; delegates to ThreadsRepository.set_synopsis
 - get_touchpoint_by_id/2 — fetches single Touchpoint by id (account-scoped); delegates to TouchpointsRepository
 - create_touchpoint/2 — persists a new Touchpoint; delegates to TouchpointsRepository
 - create_staged_touchpoint/2 — persists a staged Touchpoint (no comment_url/posted_at required); delegates to TouchpointsRepository

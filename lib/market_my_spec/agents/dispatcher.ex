@@ -15,6 +15,7 @@ defmodule MarketMySpec.Agents.Dispatcher do
   to keep the agents context independent of the web layer.
   """
 
+  alias MarketMySpec.Agents.AgentsRepository
   alias MarketMySpec.Agents.HostAllowlist
   alias MarketMySpec.Agents.Presence
 
@@ -23,7 +24,7 @@ defmodule MarketMySpec.Agents.Dispatcher do
 
   def dispatch_http(user, %{url: url} = req, opts \\ []) do
     if HostAllowlist.allowed?(url) do
-      case Presence.most_recently_connected(user.id) do
+      case pick_active_online_agent(user.id) do
         nil ->
           {:error, :agent_offline}
 
@@ -33,6 +34,19 @@ defmodule MarketMySpec.Agents.Dispatcher do
     else
       {:error, :host_not_allowed}
     end
+  end
+
+  # Returns the most-recently-connected agent id that is still :active
+  # in the DB. A revoked agent whose channel hadn't been force-closed
+  # could still appear in Presence with a high `online_at` — without
+  # this filter the Dispatcher would broadcast to a doomed agent and
+  # time out.
+  defp pick_active_online_agent(user_id) do
+    active_ids = AgentsRepository.active_agent_id_set(user_id)
+
+    user_id
+    |> Presence.online_agent_ids_by_recency()
+    |> Enum.find(&MapSet.member?(active_ids, &1))
   end
 
   defp do_dispatch(user, agent_id, req, opts) do

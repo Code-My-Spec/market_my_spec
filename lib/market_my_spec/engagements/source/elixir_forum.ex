@@ -158,8 +158,18 @@ defmodule MarketMySpec.Engagements.Source.ElixirForum do
     end
   end
 
+  # `include_subcategories=true` makes Discourse return each top-level
+  # category with a full `subcategory_list` of nested category objects,
+  # so a single request covers both tiers. Without it, slugs like
+  # `your-libraries` / `phoenix-forum` / `chat` / `questions-help`
+  # (all subcategories of `elixir-programming`) resolve to
+  # `{:unknown_category, _}` because the response only carries the
+  # top-level slug→id pairs.
   defp fetch_categories do
-    case Req.get(HTTP.elixirforum_client(), url: "/categories.json") do
+    case Req.get(HTTP.elixirforum_client(),
+           url: "/categories.json",
+           params: [include_subcategories: true]
+         ) do
       {:ok, %Req.Response{status: 200, body: body}} ->
         {:ok, build_categories_map(body)}
 
@@ -179,6 +189,15 @@ defmodule MarketMySpec.Engagements.Source.ElixirForum do
   end
 
   defp put_category(cat, acc) do
+    acc = put_slug(cat, acc)
+
+    cat
+    |> Map.get("subcategory_list", [])
+    |> List.wrap()
+    |> Enum.reduce(acc, &put_category/2)
+  end
+
+  defp put_slug(cat, acc) do
     slug = Map.get(cat, "slug")
     id = Map.get(cat, "id")
     if is_binary(slug) and is_integer(id), do: Map.put(acc, slug, id), else: acc

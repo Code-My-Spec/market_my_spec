@@ -21,8 +21,13 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
 
   ## Synopsis behavior
 
-  The synopsis the agent passes is written onto the parent Thread only
-  when the Thread has no synopsis yet — never overwrites an existing one.
+  Each call writes its `synopsis` onto the parent Thread, overwriting any
+  prior value. This lets the agent iterate (correct typos, refine the
+  synthesis on a subsequent stage) without leaving placeholder/test
+  values stuck permanently. The Thread.synopsis column is `:text`
+  (no length cap at the DB layer); the Peri schema below enforces a
+  generous upper bound so an oversized synopsis returns a clear
+  validation error instead of an opaque crash.
 
   Cross-account access returns an error without creating any row.
   """
@@ -39,15 +44,15 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
       required: true,
       doc: "UUID of the persisted Thread record (from a prior search_engagements call)"
 
-    field :synopsis, :string,
+    field :synopsis, {:string, {:max, 4000}},
       required: true,
       doc:
-        "One-paragraph synthesis of the thread (what the discussion is about). Written to the parent Thread on the FIRST stage; subsequent stages do not overwrite. Shared across all Touchpoints on the thread."
+        "One-paragraph synthesis of the thread (what the discussion is about). Up to 4000 chars. Written to the parent Thread on every stage — overwrites any prior value, so placeholder/test synopses do NOT stick. Shared across all Touchpoints on the thread."
 
-    field :angle, :string,
+    field :angle, {:string, {:max, 4000}},
       required: true,
       doc:
-        "Agent's reasoning angle for this specific reply (per-Touchpoint, not per-Thread — the same thread may be replied to multiple times with different angles)."
+        "Agent's reasoning angle for this specific reply (per-Touchpoint, not per-Thread — the same thread may be replied to multiple times with different angles). Up to 4000 chars."
 
     field :utm_campaign, :string,
       required: false,
@@ -77,7 +82,7 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.StageResponse do
 
         case TouchpointsRepository.create_staged_touchpoint(scope, attrs) do
           {:ok, touchpoint} ->
-            _ = ThreadsRepository.set_synopsis_if_blank(scope, thread.id, synopsis)
+            _ = ThreadsRepository.set_synopsis(scope, thread.id, synopsis)
 
             payload = %{
               "touchpoint_id" => touchpoint.id,

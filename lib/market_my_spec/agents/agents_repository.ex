@@ -16,6 +16,15 @@ defmodule MarketMySpec.Agents.AgentsRepository do
     |> Repo.all()
   end
 
+  @doc "Returns a MapSet of active agent ids for the user. Used by Dispatcher to filter Presence."
+  def active_agent_id_set(user_id) do
+    Agent
+    |> where([a], a.user_id == ^user_id and a.status == ^:active)
+    |> select([a], a.id)
+    |> Repo.all()
+    |> MapSet.new()
+  end
+
   def get_agent(user_id, agent_id) do
     case Repo.get_by(Agent, id: agent_id, user_id: user_id) do
       nil -> {:error, :not_found}

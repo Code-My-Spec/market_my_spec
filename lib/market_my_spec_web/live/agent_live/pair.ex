@@ -83,25 +83,27 @@ defmodule MarketMySpecWeb.AgentLive.Pair do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-lg py-12">
-      <%= case @status do %>
-        <% :ready -> %>
-          <h1 class="text-2xl font-semibold">Pair this binary</h1>
-          <p class="mt-4">Approve to let <strong>{@agent_name}</strong> connect to your account.</p>
-          <div class="mt-6 flex gap-3">
-            <button data-test="approve-pairing" phx-click="approve" class="btn btn-primary">
-              Approve
-            </button>
-            <button data-test="deny-pairing" phx-click="deny" class="btn">
-              Deny
-            </button>
-          </div>
-        <% :unavailable -> %>
-          <h1 class="text-2xl font-semibold">Pairing session unavailable — restart your agent</h1>
-        <% :invalid_params -> %>
-          <h1 class="text-2xl font-semibold">Invalid pairing link — restart your agent</h1>
-      <% end %>
-    </div>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
+      <div class="mx-auto max-w-lg py-12">
+        <%= case @status do %>
+          <% :ready -> %>
+            <h1 class="text-2xl font-semibold">Pair this binary</h1>
+            <p class="mt-4">Approve to let <strong>{@agent_name}</strong> connect to your account.</p>
+            <div class="mt-6 flex gap-3">
+              <button data-test="approve-pairing" phx-click="approve" class="btn btn-primary">
+                Approve
+              </button>
+              <button data-test="deny-pairing" phx-click="deny" class="btn">
+                Deny
+              </button>
+            </div>
+          <% :unavailable -> %>
+            <h1 class="text-2xl font-semibold">Pairing session unavailable — restart your agent</h1>
+          <% :invalid_params -> %>
+            <h1 class="text-2xl font-semibold">Invalid pairing link — restart your agent</h1>
+        <% end %>
+      </div>
+    </Layouts.app>
     """
   end
 end

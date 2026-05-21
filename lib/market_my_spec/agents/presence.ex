@@ -28,16 +28,27 @@ defmodule MarketMySpec.Agents.Presence do
 
   @doc "Returns the most-recently-connected online agent id for the user, or nil."
   def most_recently_connected(user_id) do
+    user_id
+    |> online_agent_ids_by_recency()
+    |> List.first()
+  end
+
+  @doc """
+  Returns online agent ids for the user as a list, sorted by `online_at`
+  descending (most-recently-connected first). Dispatcher uses this to pick
+  the freshest still-active agent — pairing the list with an allowlist of
+  active ids excludes stale Presence entries for revoked agents.
+  """
+  def online_agent_ids_by_recency(user_id) do
     "agents:#{user_id}"
     |> list()
     |> Enum.flat_map(fn {agent_id, %{metas: metas}} ->
       Enum.map(metas, fn m -> {agent_id, Map.get(m, :online_at, 0)} end)
     end)
-    |> case do
-      [] -> nil
-      list -> list |> Enum.max_by(&elem(&1, 1)) |> elem(0)
-    end
+    |> Enum.sort_by(&elem(&1, 1), :desc)
+    |> Enum.map(&elem(&1, 0))
+    |> Enum.uniq()
   rescue
-    ArgumentError -> nil
+    ArgumentError -> []
   end
 end

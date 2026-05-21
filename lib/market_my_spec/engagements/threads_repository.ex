@@ -92,31 +92,29 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
   end
 
   @doc """
-  Writes `synopsis` to the thread only when its current synopsis is nil.
+  Writes `synopsis` to the thread, overwriting any prior value.
 
-  Used by `stage_response` so the first staged Touchpoint on a thread fixes
-  the synthesis. Subsequent stages do not overwrite — the synopsis is a
-  per-thread record, not a per-touchpoint one.
+  Used by `stage_response` so the agent can iterate on the synthesis
+  (correct typos, refine the framing) without placeholder/test values
+  sticking permanently. A blank/nil synopsis is a no-op so a caller
+  can't accidentally clobber a real synthesis with an empty string.
 
   When a write occurs, broadcasts `{:thread_updated, thread}` on PubSub
   topic `"thread:<id>"` so any open TouchpointLive.Show page rendering this
   thread's synopsis reflects the new value without a refresh.
 
   Returns `{:ok, thread}` with the updated row when the write occurred,
-  `{:ok, thread}` with the unchanged row when synopsis was already set,
+  `{:ok, thread}` with the unchanged row when `synopsis` was blank/nil,
   `{:error, :not_found}` when the thread doesn't belong to the account, or
   `{:error, changeset}` on validation failure.
   """
-  @spec set_synopsis_if_blank(Scope.t(), Ecto.UUID.t(), String.t() | nil) ::
+  @spec set_synopsis(Scope.t(), Ecto.UUID.t(), String.t() | nil) ::
           {:ok, Thread.t()} | {:error, :not_found} | {:error, Ecto.Changeset.t()}
-  def set_synopsis_if_blank(%Scope{} = scope, thread_id, synopsis)
+  def set_synopsis(%Scope{} = scope, thread_id, synopsis)
       when is_binary(thread_id) do
     case get_thread_by_id(scope, thread_id) do
       {:error, :not_found} ->
         {:error, :not_found}
-
-      {:ok, %Thread{synopsis: existing} = thread} when not is_nil(existing) ->
-        {:ok, thread}
 
       {:ok, %Thread{} = thread} when is_binary(synopsis) and synopsis != "" ->
         thread

@@ -1,13 +1,13 @@
 defmodule MarketMySpecSpex.Story707.Criterion6506Spex do
   @moduledoc """
   Story 707 — Stage a Touchpoint from a Thread (synopsis, angle, UTM link)
-  Criterion 6506 — A later stage with a different synopsis preserves the
-  original.
+  Criterion 6506 — A later stage with a different synopsis OVERWRITES the
+  prior value.
 
-  Once the parent Thread has a non-nil synopsis, subsequent stage_response
-  calls passing a different synopsis must NOT overwrite it. Synopsis is
-  captured once and preserved on subsequent stages — never an update path.
-  The agent observes via the GetThread MCP tool between stages.
+  The original write-once semantics caused placeholder/test synopses to
+  stick permanently when the agent staged a touchpoint with a stub value
+  while iterating. Synopsis is now updated on every stage so the agent
+  can refine its synthesis.
 
   Interaction surface: MCP tool execution (agent surface).
   """
@@ -41,14 +41,11 @@ defmodule MarketMySpecSpex.Story707.Criterion6506Spex do
     get_in(decode_payload(get_resp), ["thread", "synopsis"])
   end
 
-  spex "synopsis is write-once on the parent Thread" do
-    scenario "Two stages with different synopses; second is ignored; first persists" do
+  spex "synopsis on parent Thread is overwritten on subsequent stages" do
+    scenario "Two stages with different synopses; second value wins" do
       given_ "a fresh Reddit thread owned by Sam with nil synopsis", context do
         scope = Fixtures.account_scoped_user_fixture()
 
-        # `fetched_at` + `op_body` set so GetThread skips the Reddit refresh
-        # and just returns the cached payload (which is what these assertions
-        # are about).
         thread =
           Fixtures.thread_fixture(scope, %{
             source: :reddit,
@@ -61,9 +58,9 @@ defmodule MarketMySpecSpex.Story707.Criterion6506Spex do
         {:ok, Map.merge(context, %{frame: build_frame(scope), thread: thread})}
       end
 
-      when_ "agent stages once with synopsis A, then again with synopsis B", context do
-        first_synopsis = "First take — OP wants to learn idiomatic Elixir."
-        second_synopsis = "Different take that should be ignored on second stage."
+      when_ "agent stages once with a placeholder synopsis, then again with the real one", context do
+        first_synopsis = "test synopsis"
+        second_synopsis = "OP wants to learn idiomatic Elixir; pair with the small-programs series."
 
         {:reply, _, _} =
           StageResponse.execute(
@@ -92,17 +89,18 @@ defmodule MarketMySpecSpex.Story707.Criterion6506Spex do
         {:ok,
          Map.merge(context, %{
            first_synopsis: first_synopsis,
+           second_synopsis: second_synopsis,
            after_first: after_first,
            after_second: after_second
          })}
       end
 
-      then_ "after stage 1 the synopsis is set; after stage 2 it is unchanged", context do
+      then_ "after stage 1 the synopsis is the first value; after stage 2 it is the second", context do
         assert context.after_first == context.first_synopsis,
                "expected first synopsis to be written (observed via GetThread); got: #{inspect(context.after_first)}"
 
-        assert context.after_second == context.first_synopsis,
-               "expected first synopsis preserved after second stage (observed via GetThread); got: #{inspect(context.after_second)}"
+        assert context.after_second == context.second_synopsis,
+               "expected second synopsis to overwrite first (observed via GetThread); got: #{inspect(context.after_second)}"
 
         {:ok, context}
       end
