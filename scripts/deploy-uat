@@ -31,21 +31,50 @@ gh run watch "$RUN_ID" --exit-status --interval 10
 export KAMAL_REGISTRY_PASSWORD
 KAMAL_REGISTRY_PASSWORD=$(gh auth token)
 
+# Render SSM bootstrap creds to a temp file with an explicit exit-code
+# check. Process substitution (`source <(render-env …)`) swallows the
+# inner command's failure — if SSO is stale, render-env prints nothing,
+# source consumes nothing, and the deploy proceeds with empty AWS keys.
+# That empty-creds state then propagates into kamal's per-host env-file
+# and survives across every subsequent `kamal app exec` (which reuses
+# the stale file without re-pushing). The temp-file approach makes the
+# failure loud and immediate.
+ENV_FILE=$(mktemp -t market_my_spec_uat_env.XXXXXX)
+trap 'rm -f "$ENV_FILE"' EXIT
+
+echo "==> rendering env from SSM (/market_my_spec/uat/*)..."
+if ! "$DEVOPS_DIR/scripts/render-env" market_my_spec uat --out "$ENV_FILE"; then
+  echo "ERROR: render-env failed. Run 'aws sso login' and retry." >&2
+  exit 1
+fi
+
 set -a
 # shellcheck disable=SC1091
-source <("$DEVOPS_DIR/scripts/render-env" market_my_spec uat)
+source "$ENV_FILE"
 set +a
 
 # The shell that invoked this script likely has AWS_SESSION_TOKEN (and
-# friends) set from an active SSO session. render-env's output sets the
-# long-term IAM user credentials from SSM into AWS_ACCESS_KEY_ID /
-# AWS_SECRET_ACCESS_KEY, but the SSO session token from the parent shell
-# survives. Kamal's `env.secret` then ships all three into the container,
-# AWS SDK treats the keys as STS creds (because session_token is present),
-# and AWS rejects them with "UnrecognizedClientException: The security
-# token included in the request is invalid." Clear them so the container
-# sees only the long-term IAM pair.
+# friends) set from an active SSO session. The SSM payload sets the
+# long-term IAM user credentials into AWS_ACCESS_KEY_ID /
+# AWS_SECRET_ACCESS_KEY; clearing the surrounding STS noise prevents
+# the AWS SDK in the container from misinterpreting the long-term pair
+# as temporary credentials.
 unset AWS_SESSION_TOKEN AWS_SECURITY_TOKEN AWS_PROFILE
+
+# Hard-fail before kamal sees empty creds. Without this, kamal pushes
+# an empty env-file to the host, the container crashes on boot, and
+# every subsequent `kamal app exec` reuses the stale empty file —
+# silent failure mode documented in
+# memory/feedback_deploy_render_env_silent_fail.md.
+for required in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+  if [[ -z "${!required:-}" ]]; then
+    echo "ERROR: $required is empty after render-env. Refusing to deploy" >&2
+    echo "       — kamal would push an empty env-file and brick UAT secrets." >&2
+    exit 1
+  fi
+done
+
+echo "==> bootstrap creds OK (AWS_ACCESS_KEY_ID ends ${AWS_ACCESS_KEY_ID: -4})"
 
 # Migrate against the NEW image before swapping traffic. See scripts/deploy
 # for the full rationale.
