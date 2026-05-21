@@ -15,6 +15,7 @@ defmodule MarketMySpec.McpServers.MarketingStrategyServer do
   component(MarketMySpec.McpServers.Engagements.Tools.SearchEngagements)
   component(MarketMySpec.McpServers.Engagements.Tools.RunSearch)
   component(MarketMySpec.McpServers.Engagements.Tools.StageResponse)
+  component(MarketMySpec.McpServers.Engagements.Tools.PolishTouchpoint)
   component(MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint)
   component(MarketMySpec.McpServers.Engagements.Tools.ListTouchpoints)
   component(MarketMySpec.McpServers.Engagements.Tools.DeleteTouchpoint)

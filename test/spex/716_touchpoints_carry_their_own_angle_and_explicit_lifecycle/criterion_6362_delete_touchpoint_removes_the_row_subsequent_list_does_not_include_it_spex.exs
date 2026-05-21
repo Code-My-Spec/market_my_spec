@@ -44,13 +44,13 @@ defmodule MarketMySpecSpex.Story716.Criterion6362Spex do
 
         {:reply, stage_a, _} =
           StageResponse.execute(
-            %{thread_id: thread.id, polished_body: "Keep me", link_target: "https://x"},
+            %{thread_id: thread.id, synopsis: "Keep me", angle: "Test angle."},
             frame
           )
 
         {:reply, stage_b, _} =
           StageResponse.execute(
-            %{thread_id: thread.id, polished_body: "Delete me", link_target: "https://x"},
+            %{thread_id: thread.id, synopsis: "Delete me", angle: "Test angle."},
             frame
           )
 

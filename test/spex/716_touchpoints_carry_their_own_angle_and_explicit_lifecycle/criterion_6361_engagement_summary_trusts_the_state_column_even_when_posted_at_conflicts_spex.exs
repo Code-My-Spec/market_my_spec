@@ -65,8 +65,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6361Spex do
           StageResponse.execute(
             %{
               thread_id: thread.id,
-              polished_body: "Body for explicit-state test",
-              link_target: "https://x",
+              synopsis: "Body for explicit-state test",
               angle: "explicit state path"
             },
             frame

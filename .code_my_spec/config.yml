@@ -26,7 +26,9 @@ infrastructure_paths:
     - lib/market_my_spec_web/controllers/error_*
     - lib/market_my_spec_web/controllers/page_*
     - lib/market_my_spec_web/channels/user_socket.ex
+    - lib/market_my_spec_web/channels/agent_socket.ex
     - lib/market_my_spec_web/channels/presence.ex
+    - lib/market_my_spec_web/controllers/user_oauth_controller.ex
     # phx.gen.auth-generated web-side scaffolding (Users domain stays as domain)
     - lib/market_my_spec_web/user_auth.ex
     - lib/market_my_spec_web/controllers/user_session_controller.ex

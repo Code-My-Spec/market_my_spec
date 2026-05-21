@@ -35,21 +35,20 @@ defmodule MarketMySpecSpex.Story716.Criterion6334Spex do
     |> Jason.decode!()
   end
 
-  spex "stage_response accepts optional angle; persists string when given, nil when omitted" do
-    scenario "with angle: persisted; without angle: nil" do
+  spex "stage_response requires synopsis and angle; both are persisted" do
+    scenario "two angle values: strong vs generic" do
       given_ "an account with a thread", context do
         scope = Fixtures.account_scoped_user_fixture()
         thread = Fixtures.thread_fixture(scope, %{source: :reddit, source_thread_id: "ang334"})
         {:ok, Map.merge(context, %{frame: build_frame(scope), thread: thread})}
       end
 
-      when_ "the agent stages once with angle and once without", context do
+      when_ "the agent stages twice with different angles", context do
         {:reply, _r1, _} =
           StageResponse.execute(
             %{
               thread_id: context.thread.id,
-              polished_body: "With angle body",
-              link_target: "https://marketmyspec.com/x",
+              synopsis: "Discussion about angle discovery insights",
               angle: "Lead with the discovery insight"
             },
             context.frame
@@ -59,8 +58,8 @@ defmodule MarketMySpecSpex.Story716.Criterion6334Spex do
           StageResponse.execute(
             %{
               thread_id: context.thread.id,
-              polished_body: "Without angle body",
-              link_target: "https://marketmyspec.com/x"
+              synopsis: "Discussion about angle discovery insights",
+              angle: "Generic reply with helpful link"
             },
             context.frame
           )
@@ -71,31 +70,31 @@ defmodule MarketMySpecSpex.Story716.Criterion6334Spex do
         {:ok, Map.put(context, :payload, decode_payload(list_resp))}
       end
 
-      then_ "exactly two touchpoints exist; one with angle string, one with angle nil",
+      then_ "exactly two touchpoints exist with distinct angles",
             context do
         touchpoints = context.payload["touchpoints"] || context.payload["list"] || []
 
         refute Enum.empty?(touchpoints), "expected 2 touchpoints, got empty"
         assert length(touchpoints) == 2, "expected 2, got #{length(touchpoints)}"
 
-        with_angle =
+        strong_angle =
           Enum.find(touchpoints, fn tp ->
-            (tp["polished_body"] || tp[:polished_body]) == "With angle body"
+            (tp["angle"] || tp[:angle]) == "Lead with the discovery insight"
           end)
 
-        without_angle =
+        generic_angle =
           Enum.find(touchpoints, fn tp ->
-            (tp["polished_body"] || tp[:polished_body]) == "Without angle body"
+            (tp["angle"] || tp[:angle]) == "Generic reply with helpful link"
           end)
 
-        assert with_angle, "expected to find the with-angle touchpoint"
-        assert without_angle, "expected to find the without-angle touchpoint"
+        assert strong_angle, "expected to find the strong-angle touchpoint"
+        assert generic_angle, "expected to find the generic-angle touchpoint"
 
-        assert (with_angle["angle"] || with_angle[:angle]) == "Lead with the discovery insight",
-               "expected angle persisted, got: #{inspect(with_angle["angle"] || with_angle[:angle])}"
+        assert (strong_angle["angle"] || strong_angle[:angle]) == "Lead with the discovery insight",
+               "expected angle persisted, got: #{inspect(strong_angle["angle"] || strong_angle[:angle])}"
 
-        assert (without_angle["angle"] || without_angle[:angle]) == nil,
-               "expected angle nil when omitted, got: #{inspect(without_angle["angle"] || without_angle[:angle])}"
+        assert (generic_angle["angle"] || generic_angle[:angle]) == "Generic reply with helpful link",
+               "expected angle persisted, got: #{inspect(generic_angle["angle"] || generic_angle[:angle])}"
 
         {:ok, context}
       end

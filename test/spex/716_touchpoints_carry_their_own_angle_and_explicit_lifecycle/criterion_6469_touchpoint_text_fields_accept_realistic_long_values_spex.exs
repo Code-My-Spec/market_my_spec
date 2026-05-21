@@ -20,6 +20,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6469Spex do
 
   alias Anubis.Server.Response
   alias MarketMySpec.Engagements
+  alias MarketMySpec.McpServers.Engagements.Tools.PolishTouchpoint
   alias MarketMySpec.McpServers.Engagements.Tools.StageResponse
   alias MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint
   alias MarketMySpecSpex.Fixtures
@@ -110,10 +111,8 @@ defmodule MarketMySpecSpex.Story716.Criterion6469Spex do
           StageResponse.execute(
             %{
               thread_id: context.thread.id,
-              polished_body: long_body(),
-              link_target: "https://codemyspec.com/blog/bdd-specs-for-ai-generated-code",
-              angle: long_angle(),
-              synopsis: long_synopsis()
+              synopsis: long_synopsis(),
+              angle: long_angle()
             },
             context.frame
           )
@@ -123,15 +122,21 @@ defmodule MarketMySpecSpex.Story716.Criterion6469Spex do
 
         revised_angle = long_angle() <> " (revised after the OP replied)"
 
+        revised_body = long_body() <> "\n\nEdit: clarified the static-vs-chat split."
+
         {:reply, _update_resp, _} =
           UpdateTouchpoint.execute(
             %{
               touchpoint_id: touchpoint_id,
-              polished_body: long_body() <> "\n\nEdit: clarified the static-vs-chat split.",
               angle: revised_angle
             },
             context.frame
           )
+
+        PolishTouchpoint.execute(
+          %{touchpoint_id: touchpoint_id, polished_body: revised_body},
+          context.frame
+        )
 
         posted_at_iso = "2026-05-17T20:55:00Z"
 

@@ -49,8 +49,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6359Spex do
           StageResponse.execute(
             %{
               thread_id: thread.id,
-              polished_body: "First (oldest) body",
-              link_target: "https://x/1",
+              synopsis: "First (oldest) body",
               angle: "first angle"
             },
             frame
@@ -66,8 +65,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6359Spex do
           StageResponse.execute(
             %{
               thread_id: thread.id,
-              polished_body: "Second body",
-              link_target: "https://x/2",
+              synopsis: "Second body",
               angle: "second angle"
             },
             frame
@@ -83,8 +81,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6359Spex do
           StageResponse.execute(
             %{
               thread_id: thread.id,
-              polished_body: "Third (newest) body",
-              link_target: "https://x/3",
+              synopsis: "Third (newest) body",
               angle: "third angle"
             },
             frame

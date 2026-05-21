@@ -61,6 +61,10 @@ config :phoenix,
 # Use in-memory ETS backend for file storage in tests (avoids real S3 calls)
 config :market_my_spec, :files_backend, MarketMySpec.Files.Memory
 
+# Use the deterministic TestStub for prose linting in tests — avoids shelling
+# out to the real Vale binary (which may not be installed in CI).
+config :market_my_spec, :linter_impl, MarketMySpec.Linter.TestStub
+
 # OAuth client credentials for tests. ReqCassette intercepts the actual
 # Google/GitHub HTTP calls (see test/support/oauth_spex_helpers.ex), but
 # the provider modules still call `Application.fetch_env!/2` for these

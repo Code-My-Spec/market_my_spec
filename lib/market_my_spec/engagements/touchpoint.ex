@@ -39,6 +39,9 @@ defmodule MarketMySpec.Engagements.Touchpoint do
           comment_url: String.t() | nil,
           polished_body: String.t() | nil,
           link_target: String.t() | nil,
+          utm_source: String.t() | nil,
+          utm_medium: String.t() | nil,
+          utm_campaign: String.t() | nil,
           posted_at: DateTime.t() | nil,
           account: Account.t() | Ecto.Association.NotLoaded.t(),
           thread: Thread.t() | Ecto.Association.NotLoaded.t(),
@@ -52,6 +55,9 @@ defmodule MarketMySpec.Engagements.Touchpoint do
     field :comment_url, :string
     field :polished_body, :string
     field :link_target, :string
+    field :utm_source, :string
+    field :utm_medium, :string
+    field :utm_campaign, :string
     field :posted_at, :utc_datetime
 
     belongs_to :account, Account, type: :binary_id
@@ -69,7 +75,19 @@ defmodule MarketMySpec.Engagements.Touchpoint do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(touchpoint, attrs) do
     touchpoint
-    |> cast(attrs, [:account_id, :thread_id, :state, :angle, :comment_url, :polished_body, :link_target, :posted_at])
+    |> cast(attrs, [
+      :account_id,
+      :thread_id,
+      :state,
+      :angle,
+      :comment_url,
+      :polished_body,
+      :link_target,
+      :utm_source,
+      :utm_medium,
+      :utm_campaign,
+      :posted_at
+    ])
     |> put_default_state_from_posted_at()
     |> validate_required([:account_id, :thread_id, :comment_url, :polished_body, :posted_at])
     |> validate_url(:comment_url)
@@ -111,7 +129,17 @@ defmodule MarketMySpec.Engagements.Touchpoint do
   @spec staged_changeset(t(), map()) :: Ecto.Changeset.t()
   def staged_changeset(touchpoint, attrs) do
     touchpoint
-    |> cast(attrs, [:account_id, :thread_id, :state, :angle, :polished_body, :link_target])
+    |> cast(attrs, [
+      :account_id,
+      :thread_id,
+      :state,
+      :angle,
+      :polished_body,
+      :link_target,
+      :utm_source,
+      :utm_medium,
+      :utm_campaign
+    ])
     |> put_default_state(:staged)
     |> validate_required([:account_id, :thread_id])
     |> validate_url(:link_target)
@@ -146,6 +174,7 @@ defmodule MarketMySpec.Engagements.Touchpoint do
     changeset =
       touchpoint
       |> cast(attrs, [:state, :comment_url, :posted_at, :polished_body, :angle])
+      |> cast(attrs, [:utm_source, :utm_medium, :utm_campaign])
 
     state = get_field(changeset, :state)
 

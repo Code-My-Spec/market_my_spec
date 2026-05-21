@@ -50,8 +50,8 @@ defmodule MarketMySpecSpex.Story716.Criterion6358Spex do
           StageResponse.execute(
             %{
               thread_id: thread.id,
-              polished_body: "Body for paste-URL test",
-              link_target: "https://marketmyspec.com/x"
+              synopsis: "Body for paste-URL test",
+              angle: "Test angle."
             },
             frame
           )

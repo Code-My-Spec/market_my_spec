@@ -48,8 +48,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6332Spex do
           StageResponse.execute(
             %{
               thread_id: context.thread.id,
-              polished_body: "A polished body",
-              link_target: "https://marketmyspec.com/x",
+              synopsis: "A discussion about harness engineering",
               angle: "Pivot to harness engineering as the missing piece"
             },
             context.frame

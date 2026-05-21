@@ -5,7 +5,8 @@ All sources accessed 2026-05-01 unless noted. Grouped by evidence cluster.
 ## E1 — Direct PM interview: Growth Tech Marketing
 
 - https://growthtechmarketing.com/ — "Growth Tech Marketing" (primary, direct customer example) — accessed 2026-05-01
-- PM intake interview, 2026-05-01 — John Davenport, Market My Spec founder: "He has 90 days to make a client money or they work for free. Speed to strategy is basically a business-critical function." Confirmed: event venue clients, semi-technical founder (can drive Claude Code), solo tooling decision-maker, mix of tools, expanding verticals.
+
+PM intake quote and confirmation details are in `summary.md` Evidence section under E1.
 
 ## E2 — Performance marketing agency guarantee and SLA model research
 

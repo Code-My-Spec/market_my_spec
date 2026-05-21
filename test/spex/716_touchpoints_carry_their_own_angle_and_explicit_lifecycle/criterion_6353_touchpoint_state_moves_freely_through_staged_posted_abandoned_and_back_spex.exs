@@ -15,6 +15,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6353Spex do
 
   alias Anubis.Server.Response
   alias MarketMySpec.McpServers.Engagements.Tools.ListTouchpoints
+  alias MarketMySpec.McpServers.Engagements.Tools.PolishTouchpoint
   alias MarketMySpec.McpServers.Engagements.Tools.StageResponse
   alias MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint
   alias MarketMySpecSpex.Fixtures
@@ -53,8 +54,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6353Spex do
           StageResponse.execute(
             %{
               thread_id: thread.id,
-              polished_body: "Lifecycle test body",
-              link_target: "https://x",
+              synopsis: "Lifecycle test body",
               angle: "Lifecycle test angle"
             },
             frame
@@ -63,6 +63,11 @@ defmodule MarketMySpecSpex.Story716.Criterion6353Spex do
         touchpoint_id =
           (decode_payload(stage_resp))["touchpoint_id"] ||
             (decode_payload(stage_resp))["id"]
+
+        PolishTouchpoint.execute(
+          %{touchpoint_id: touchpoint_id, polished_body: "Lifecycle test body"},
+          frame
+        )
 
         {:ok, Map.merge(context, %{frame: frame, thread: thread, touchpoint_id: touchpoint_id})}
       end

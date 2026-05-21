@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6335Spex do
 
         {:reply, stage_resp, _} =
           StageResponse.execute(
-            %{thread_id: thread.id, polished_body: "Body", link_target: "https://x"},
+            %{thread_id: thread.id, synopsis: "Test synopsis.", angle: "Test angle."},
             frame
           )
 

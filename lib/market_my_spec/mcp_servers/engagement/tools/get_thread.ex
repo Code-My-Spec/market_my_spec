@@ -143,6 +143,7 @@ defmodule MarketMySpec.McpServers.Engagement.Tools.GetThread do
         "id" => thread.id,
         "source" => to_string(thread.source),
         "source_thread_id" => thread.source_thread_id,
+        "synopsis" => thread.synopsis,
         "title" => thread.title,
         "url" => thread.url,
         "op_body" => thread.op_body,

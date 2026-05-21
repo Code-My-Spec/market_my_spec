@@ -40,6 +40,75 @@ defmodule MarketMySpec.Engagements.Posting do
     "#{link_target}#{separator(link_target)}#{utm_params}"
   end
 
+  @doc """
+  Returns a map of UTM parameter values derived from the thread's source.
+
+  Keys: `:utm_source`, `:utm_medium`, `:utm_campaign`. Used by
+  `stage_response` to populate the per-Touchpoint UTM columns; the polish
+  step composes the final URL from these args + whatever destination URL
+  the model embeds into the polished body.
+
+  Reddit:
+    - utm_source: "reddit"
+    - utm_medium: "comment"
+    - utm_campaign: `<subreddit>:<source_thread_id>` (from Thread.url) or
+      override if provided.
+
+  ElixirForum:
+    - utm_source: "elixirforum"
+    - utm_medium: "reply"
+    - utm_campaign: `<category-slug>:<source_thread_id>` (from Thread.url)
+      or override.
+  """
+  @spec build_utm_params(map(), String.t() | nil) :: %{
+          utm_source: String.t(),
+          utm_medium: String.t(),
+          utm_campaign: String.t()
+        }
+  def build_utm_params(thread, campaign_override \\ nil) do
+    case Map.get(thread, :source) do
+      :reddit ->
+        %{
+          utm_source: "reddit",
+          utm_medium: "comment",
+          utm_campaign: default_or_override(:reddit, thread, campaign_override)
+        }
+
+      :elixirforum ->
+        %{
+          utm_source: "elixirforum",
+          utm_medium: "reply",
+          utm_campaign: default_or_override(:elixirforum, thread, campaign_override)
+        }
+
+      other ->
+        %{
+          utm_source: to_string(other || "unknown"),
+          utm_medium: "engagement",
+          utm_campaign: sanitize_campaign(campaign_override) || ""
+        }
+    end
+  end
+
+  defp default_or_override(source, thread, campaign_override) do
+    case sanitize_campaign(campaign_override) do
+      nil -> default_campaign(source, thread)
+      override -> override
+    end
+  end
+
+  defp default_campaign(:reddit, thread) do
+    venue = extract_subreddit(Map.get(thread, :url, "")) || "reddit"
+    name = to_string(Map.get(thread, :source_thread_id, "thread"))
+    "#{venue}:#{name}"
+  end
+
+  defp default_campaign(:elixirforum, thread) do
+    venue = extract_ef_category(Map.get(thread, :url, "")) || "elixirforum"
+    name = to_string(Map.get(thread, :source_thread_id, "thread"))
+    "#{venue}:#{name}"
+  end
+
   defp utm_params_for_thread(thread, campaign_override) do
     source = Map.get(thread, :source)
     url = Map.get(thread, :url, "")

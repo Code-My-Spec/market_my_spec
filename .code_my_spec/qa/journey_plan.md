@@ -1,6 +1,6 @@
 # Qa Journey Plan
 
-End-to-end QA journey plan for MarketMySpec. Five journeys covering the 13 in-flight stories. Each journey traces a real user path across multiple stories, not a single criterion.
+End-to-end QA journey plan for MarketMySpec. Seven journeys covering the 19 in-flight stories. Each journey traces a real user path across multiple stories, not a single criterion.
 
 ## Journeys
 
@@ -32,7 +32,7 @@ End-to-end QA journey plan for MarketMySpec. Five journeys covering the 13 in-fl
 **Stories covered:** 612 (OAuth for MCP), 674 (Marketing Strategy Interview), 675 (Skill Over MCP / SSE), 676 (Strategy Artifacts Saved), 683 (Agent File Tools Over MCP).
 
 **Steps:**
-1. User runs `claude mcp add market-my-spec http://localhost:4008/mcp`. The OAuth flow opens `/oauth/authorize`; user signs in (existing session) and approves.
+1. User runs `claude mcp add market-my-spec http://localhost:4007/mcp`. The OAuth flow opens `/oauth/authorize`; user signs in (existing session) and approves.
 2. Claude Code receives a bearer token via `/oauth/token` and stores it. MCP session establishes via `POST /mcp` initialize → SSE response with server info.
 3. Agent calls `list_files` (empty result) and reads `marketing-strategy://orientation` to load SKILL.md.
 4. Agent calls `start_interview`, gets back the orientation + step manifest.
@@ -114,16 +114,72 @@ End-to-end QA journey plan for MarketMySpec. Five journeys covering the 13 in-fl
 - Invited grants can be revoked by either party.
 - Revoked clients don't appear on the dashboard.
 
+### Journey 6 — Founder installs the MMS Agent, pairs, joins channel, dispatches Reddit search
+
+**Role:** Founder with an existing MMS account, installing the local agent binary on their machine.
+
+**Stories covered:** 731 (Install and pair), 732 (Connect and report status), 733 (Reddit operations via agent).
+
+**Steps:**
+1. User signs in to `https://marketmyspec.com` (or `http://localhost:4007` in dev). User opens `/agents` — empty list, no agents paired.
+2. User installs the binary: `brew tap Code-My-Spec/mms-agent && brew install mms-agent`. (On a fresh Apple Silicon Mac; if already installed, skip.)
+3. User runs `mms-agent pair`. The default browser opens to `/agents/pair?state=…&port=…&name=…`. User clicks **Approve**.
+4. The binary's loopback callback receives the token + `agent_id` + `user_id`; persists to `~/.mms-agent/auth.json` at mode 0600; prints `mms-agent: paired. Token saved to ~/.mms-agent/auth.json.` and exits 0.
+5. User runs `mms-agent server`. `MarketMySpecAgent.Channel.Client` reads the creds, connects via `wss://<server>/agent/websocket?vsn=2.0.0` (or `ws://localhost:4007/...` in dev), joins `agents:<user_id>`. Expect log lines `[Agent.Channel.Client] connected — joining agents:N` then `[Agent.Channel.Client] joined agents:N`.
+6. User refreshes (or just watches) `/agents` — the paired agent shows `Online · v0.1.0 · last seen <ts>` via the `Phoenix.Presence` diff. No manual refresh required after the LiveView mounts.
+7. (Story 733 happy path) User invokes the `SearchEngagements` MCP tool. Server's `MarketMySpec.Agents.Dispatcher.dispatch_http/3` broadcasts on the user's topic; the binary's `Channel.Client` executes the request via `Req` (gated by `MarketMySpecAgent.HostAllowlist`), pushes the response back. The tool returns real Reddit candidates with **no** anonymous-fallback `notices` entry.
+8. User kills the binary (`pkill -f market_my_spec_agent` or Ctrl-C in the `mms-agent server` terminal). `/agents` flips to `Offline` within ~5s via the `presence_diff` broadcast.
+9. (Story 733 negative path) User invokes `SearchEngagements` again with no online agent. The tool returns a `notices` array containing `"No online MMS Agent … Pair or start an agent at /agents …"` plus anonymous-fallback Reddit candidates (lower fidelity, but non-empty).
+
+**Expected outcome:**
+- Binary installs cleanly via Homebrew on Apple Silicon.
+- Pair flow completes; `~/.mms-agent/auth.json` exists at mode 0600 with `agent_id`, `user_id`, `token`, `server_url`, `paired_at`.
+- Channel joins via real WSS (prod) or WS (dev) to the configured `server_url`.
+- `/agents` flips Online ↔ Offline without manual refresh (presence-driven).
+- Reddit search dispatches through the agent when online; falls back with a user-facing `notices` entry when offline.
+
+---
+
+### Journey 7 — Founder saves a Vale style guide, polishes touchpoint prose with lint feedback
+
+**Role:** Authenticated founder with the engagement-finder flow already set up; agent (Claude Code) is the actor for steps 3–6.
+
+**Stories covered:** 736 (Paste a Vale configuration onto my account), 707 (Stage a Touchpoint from a Thread — synopsis, angle, UTM link), 738 (Polish touchpoint prose with Vale lint feedback).
+
+**Steps:**
+1. Founder signs in and navigates to `/accounts/:account_id/style-guide`. The empty-state intro reads "No configuration saved yet."
+2. Founder pastes a valid `.vale.ini` body that activates `write-good` (e.g. `[*.md] BasedOnStyles = write-good`) and clicks **Save**. The page re-renders with the saved body in the textarea, a success flash, and the "Clear configuration" button visible.
+3. Agent calls `search_engagements` (or `run_search`) to find a Reddit/ElixirForum thread of interest. Returns a Thread UUID.
+4. Agent calls `stage_response(thread_id, synopsis, angle)` — the new 707 signature. The tool persists `synopsis` on the parent Thread (write-once), creates a `:staged` Touchpoint carrying the angle and the derived UTM params (`utm_source=reddit`/`utm_medium=comment`/`utm_campaign=<subreddit>:<source_thread_id>` for Reddit; `utm_source=elixirforum`/`utm_medium=reply`/`utm_campaign=<category-slug>:<source_thread_id>` for ElixirForum). Returns the new Touchpoint id.
+5. Agent dictates and refines prose with the founder, then calls `polish_touchpoint(touchpoint_id, polished_body)` with prose that contains a weasel word (e.g. "very"). The tool runs Vale against the founder's saved configuration; alerts come back non-empty; the polished body is NOT persisted; the response shape is `%{"touchpoint" => %{...polished_body: nil...}, "alerts" => [%{severity, check, line, column, message}, ...]}`. The agent reads the alerts and revises the prose.
+6. Agent re-calls `polish_touchpoint` with the revised prose (no weasel words). Alerts come back empty; `polished_body` is persisted on the Touchpoint; the response carries the updated Touchpoint and `alerts: []`.
+7. Founder opens `/accounts/:account_id/touchpoints/:touchpoint_id` (story 716's TouchpointLive.Show). The polished body is visible alongside the angle, the parent Thread synopsis, and the UTM params on the row.
+8. Founder copies the polished body, posts it as a reply on the source platform, returns to TouchpointLive.Show, pastes the live comment URL into the "mark posted" form, submits. Touchpoint transitions to `:posted` with `comment_url` and `posted_at` populated (story 716).
+
+**Expected outcome:**
+- Vale config persists on the Account; reloading `/accounts/:account_id/style-guide` shows the saved body.
+- `stage_response` rejects calls without required `synopsis` and `angle`; never accepts `polished_body` or `link_target` (those parameters no longer exist on its schema).
+- `polish_touchpoint` is the only MCP tool that writes `polished_body`. `update_touchpoint` no longer accepts `polished_body` at all.
+- Lint feedback is blocking: alerts non-empty → no write; alerts empty → write. The agent iterates without the founder reading lint output.
+- Cross-account access on either `polish_touchpoint` or the style-guide URL returns `:not_found` / redirects with no data leak.
+
+**Cross-account isolation check (optional sub-flow):** Sign in as a second founder, navigate to the first founder's `/accounts/<other-account-id>/style-guide` URL — redirects to `/accounts` with "Account not found" flash. The first founder's saved body never renders for the second.
+
+---
+
 ## Prerequisites
 
-- Phoenix dev server running on port 4008: `PORT=4008 mix phx.server`. (Port 4000 conflicts with the sister `code_my_spec` project; 4007 has a stale-server history — see `reference_dev_server.md`.)
+- Phoenix dev server running on port 4007: `PORT=4007 mix phx.server` (or `just server`). (Port 4000 conflicts with the sister `code_my_spec` project; `envs/dev.env` sets `PORT=4007` but `mix phx.server` doesn't always pick it up — see `reference_dev_server.md` and the dotenvy note in `.code_my_spec/qa/plan.md`.)
 - Database migrated: `mix ecto.migrate`
 - Files backend in dev = `MarketMySpec.Files.Disk` (writes under `tmp/files/`, no AWS creds needed). Set in `config/dev.exs`.
 - OAuth credentials present in `envs/dev.env` (loaded via Dotenvy in `config/runtime.exs`): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `RESEND_API_KEY`, `CLOAK_KEY`. These must be present even though Journeys 1–5 don't go through Google/GitHub sign-in — the Endpoint init reads them.
 - Seed data: at minimum, two test users (one individual, one agency-account-owner) and one agency account. Use `priv/repo/qa_seeds.exs` as the entrypoint; extend if it doesn't already create the agency seed.
-- For Journey 2, Claude Code must be available as the MCP client. Add via `claude mcp add market-my-spec http://localhost:4008/mcp`. The OAuth approval is interactive (browser).
+- For Journey 2, Claude Code must be available as the MCP client. Add via `claude mcp add market-my-spec http://localhost:4007/mcp`. The OAuth approval is interactive (browser).
 - For curl-only fallbacks (when browser-mediated OAuth isn't available), mint a bearer token directly via `mix run /tmp/claude/mint_token.exs` (recipe in `reference_mcp_architecture.md`). This skips the user-mediated consent step but exercises the same MCP surface.
 - Vibium MCP browser tools are wired and verified working as of this session — use them for browser-driven steps.
+- For Journey 6: Apple Silicon Mac (linux/intel targets deferred — see `docs/release.md` and `.github/workflows/release.yml`). Xcode 26+ Command Line Tools must be current or Homebrew installs fail. `aws sso login` only needed if testing against prod via `scripts/deploy`; pair-only QA doesn't need AWS creds.
+- For Journey 6 in-tree (no Burrito binary): `just agent` boots the agent in `MIX_ENV=dev_agent` against `http://localhost:4007`. See `.code_my_spec/qa/plan.md` § "`just agent`" for the full bring-up.
+- For Journey 7: Vale CLI installed locally (`brew install vale` on macOS; download from GitHub Releases in Docker per `.code_my_spec/knowledge/vale-cli.md`). `VALE_STYLES_PATH` env var must point at the vendored styles tree (defaults to `/app/priv/vale/styles` for the Docker image; in local dev set it to e.g. `~/.config/vale/styles` or wherever `vale sync` landed the packages). `envs/dev.env` should export `VALE_STYLES_PATH`. `write-good` must be present in the styles tree for the weasel-word assertion in step 5 — run `vale sync` from a directory with a `.vale.ini` referencing `Packages = write-good` if it's not there yet.
 
 ## Notes
 
@@ -132,3 +188,5 @@ End-to-end QA journey plan for MarketMySpec. Five journeys covering the 13 in-fl
 - The read-before-overwrite gate is per-Anubis-session. Journey 3's "fresh session" precondition matters — restarting Claude Code or running a separate curl session both reset `frame.assigns.read_paths`.
 - Journey 4 needs an admin-provisioned agency account (self-service produces only individual accounts, criterion 5777). Create the agency via the seed script using `MarketMySpec.Accounts.AccountsRepository.create_agency_account_with_owner/2`.
 - Phase 3 Wallaby tests should pin the bearer-token-minting step (Journey 2 prereq) to a fixture rather than driving the OAuth flow — Wallaby on its own can't span the Phoenix server + a separate Claude Code process.
+- Journey 6 is a 3-process flow (browser + `mms-agent` binary + Phoenix server). Wallaby can't drive the binary side cleanly, so the corresponding test (`test/e2e/journey_6_agent_pair_test.exs`) is tagged `@moduletag :manual` and documents the manual procedure in its `@moduledoc`. The browser-side surface (`/agents` rendering an Online agent + flipping to Offline on presence diff) can be exercised by pre-seeding an `Agent` record and a `Phoenix.Presence` track in a future test; the binary-side pair flow and Reddit dispatch round-trip stay manual until we have a fixture process that can stand in for the burrito binary. Per-story BDD spex (`test/spex/{731,732,733}_*/`) cover the pieces in isolation: Channel.Client uses `Phoenix.ChannelTest` with a real join, Dispatcher tests run against a real `AgentChannel` join, pairing tests exercise the LiveView + token persistence.
+- Journey 7 spans the LiveView (style-guide settings page) and the MCP-tool surface (`stage_response`, `polish_touchpoint`). The browser half is driven by Vibium; the MCP half is driven in-process via `mix run -e` with a synthesized `Anubis.Server.Frame` (no MCP-over-HTTP transport is wired yet in this project — see `.code_my_spec/qa/plan.md`). The Vale lint is the operative gate: in dev/QA the real `vale` binary runs against the saved `.vale.ini`; in `MIX_ENV=test` the spex use `MarketMySpec.Linter.TestStub` which flags occurrences of "very" when the saved config enables `write-good`. Per-story BDD spex (`test/spex/{736,738}_*/` and the redesigned `test/spex/707_stage_a_touchpoint_from_a_thread_synopsis_angle_utm_link/`) cover the pieces in isolation.

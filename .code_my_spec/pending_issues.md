@@ -207,6 +207,69 @@ on lint debt in unrelated `lib/` files.
 
 ---
 
+## 5. Stop hook re-fires stale spex failures from prior session transcripts (framework)
+
+**Scope:** framework
+**Severity:** medium
+**Captured:** 2026-05-17 (MCP `create_issue` returning `-32603 Internal error`
+at capture, so filed here per the documented fallback.)
+
+### What we saw
+
+Stop hook reports the same two spex failures on every turn-end:
+
+- `test/spex/672_sign_up_and_sign_in_with_google/criterion_5679_new_visitor_signs_up_via_google_in_one_click_spex.exs:96`
+  - `protocol Enumerable not implemented for Atom`
+- `test/spex/672_sign_up_and_sign_in_with_google/criterion_5681_user_changes_google_email_and_still_resolves_to_the_same_mms_account_spex.exs:50`
+  - same error
+
+These do not reproduce. Verified during this turn:
+
+1. `mix spex` on each file individually — 0 failures.
+2. Both files together — 2 tests, 0 failures.
+3. Full `mix spex` suite — 324 tests, 0 failures.
+4. `mix credo --strict` — 0 issues.
+5. Manually POSTing a Stop event to the hook server (`curl -X POST
+   http://localhost:4003/api/hooks/stop ...`) returns `{}` (no blockers).
+6. `.code_my_spec/internal/agent_test_events.json` `for_callers` is `[]`
+   and only contains success events for 5679.
+
+The error string "Enumerable not implemented for Atom" only appears in
+old transcript jsonl files under
+`/Users/johndavenport/.claude/projects/-Users-johndavenport-Documents-github-market-my-spec/*.jsonl`,
+suggesting the hook is sourcing failures from session transcripts rather
+than the live test-event JSON.
+
+### Relationship to prior issues
+
+This is a recurrence of resolved issue
+`5efd7331-64a0-4f8d-927f-fc7e84a9f63f` ("Stop hook re-fires stale spex
+failures after fixture commit f724220"). It also overlaps with item 4
+above ("Stop hook blocks on pre-existing credo/spex unrelated to turn
+changes"). Resolution of `5efd7331` evidently regressed.
+
+### Impact
+
+Turn-end is blocked indefinitely on errors that do not reproduce. The
+model has no clean exit path: re-running spex doesn't clear the report,
+no incoming or accepted issues exist that the supposed failures could
+hang off of, and `create_issue` itself is returning `-32603` so the
+framework escape hatch is also dead.
+
+### Suggested fix directions
+
+1. Source spex failure reporting from `agent_test_events.json` (or
+   whatever the current run wrote) rather than session transcripts. If
+   the latest run shows no failures, the hook should not surface old
+   ones.
+2. Add a TTL or run-id check so failure reports older than the most
+   recent `completed_at` timestamp are discarded.
+3. Expose a hook-side endpoint (e.g. `POST /api/hooks/clear-stale`) so
+   the model can request a re-scrape after manually verifying that
+   flagged failures no longer reproduce.
+
+---
+
 ## Surfaced threads worth a draft pass (CMS-track)
 
 Captured here so they don't get lost while issues are pending. These came

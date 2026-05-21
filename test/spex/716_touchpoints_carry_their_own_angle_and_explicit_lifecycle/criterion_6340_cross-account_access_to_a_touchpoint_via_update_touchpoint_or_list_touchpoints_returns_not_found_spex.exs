@@ -61,8 +61,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6340Spex do
           StageResponse.execute(
             %{
               thread_id: thread_a.id,
-              polished_body: "ACCOUNT_A_PRIVATE_BODY",
-              link_target: "https://marketmyspec.com/x",
+              synopsis: "ACCOUNT_A_PRIVATE_BODY",
               angle: "ACCOUNT_A_PRIVATE_ANGLE"
             },
             frame_a

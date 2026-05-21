@@ -22,7 +22,6 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint do
     field :state, :string, required: false, doc: "Target state: staged | posted | abandoned. Omit to leave state unchanged."
     field :comment_url, :string, required: false, doc: "Live comment URL (required for :posted)"
     field :posted_at, :string, required: false, doc: "ISO8601 timestamp (required for :posted)"
-    field :polished_body, :string, required: false, doc: "Revised polished body. Must be non-empty when provided."
     field :angle, :string, required: false, doc: "Revised reasoning angle for this touchpoint."
   end
 
@@ -32,7 +31,6 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint do
     state = Map.get(params, :state)
     comment_url = Map.get(params, :comment_url)
     posted_at_str = Map.get(params, :posted_at)
-    polished_body = Map.get(params, :polished_body)
     angle = Map.get(params, :angle)
 
     posted_at =
@@ -48,7 +46,6 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint do
       |> maybe_put_state(state)
       |> maybe_put(:comment_url, comment_url)
       |> maybe_put(:posted_at, posted_at)
-      |> maybe_put(:polished_body, polished_body)
       |> maybe_put(:angle, angle)
 
     case TouchpointsRepository.update_touchpoint(scope, touchpoint_id, attrs) do

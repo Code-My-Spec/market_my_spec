@@ -17,6 +17,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6360Spex do
   alias Anubis.Server.Response
   alias MarketMySpec.McpServers.Engagements.Tools.DeleteTouchpoint
   alias MarketMySpec.McpServers.Engagements.Tools.ListTouchpoints
+  alias MarketMySpec.McpServers.Engagements.Tools.PolishTouchpoint
   alias MarketMySpec.McpServers.Engagements.Tools.StageResponse
   alias MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint
   alias MarketMySpecSpex.Fixtures
@@ -50,8 +51,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6360Spex do
           StageResponse.execute(
             %{
               thread_id: thread_a.id,
-              polished_body: "A's body",
-              link_target: "https://x",
+              synopsis: "A's body",
               angle: "A's angle"
             },
             frame_a
@@ -60,6 +60,11 @@ defmodule MarketMySpecSpex.Story716.Criterion6360Spex do
         touchpoint_id =
           (decode_payload(stage_resp))["touchpoint_id"] ||
             (decode_payload(stage_resp))["id"]
+
+        PolishTouchpoint.execute(
+          %{touchpoint_id: touchpoint_id, polished_body: "A's body"},
+          frame_a
+        )
 
         scope_b = Fixtures.account_scoped_user_fixture()
         frame_b = build_frame(scope_b)

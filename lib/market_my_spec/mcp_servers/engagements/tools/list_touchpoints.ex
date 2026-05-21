@@ -34,6 +34,9 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.ListTouchpoints do
       "angle" => tp.angle,
       "polished_body" => tp.polished_body,
       "link_target" => tp.link_target,
+      "utm_source" => tp.utm_source,
+      "utm_medium" => tp.utm_medium,
+      "utm_campaign" => tp.utm_campaign,
       "comment_url" => tp.comment_url,
       "posted_at" => tp.posted_at && DateTime.to_iso8601(tp.posted_at),
       "inserted_at" => tp.inserted_at && DateTime.to_iso8601(tp.inserted_at)

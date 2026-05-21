@@ -35,26 +35,25 @@ defmodule MarketMySpecSpex.Story716.Criterion6354Spex do
     |> Jason.decode!()
   end
 
-  spex "stage_response persists angle when given; nil when omitted" do
-    scenario "Two stages on same thread: with angle and without — both surface correctly" do
+  spex "stage_response requires synopsis and angle parameters" do
+    scenario "Two stages on same thread: with different angles — both surface correctly" do
       given_ "a thread", context do
         scope = Fixtures.account_scoped_user_fixture()
         thread = Fixtures.thread_fixture(scope, %{source: :reddit, source_thread_id: "ang354"})
         {:ok, Map.merge(context, %{frame: build_frame(scope), thread: thread})}
       end
 
-      when_ "two stages on the same thread; one with angle, one without; then list", context do
+      when_ "two stages on the same thread with different angles; then list", context do
         {:reply, _, _} =
           StageResponse.execute(
-            %{thread_id: context.thread.id, polished_body: "Body no angle",
-              link_target: "https://x"},
+            %{thread_id: context.thread.id, synopsis: "Discussion on harness engineering",
+              angle: "Suggest harness as foundation"},
             context.frame
           )
 
         {:reply, _, _} =
           StageResponse.execute(
-            %{thread_id: context.thread.id, polished_body: "Body with angle",
-              link_target: "https://x",
+            %{thread_id: context.thread.id, synopsis: "Discussion on harness engineering",
               angle: "intro harness eng as the missing piece"},
             context.frame
           )
@@ -65,29 +64,29 @@ defmodule MarketMySpecSpex.Story716.Criterion6354Spex do
         {:ok, Map.put(context, :payload, decode_payload(list_resp))}
       end
 
-      then_ "the with-angle Touchpoint has the angle string; the without-angle has nil", context do
+      then_ "both Touchpoints have their distinct angle strings", context do
         touchpoints = context.payload["touchpoints"] || context.payload["list"] || []
 
         refute Enum.empty?(touchpoints), "expected 2 touchpoints, got empty"
         assert length(touchpoints) == 2
 
-        with_angle =
+        angle1 =
           Enum.find(touchpoints, fn tp ->
-            (tp["polished_body"] || tp[:polished_body]) == "Body with angle"
+            (tp["angle"] || tp[:angle]) == "Suggest harness as foundation"
           end)
 
-        without_angle =
+        angle2 =
           Enum.find(touchpoints, fn tp ->
-            (tp["polished_body"] || tp[:polished_body]) == "Body no angle"
+            (tp["angle"] || tp[:angle]) == "intro harness eng as the missing piece"
           end)
 
-        assert with_angle, "expected the with-angle touchpoint in list"
-        assert without_angle, "expected the without-angle touchpoint in list"
+        assert angle1, "expected the first angle touchpoint in list"
+        assert angle2, "expected the second angle touchpoint in list"
 
-        assert (with_angle["angle"] || with_angle[:angle]) ==
-                 "intro harness eng as the missing piece"
+        assert (angle1["angle"] || angle1[:angle]) ==
+                 "Suggest harness as foundation"
 
-        assert (without_angle["angle"] || without_angle[:angle]) == nil
+        assert (angle2["angle"] || angle2[:angle]) == "intro harness eng as the missing piece"
 
         {:ok, context}
       end

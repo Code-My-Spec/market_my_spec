@@ -17,23 +17,23 @@ defmodule MarketMySpecAgent.CLI do
   def main(argv \\ nil) do
     args = (argv || burrito_argv()) |> Enum.reject(&(&1 == "--"))
 
-    # Phone-home version check (soft-fails, cached 24h). Skipped for
-    # `server` mode so the long-running process doesn't block on it,
-    # and for `help` since the user is just discovering commands.
-    case args do
-      [head | _] when head in ["pair", "status"] -> MarketMySpecAgent.VersionCheck.maybe_notify()
-      _ -> :ok
-    end
-
-    case args do
-      ["pair" | _] -> cmd_pair()
-      ["status" | _] -> cmd_status()
-      ["server" | _] -> cmd_server()
-      ["help" | _] -> cmd_help()
-      [] -> cmd_help()
-      _ -> cmd_help()
-    end
+    maybe_version_check(args)
+    dispatch(args)
   end
+
+  # Phone-home version check (soft-fails, cached 24h). Skipped for
+  # `server` mode so the long-running process doesn't block on it,
+  # and for `help` since the user is just discovering commands.
+  defp maybe_version_check([head | _]) when head in ["pair", "status"] do
+    MarketMySpecAgent.VersionCheck.maybe_notify()
+  end
+
+  defp maybe_version_check(_args), do: :ok
+
+  defp dispatch(["pair" | _]), do: cmd_pair()
+  defp dispatch(["status" | _]), do: cmd_status()
+  defp dispatch(["server" | _]), do: cmd_server()
+  defp dispatch(_), do: cmd_help()
 
   defp cmd_server do
     case MarketMySpecAgent.Auth.read() do

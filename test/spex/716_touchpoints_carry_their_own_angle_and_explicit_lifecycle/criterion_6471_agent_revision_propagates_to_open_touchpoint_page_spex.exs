@@ -20,6 +20,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6471Spex do
 
   alias Anubis.Server.Response
   alias MarketMySpec.Engagements
+  alias MarketMySpec.McpServers.Engagements.Tools.PolishTouchpoint
   alias MarketMySpec.McpServers.Engagements.Tools.StageResponse
   alias MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint
   alias MarketMySpecSpex.Fixtures
@@ -52,14 +53,18 @@ defmodule MarketMySpecSpex.Story716.Criterion6471Spex do
           StageResponse.execute(
             %{
               thread_id: thread.id,
-              polished_body: "first draft body",
-              angle: "first angle",
-              link_target: "https://marketmyspec.com/x"
+              synopsis: "first draft body",
+              angle: "first angle"
             },
             frame
           )
 
         touchpoint_id = (decode_payload(stage_resp))["touchpoint_id"]
+
+        PolishTouchpoint.execute(
+          %{touchpoint_id: touchpoint_id, polished_body: "first draft body"},
+          frame
+        )
 
         token = MarketMySpec.Users.generate_user_session_token(scope.user)
 
@@ -85,14 +90,12 @@ defmodule MarketMySpecSpex.Story716.Criterion6471Spex do
       end
 
       when_ "the agent calls update_touchpoint via MCP with a revised body and angle", context do
-        revised_body = "REVISED body from the agent"
         revised_angle = "REVISED angle from the agent"
 
         {:reply, _resp, _} =
           UpdateTouchpoint.execute(
             %{
               touchpoint_id: context.touchpoint_id,
-              polished_body: revised_body,
               angle: revised_angle
             },
             context.frame
@@ -104,29 +107,19 @@ defmodule MarketMySpecSpex.Story716.Criterion6471Spex do
 
         {:ok,
          Map.merge(context, %{
-           revised_body: revised_body,
            revised_angle: revised_angle,
            rerendered: rerendered,
            reloaded: reloaded
          })}
       end
 
-      then_ "the LiveView form textareas show the revised values without a refresh, and the DB row matches",
+      then_ "the LiveView form shows the revised angle without a refresh, and the DB row matches",
             context do
-        assert context.initial_html =~ "first draft body",
-               "sanity: initial render should have shown the first draft"
-
-        assert context.rerendered =~ context.revised_body,
-               "expected the re-rendered LiveView to contain the revised polished_body without a refresh"
+        assert context.initial_html =~ "first angle",
+               "sanity: initial render should have shown the first angle"
 
         assert context.rerendered =~ context.revised_angle,
                "expected the re-rendered LiveView to contain the revised angle without a refresh"
-
-        refute context.rerendered =~ "first draft body",
-               "expected the old body to be gone from the re-rendered page"
-
-        assert context.reloaded.polished_body == context.revised_body,
-               "expected the DB row to match the agent's revision; got: #{inspect(context.reloaded.polished_body)}"
 
         assert context.reloaded.angle == context.revised_angle,
                "expected the DB row to match the agent's revision; got: #{inspect(context.reloaded.angle)}"

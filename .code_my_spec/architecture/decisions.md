@@ -34,3 +34,7 @@ Index of all architecture decision records for Market My Spec. Each record captu
 - [Req](decisions/req.md) — HTTP client for all new code in the Engagements context
 - [Reddit integration](decisions/reddit-integration.md) — script app OAuth, password grant, rate-limit back-off, UTM scheme
 - [Discourse integration](decisions/discourse-integration.md) — anonymous read, User API Key for posting, ElixirForum trust levels, UTM scheme
+
+### Touchpoint prose linting
+
+- [Vale](decisions/vale.md) — Vale CLI shelled out per request, per-account `.vale.ini` + style rules stored on the Account, JSON output surfaced in the Touchpoint editor
