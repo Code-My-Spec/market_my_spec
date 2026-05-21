@@ -17,8 +17,6 @@ defmodule MarketMySpec.Linter.Vale do
 
   @behaviour MarketMySpec.Linter.Linter
 
-  @default_vendored_styles_path "/app/priv/vale/styles"
-
   @impl true
   def validate_config(vale_ini) when is_binary(vale_ini) do
     with_materialized_config(vale_ini, fn dir ->
@@ -77,12 +75,23 @@ defmodule MarketMySpec.Linter.Vale do
   end
 
   defp rewrite_styles_path(vale_ini) do
-    path = System.get_env("VALE_STYLES_PATH", @default_vendored_styles_path)
-    line = "StylesPath = #{path}"
+    line = "StylesPath = #{styles_path()}"
 
     case Regex.match?(~r/^\s*StylesPath\s*=.+$/m, vale_ini) do
       true -> Regex.replace(~r/^\s*StylesPath\s*=.+$/m, vale_ini, line)
       false -> line <> "\n" <> vale_ini
+    end
+  end
+
+  # `VALE_STYLES_PATH` env var wins when set (useful for local dev pointing
+  # at a Homebrew `vale sync` location). Otherwise resolve via :code.priv_dir
+  # so the same code works in dev (priv/vale/styles in the project) and in
+  # the prod release (lib/market_my_spec-<vsn>/priv/vale/styles inside /app).
+  defp styles_path do
+    case System.get_env("VALE_STYLES_PATH") do
+      nil -> Path.join(:code.priv_dir(:market_my_spec), "vale/styles")
+      "" -> Path.join(:code.priv_dir(:market_my_spec), "vale/styles")
+      override -> override
     end
   end
 

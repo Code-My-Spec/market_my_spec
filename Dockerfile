@@ -68,9 +68,21 @@ RUN mix release
 # ---- Runner stage ----
 FROM ${RUNNER_IMAGE}
 
+# Vale CLI version pinned. Updates are a one-line diff. See
+# .code_my_spec/knowledge/vale-cli.md.
+ARG VALE_VERSION=3.14.2
+
 RUN apt-get update -y && \
-    apt-get install -y libstdc++6 openssl libncurses6 locales ca-certificates curl \
+    apt-get install -y libstdc++6 openssl libncurses6 locales ca-certificates curl tar \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+# Install Vale prose-lint binary (arm64 — Hetzner cax11). Vendored styles
+# are shipped inside the release at priv/vale/styles; the binary itself
+# is platform-specific and lives outside the BEAM release.
+RUN curl -sSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_arm64.tar.gz" -o /tmp/vale.tar.gz \
+    && tar -xzf /tmp/vale.tar.gz -C /usr/local/bin vale \
+    && rm /tmp/vale.tar.gz \
+    && vale --version
 
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 
