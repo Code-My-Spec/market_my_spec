@@ -29,7 +29,7 @@ config :market_my_spec,
 # The binary phones home on every CLI run and prints a "brew upgrade
 # mms-agent" notice when this is newer than its compiled-in version.
 config :market_my_spec,
-  agent_latest_version: "0.1.0",
+  agent_latest_version: "0.2.0",
   agent_min_supported_version: "0.1.0"
 
 config :market_my_spec, :integration_providers, [:google, :github]
