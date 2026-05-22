@@ -1,24 +1,48 @@
 defmodule MarketMySpec.Engagements.Touchpoint do
   @moduledoc """
-  Saved post-back record for an engagement comment.
+  Saved record of one comment the founder plans to post (or has posted)
+  on a Thread.
 
-  Account-scoped. Records the final polished body that was posted,
-  the live URL of the posted comment, the UTM-tracked destination
-  embedded in the body, and the datetime when the comment was posted.
+  Account-scoped. Belongs to a Thread.
 
-  Belongs to a Thread (the thread the comment was posted in reply to)
-  and is scoped to an Account.
+  ## Fields, by who writes them
+
+  - `state`, `angle`, `utm_source`, `utm_medium`, `utm_campaign` —
+    written at stage time by the `stage_response` MCP tool. UTM fields
+    are derived from the parent Thread's source (Reddit ⇒ reddit/comment,
+    ElixirForum ⇒ elixirforum/reply) and the `utm_campaign` defaults to
+    `<subreddit>:<thread-name>` (or `<category-slug>:<thread-name>` for
+    ElixirForum); the agent may override `utm_campaign` per call.
+
+  - `polished_body` — written only by the `polish_touchpoint` MCP tool
+    (story 738). The agent embeds whatever destination URL it picks
+    with the UTM suffix appended (e.g.
+    `https://codemyspec.com/blog/x?utm_source=reddit&utm_medium=comment&utm_campaign=elixir:abc123`)
+    inside the prose body. The lint loop gates the write.
+
+  - `comment_url`, `posted_at` — written only when the founder pastes
+    the live URL of their actual posted comment back into the UI.
+    `comment_url` is the URL of the comment on the source platform and
+    is never UTM-tracked.
+
+  - `link_target` — legacy column from the pre-707-redesign era; not
+    populated by the new flow. Kept on the schema to avoid a destructive
+    migration; revisit when there's a clear reason to drop it.
 
   ## Lifecycle
 
-  A Touchpoint follows a two-state lifecycle:
+  - **staged** — `state: :staged`. Created by `stage_response`. May or
+    may not have a `polished_body` yet (the polish loop runs after
+    staging).
+  - **posted** — `state: :posted`. Transitioned when the founder pastes
+    the live `comment_url` and a `posted_at` timestamp.
+  - **abandoned** — `state: :abandoned`. Non-destructive; angle,
+    polished_body, and any prior comment_url are preserved.
 
-  - **staged** — created by `stage_response` MCP tool with `polished_body` and
-    `link_target` embedded. `comment_url` and `posted_at` are `nil`.
-  - **posted** — transitioned when the user submits the live comment URL in the UI.
-    `comment_url` and `posted_at` are populated.
-
-  Use `staged_changeset/2` for staged creation and `changeset/2` for posted updates.
+  Use `staged_changeset/2` for stage-time creation, `update_changeset/2`
+  for in-place transitions (the LiveView form and `update_touchpoint`
+  MCP tool both use it), and `changeset/2` only for direct-to-posted
+  creation paths (legacy).
   """
 
   use Ecto.Schema
@@ -67,10 +91,12 @@ defmodule MarketMySpec.Engagements.Touchpoint do
   end
 
   @doc """
-  Changeset for creating or updating a posted Touchpoint.
+  Changeset for creating a Touchpoint directly in the `:posted` state.
+
+  Legacy path — present-day flow is `staged_changeset/2` at stage time
+  followed by `update_changeset/2` once the founder marks it posted.
 
   Required: account_id, thread_id, comment_url, polished_body, posted_at.
-  Optional: link_target (the bare URL embedded as a UTM link in polished_body).
   """
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(touchpoint, attrs) do
@@ -112,19 +138,17 @@ defmodule MarketMySpec.Engagements.Touchpoint do
   end
 
   @doc """
-  Changeset for creating a staged Touchpoint (no comment_url or posted_at yet).
+  Changeset for creating a staged Touchpoint.
 
-  Required: account_id, thread_id.
-  Optional: polished_body, angle, link_target.
+  Required: account_id, thread_id. State defaults to `:staged`.
 
-  `polished_body` is intentionally optional at stage time — the agent often
-  stages a touchpoint with just the angle and link, before Sam dictates his
-  rough draft. The body is filled in later via `update_touchpoint` or the
-  LiveView edit form.
+  Optional at stage time: `angle`, `utm_source`, `utm_medium`,
+  `utm_campaign`, and `polished_body`. In the new (post-707) flow,
+  `stage_response` writes angle + the three UTM columns; the body
+  fills in later via the `polish_touchpoint` MCP tool (story 738).
 
-  Use this when the agent stages a draft via the stage_response MCP tool.
-  The touchpoint transitions to posted via `changeset/2` when the user
-  submits the live comment URL.
+  `comment_url` and `posted_at` are never written here — they're set
+  later via `update_changeset/2` when the founder pastes the live URL.
   """
   @spec staged_changeset(t(), map()) :: Ecto.Changeset.t()
   def staged_changeset(touchpoint, attrs) do
@@ -155,19 +179,19 @@ defmodule MarketMySpec.Engagements.Touchpoint do
   end
 
   @doc """
-  Changeset for transitioning a Touchpoint's state and/or editing its
-  polished_body / angle.
+  Changeset for editing an existing Touchpoint — state transitions plus
+  any non-body field edits.
 
   Allowed transitions: any state → :staged | :posted | :abandoned.
   Transitioning to :posted requires comment_url and posted_at.
   Transitioning to :staged or :abandoned does not.
 
-  `polished_body` may be saved empty — staged touchpoints often exist with
-  no body yet while the agent and Sam iterate on what to post. The body
-  fills in over time.
-
-  Use this from the `update_touchpoint` MCP tool and the TouchpointLive.Show
-  edit form.
+  Used by the `update_touchpoint` MCP tool and the TouchpointLive.Show
+  edit form. Note: in the post-707 flow, `polished_body` writes route
+  through `polish_touchpoint` (story 738) — the MCP tool schema for
+  `update_touchpoint` no longer exposes that field, but the changeset
+  still casts it so the LiveView edit form (which writes directly via
+  this changeset) keeps working.
   """
   @spec update_changeset(t(), map()) :: Ecto.Changeset.t()
   def update_changeset(touchpoint, attrs) do
