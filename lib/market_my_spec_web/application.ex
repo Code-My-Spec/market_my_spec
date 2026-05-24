@@ -17,8 +17,11 @@ defmodule MarketMySpecWeb.Application do
         {DNSCluster, query: Application.get_env(:market_my_spec, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: MarketMySpec.PubSub},
         MarketMySpec.Agents.Presence,
-        # MCP server — mounted via Anubis StreamableHTTP plug in the router
+        # MCP servers — mounted via Anubis StreamableHTTP plug in the router.
+        # Each server owns its own per-session state (persistent_term) and
+        # must be supervised independently, even though they share transport.
         {MarketMySpec.McpServers.MarketingStrategyServer, transport: :streamable_http},
+        {MarketMySpec.McpServers.AnalyticsAdminServer, transport: :streamable_http},
         # Start to serve requests, typically the last entry
         MarketMySpecWeb.Endpoint
       ] ++ cloudflare_tunnel_child()

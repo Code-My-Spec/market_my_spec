@@ -153,6 +153,12 @@ defmodule MarketMySpecWeb.Layouts do
       </div>
     </div>
 
+    <.live_component
+      :if={@current_scope}
+      module={MarketMySpecWeb.FeedbackWidget}
+      id="codemyspec-feedback"
+      current_scope={@current_scope}
+    />
     <.flash_group flash={@flash} />
     """
   end

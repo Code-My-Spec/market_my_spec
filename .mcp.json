@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "market-my-spec": {
+            "type": "http",
+            "url": "https://dev.marketmyspec.com/mcp"
+        },
+        "mms-analytics-admin": {
+            "type": "http",
+            "url": "https://dev.marketmyspec.com/mcp/analytics-admin"
+        }
+    }
+}

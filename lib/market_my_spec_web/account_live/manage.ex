@@ -37,6 +37,18 @@ defmodule MarketMySpecWeb.AccountLive.Manage do
                     label="Account Name"
                     placeholder="Enter account name"
                   />
+                  <.input
+                    field={@account_form[:google_analytics_property_id]}
+                    type="text"
+                    label="Google Analytics 4 Property ID"
+                    placeholder="e.g. 123456789"
+                    inputmode="numeric"
+                    pattern="\d*"
+                    data-test="ga-property-id"
+                  />
+                  <p class="text-xs opacity-60 -mt-2">
+                    Bare numeric property ID (no <code>properties/</code> prefix). Used by the Analytics Admin MCP tools.
+                  </p>
                   <div :if={!@read_only_agency_access} class="flex justify-end gap-x-4">
                     <button
                       type="button"

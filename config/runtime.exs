@@ -76,7 +76,10 @@ if config_env() in [:dev, :prod] do
     google_client_id: env!("GOOGLE_CLIENT_ID"),
     google_client_secret: env!("GOOGLE_CLIENT_SECRET"),
     github_client_id: env!("GITHUB_CLIENT_ID"),
-    github_client_secret: env!("GITHUB_CLIENT_SECRET")
+    github_client_secret: env!("GITHUB_CLIENT_SECRET"),
+    codemyspec_url: env!("CODEMYSPEC_URL", :string, "https://codemyspec.com"),
+    codemyspec_client_id: env!("CODEMYSPEC_CLIENT_ID"),
+    codemyspec_client_secret: env!("CODEMYSPEC_CLIENT_SECRET")
 end
 
 # Let `envs/dev.env` (or any real env var) override the compile-time

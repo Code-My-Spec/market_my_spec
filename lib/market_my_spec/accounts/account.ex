@@ -87,11 +87,15 @@ defmodule MarketMySpec.Accounts.Account do
 
   def changeset(account, attrs) do
     account
-    |> cast(attrs, [:name, :slug])
+    |> cast(attrs, [:name, :slug, :google_analytics_property_id])
     |> validate_required([:name])
     |> validate_length(:name, min: 1, max: 100)
     |> validate_slug()
     |> unique_constraint(:slug, message: "already taken")
+    |> update_change(:google_analytics_property_id, &normalize_property_id/1)
+    |> validate_format(:google_analytics_property_id, ~r/^\d+$/,
+      message: "must be a numeric GA4 property ID (digits only)"
+    )
   end
 
   def create_changeset(attrs) do
