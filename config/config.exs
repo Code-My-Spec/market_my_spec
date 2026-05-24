@@ -29,15 +29,18 @@ config :market_my_spec,
 # The binary phones home on every CLI run and prints a "brew upgrade
 # mms-agent" notice when this is newer than its compiled-in version.
 config :market_my_spec,
-  agent_latest_version: "0.2.0",
+  agent_latest_version: "0.3.0",
   agent_min_supported_version: "0.1.0"
 
-config :market_my_spec, :integration_providers, [:google, :github]
+config :market_my_spec, :integration_providers, [:google, :github, :codemyspec]
 
 config :market_my_spec, :oauth_providers, %{
   google: MarketMySpec.Integrations.Providers.Google,
-  github: MarketMySpec.Integrations.Providers.GitHub
+  github: MarketMySpec.Integrations.Providers.GitHub,
+  codemyspec: MarketMySpec.Integrations.Providers.Codemyspec
 }
+
+config :market_my_spec, :codemyspec_url, "https://codemyspec.com"
 
 config :market_my_spec, ExOauth2Provider,
   repo: MarketMySpec.Repo,
