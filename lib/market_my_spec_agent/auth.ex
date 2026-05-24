@@ -2,14 +2,22 @@ defmodule MarketMySpecAgent.Auth do
   @moduledoc """
   Reads and writes the paired-agent credential file.
 
-  Path is configured per env via `config :market_my_spec, :agent_token_path`:
+  ## Path resolution
 
-    * `prod_agent` → `~/.mms-agent/auth.json` (shipped Burrito binary)
-    * `dev_agent`  → `~/.mms-agent/auth.dev.json` (in-tree `just agent`)
+  The credential file lives under `~/.mms-agent/`. Which file inside
+  that directory is read or written is determined by, in order:
 
-  Separate files mean a developer can pair against `http://localhost:4007`
-  without clobbering production credentials, and vice versa. `~` is
-  expanded against the current user's home.
+  1. **Runtime env override** (set by `MarketMySpecAgent.CLI` from the
+     `--env NAME` flag or `MMS_AGENT_ENV` env var): writes
+     `~/.mms-agent/auth.<env>.json`. This is how the same Burrito binary
+     pairs separately against UAT, dev, prod, etc. on the same machine.
+
+  2. **Compile-time default** (set via
+     `config :market_my_spec, :agent_token_path`): the original
+     per-MIX_ENV split — `prod_agent` → `~/.mms-agent/auth.json`,
+     `dev_agent` → `~/.mms-agent/auth.dev.json`. Used when no `--env`
+     flag is passed, which keeps existing brew installs talking to the
+     same prod server they were paired against.
 
   Shape:
 
@@ -23,11 +31,23 @@ defmodule MarketMySpecAgent.Auth do
 
   @default_path "~/.mms-agent/auth.json"
 
-  @doc "Absolute path to the credential file (env-configured)."
+  @doc """
+  Absolute path to the credential file.
+
+  Runtime env override (set via `Application.put_env(:market_my_spec,
+  :agent_env_override, "uat")`) wins. Otherwise falls back to the
+  compile-time configured path.
+  """
   def path do
-    :market_my_spec
-    |> Application.get_env(:agent_token_path, @default_path)
-    |> Path.expand()
+    case Application.get_env(:market_my_spec, :agent_env_override) do
+      env when is_binary(env) and env != "" ->
+        Path.expand("~/.mms-agent/auth.#{env}.json")
+
+      _ ->
+        :market_my_spec
+        |> Application.get_env(:agent_token_path, @default_path)
+        |> Path.expand()
+    end
   end
 
   @doc "Absolute path to the credential directory (parent of `path/0`)."

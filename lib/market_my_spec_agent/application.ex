@@ -12,6 +12,14 @@ defmodule MarketMySpecAgent.Application do
 
   @impl true
   def start(_type, _args) do
+    # Resolve the --env flag (or MMS_AGENT_ENV) BEFORE building the
+    # children list so `Auth.Store.init/1` reads the right credential
+    # file on its first call. Doing this any later means the Store
+    # caches credentials from the wrong env.
+    argv = MarketMySpecAgent.CLI.burrito_argv()
+    {env, _rest} = MarketMySpecAgent.CLI.parse_env_flag(argv)
+    MarketMySpecAgent.CLI.apply_env_override(env)
+
     children = [
       # Persistence for the paired token + agent id.
       MarketMySpecAgent.Auth.Store,
