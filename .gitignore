@@ -60,3 +60,10 @@ diagnostics.jsonl
 /.code_my_spec/internal/agent_test_events.json
 
 burrito_out/
+
+# QA browser sessions — Playwright storage_state JSON. These are session
+# credentials (cookies + localStorage); never commit. README + SETUP
+# explain the capture/restore workflow.
+.code_my_spec/qa/sessions/*
+!.code_my_spec/qa/sessions/README.md
+!.code_my_spec/qa/sessions/SETUP.md
