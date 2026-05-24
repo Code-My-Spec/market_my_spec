@@ -11,7 +11,7 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 # ---- Build stage ----
 FROM ${BUILDER_IMAGE} AS builder
 
-RUN apt-get update -y && apt-get install -y build-essential git curl \
+RUN apt-get update -y && apt-get install -y build-essential git curl nodejs npm \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 WORKDIR /app
@@ -40,6 +40,11 @@ COPY rel rel
 # all env vars come via --env-file so the files don't exist; keep Dotenvy
 # happy by giving it empty placeholders.
 RUN mkdir -p envs && touch envs/.env envs/prod.env
+
+# Install npm deps used by esbuild (e.g. html-to-image for the
+# CodeMySpec feedback widget's screenshot capture). Done before
+# assets.deploy so esbuild can resolve the imports.
+RUN cd assets && npm install --no-audit --no-fund --no-progress
 
 # Compile and build assets
 RUN mix compile
