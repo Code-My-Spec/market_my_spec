@@ -21,6 +21,11 @@ defmodule MarketMySpecWeb.FeatureCase do
   end
 
   setup tags do
+    # Wallaby needs base_url set to drive relative visit/2 paths. Point it
+    # at the local test endpoint. (JourneyCase overrides this per-test for
+    # deployed-env runs; FeatureCase tests are always local.)
+    Application.put_env(:wallaby, :base_url, MarketMySpecWeb.Endpoint.url())
+
     pid = Ecto.Adapters.SQL.Sandbox.start_owner!(MarketMySpec.Repo, shared: not tags[:async])
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
     {:ok, metadata: Phoenix.Ecto.SQL.Sandbox.metadata_for(MarketMySpec.Repo, pid)}
