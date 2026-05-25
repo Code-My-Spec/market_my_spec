@@ -29,9 +29,7 @@ defmodule MarketMySpecWeb.Journeys.Journey4AgencyDashboardTest do
     {encoded_token, _raw} = generate_user_magic_link_token(agency_owner)
 
     # Sign in as agency owner.
-    session
-    |> visit("/users/log-in/#{encoded_token}")
-    |> click(css("button[type='submit']"))
+    session = log_in_via_magic_link(session, encoded_token)
 
     # Step 1: Nav shows the agency-dashboard link on /accounts.
     session

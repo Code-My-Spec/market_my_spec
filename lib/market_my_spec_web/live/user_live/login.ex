@@ -98,7 +98,7 @@ defmodule MarketMySpecWeb.UserLive.Login do
             required
             phx-mounted={JS.focus()}
           />
-          <.button class="btn btn-primary w-full mt-2">
+          <.button type="submit" class="btn btn-primary w-full mt-2">
             Log in with email <span aria-hidden="true">&#8594;</span>
           </.button>
         </.form>

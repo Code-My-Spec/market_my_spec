@@ -23,14 +23,20 @@ defmodule MarketMySpecWeb.UserLive.Confirmation do
         >
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
           <.button
+            type="submit"
             name={@form[:remember_me].name}
             value="true"
             phx-disable-with="Confirming..."
             class="btn btn-primary w-full"
+            data-test="confirm-login"
           >
             Confirm and stay logged in
           </.button>
-          <.button phx-disable-with="Confirming..." class="btn btn-primary btn-soft w-full mt-2">
+          <.button
+            type="submit"
+            phx-disable-with="Confirming..."
+            class="btn btn-primary btn-soft w-full mt-2"
+          >
             Confirm and log in only this time
           </.button>
         </.form>
@@ -46,14 +52,20 @@ defmodule MarketMySpecWeb.UserLive.Confirmation do
         >
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
           <.button
+            type="submit"
             name={@form[:remember_me].name}
             value="true"
             phx-disable-with="Logging in..."
             class="btn btn-primary w-full"
+            data-test="confirm-login"
           >
             Keep me logged in on this device
           </.button>
-          <.button phx-disable-with="Logging in..." class="btn btn-primary btn-soft w-full mt-2">
+          <.button
+            type="submit"
+            phx-disable-with="Logging in..."
+            class="btn btn-primary btn-soft w-full mt-2"
+          >
             Log me in only this time
           </.button>
         </.form>

@@ -35,11 +35,7 @@ defmodule MarketMySpecWeb.Journeys.Journey1SignupToMcpSetupTest do
     |> assert_has(css("[data-test='install-command']"))
 
     # Steps 2–4: Sign in via magic-link token URL (skips email round-trip).
-    # Visiting /users/log-in/:token renders the confirmation page; clicking
-    # the submit button establishes an authenticated session via POST.
-    session
-    |> visit("/users/log-in/#{encoded_token}")
-    |> click(css("button[type='submit']"))
+    session = log_in_via_magic_link(session, encoded_token)
 
     # Step 5: Navigate to /mcp-setup — all three steps and troubleshooting blocks must render.
     session

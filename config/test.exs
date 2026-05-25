@@ -19,13 +19,16 @@ config :market_my_spec, MarketMySpec.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
-# Endpoint stays off in test — current spex run in-process via LiveViewTest.
-# Flip `:server` to `true` when a Wallaby feature test needs a real browser
-# driving the running endpoint.
+# Endpoint serves in test so Wallaby feature/journey tests (test/e2e/,
+# test/journeys/) can drive it with a real browser. In-process spex use
+# LiveViewTest and ignore the listener; the extra port binding on 4002 is
+# harmless. Phoenix.Ecto.SQL.Sandbox (see :sandbox below + FeatureCase
+# metadata) bridges the browser's out-of-process requests to the test's
+# DB transaction.
 config :market_my_spec, MarketMySpecWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "j4Qw3mzj8ePAdijydTCyco5Jam2HdT6iwn3mKYcRGFmpl0TIIb0xVSk9KdHD0ESl",
-  server: false
+  server: true
 
 # Wallaby — drives Chrome via chromedriver. Requires `brew install chromedriver`
 # (or platform equivalent) on the dev machine. The sandbox flag below is

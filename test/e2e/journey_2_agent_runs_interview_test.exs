@@ -43,23 +43,22 @@ defmodule MarketMySpecWeb.Journeys.Journey2AgentRunsInterviewTest do
       Files.put(scope, "marketing/03_personas.md", "# Personas\n\n- Goal: first 100 customers")
 
     # Sign in via magic-link token.
-    session
-    |> visit("/users/log-in/#{encoded_token}")
-    |> click(css("button[type='submit']"))
+    session = log_in_via_magic_link(session, encoded_token)
 
-    # Navigate to /files — all 3 artifact filenames must appear.
+    # Navigate to /files — the hierarchical tree explorer (story 684) lists
+    # all 3 artifacts as file nodes under the "marketing" folder.
     session = visit(session, "/files")
 
-    assert_has(session, css(".card-title", text: "01_current_state.md"))
-    assert_has(session, css(".card-title", text: "02_jobs_and_segments.md"))
-    assert_has(session, css(".card-title", text: "03_personas.md"))
+    assert_has(session, css("[data-test='file-tree']"))
+    assert_has(session, css("summary", text: "marketing"))
+    assert_has(session, link("01_current_state.md"))
+    assert_has(session, link("02_jobs_and_segments.md"))
+    assert_has(session, link("03_personas.md"))
 
-    # Verify the skill group heading "Marketing strategy" is visible.
-    assert_has(session, css("h3", text: "Marketing strategy"))
-
-    # Click "Open" on the first artifact and verify the file show page renders content.
+    # Click a file node — it patches to /files/<key> and renders the
+    # markdown in the file-content pane.
     session
-    |> click(link("Open"))
-    |> assert_has(css("article"))
+    |> click(link("01_current_state.md"))
+    |> assert_has(css("[data-test='file-content']"))
   end
 end

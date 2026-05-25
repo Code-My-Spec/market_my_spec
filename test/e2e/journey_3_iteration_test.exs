@@ -45,21 +45,21 @@ defmodule MarketMySpecWeb.Journeys.Journey3IterationTest do
       )
 
     # Sign in.
-    session
-    |> visit("/users/log-in/#{encoded_token}")
-    |> click(css("button[type='submit']"))
+    session = log_in_via_magic_link(session, encoded_token)
 
-    # /files shows all 3 prior artifacts grouped under "Marketing strategy".
+    # /files shows all 3 prior artifacts in the tree explorer (story 684).
     session = visit(session, "/files")
 
-    assert_has(session, css(".card-title", text: "01_current_state.md"))
-    assert_has(session, css(".card-title", text: "02_jobs_and_segments.md"))
-    assert_has(session, css(".card-title", text: "03_personas.md"))
+    assert_has(session, css("[data-test='file-tree']"))
+    assert_has(session, link("01_current_state.md"))
+    assert_has(session, link("02_jobs_and_segments.md"))
+    assert_has(session, link("03_personas.md"))
 
-    # /files/marketing/03_personas.md renders the markdown body.
+    # Clicking the 03_personas node patches to its key and renders the
+    # markdown body in the file-content pane.
     session
-    |> visit("/files/marketing/03_personas.md")
-    |> assert_has(css("article"))
+    |> click(link("03_personas.md"))
+    |> assert_has(css("[data-test='file-content']"))
     |> assert_has(css("h1", text: "Personas"))
   end
 end

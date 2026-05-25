@@ -47,18 +47,14 @@ defmodule MarketMySpecWeb.Journeys.Journey5GrantRevokeTest do
     grant = invited_grant_fixture(agency, client_account)
 
     # Step 1: Client owner signs in and sees the grant form on /accounts.
-    client_session
-    |> visit("/users/log-in/#{client_token}")
-    |> click(css("button[type='submit']"))
+    client_session = log_in_via_magic_link(client_session, client_token)
 
     client_session
     |> visit("/accounts")
     |> assert_has(css("[data-test='grant-agency-access-form']"))
 
     # Step 3: Agency owner signs in, navigates /agency, sees the invited client row.
-    agency_session
-    |> visit("/users/log-in/#{agency_token}")
-    |> click(css("button[type='submit']"))
+    agency_session = log_in_via_magic_link(agency_session, agency_token)
 
     agency_session
     |> visit("/agency")
