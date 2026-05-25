@@ -24,11 +24,10 @@ defmodule MarketMySpec.Journeys.Journey6UatSmokeTest do
 
   feature "restored UAT session loads /agents and reads the agent row",
           %{session: session} do
+    # Sanity: the session cookie restored from uat.json is present.
     cookies = Wallaby.Browser.cookies(session)
-    IO.inspect(Enum.map(cookies, & &1["name"]), label: "cookies after restore")
-
-    mms_cookie = Enum.find(cookies, &(&1["name"] == "_market_my_spec_key"))
-    IO.inspect(mms_cookie, label: "_market_my_spec_key cookie")
+    assert Enum.any?(cookies, &(&1["name"] == "_market_my_spec_key")),
+           "expected the restored UAT session cookie to be present"
 
     session
     |> Browser.visit("/agents")
