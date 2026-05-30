@@ -82,6 +82,10 @@ config :market_my_spec, MarketMySpecWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :market_my_spec, MarketMySpec.Mailer, adapter: Swoosh.Adapters.Local
 
+# Default `from` for all outbound mail. Overridden per-env via the MAIL_FROM
+# env in config/runtime.exs. Address must be on a Resend-verified domain.
+config :market_my_spec, :mail_from, {"MarketMySpec", "noreply@marketmyspec.com"}
+
 # Register the text/event-stream MIME type so the :mcp_authenticated pipeline's
 # `plug :accepts, ["json", "sse"]` accepts SSE clients that send
 # `Accept: text/event-stream` without returning 406 before auth runs.

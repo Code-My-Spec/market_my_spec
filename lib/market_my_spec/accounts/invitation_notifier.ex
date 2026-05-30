@@ -56,7 +56,7 @@ defmodule MarketMySpec.Accounts.InvitationNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MarketMySpec", "noreply@example.com"})
+      |> from(Mailer.from())
       |> subject(subject)
       |> text_body(body)
 

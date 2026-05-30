@@ -178,6 +178,9 @@ if config_env() == :prod do
     adapter: Swoosh.Adapters.Resend,
     api_key: env!("RESEND_API_KEY", :string, "")
 
+  config :market_my_spec, :mail_from,
+    {"MarketMySpec", env!("MAIL_FROM", :string, "noreply@marketmyspec.com")}
+
   # AWS / S3 configuration for file storage
   config :ex_aws,
     access_key_id: env!("AWS_ACCESS_KEY_ID", :string!),

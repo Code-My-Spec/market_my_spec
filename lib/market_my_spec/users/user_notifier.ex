@@ -13,7 +13,7 @@ defmodule MarketMySpec.Users.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MarketMySpec", "contact@example.com"})
+      |> from(Mailer.from())
       |> subject(subject)
       |> text_body(body)
 
