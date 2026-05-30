@@ -77,19 +77,7 @@ defmodule MarketMySpecWeb.FeedbackWidget do
       {:noreply, assign(socket, :error, "Title is required")}
     else
       scope = socket.assigns.current_scope
-
-      attachments =
-        case socket.assigns.screenshot_data do
-          nil ->
-            []
-
-          data_url ->
-            case upload_screenshot(scope, data_url) do
-              {:ok, attachment} -> [attachment]
-              {:error, _} -> []
-            end
-        end
-
+      attachments = collect_attachments(scope, socket.assigns.screenshot_data)
       attrs = %{"title" => title, "description" => description, "severity" => severity}
 
       case Client.create_issue(scope, attrs, attachments) do
@@ -103,6 +91,15 @@ defmodule MarketMySpecWeb.FeedbackWidget do
         {:error, reason} ->
           {:noreply, assign(socket, :error, "Failed to submit: #{inspect(reason)}")}
       end
+    end
+  end
+
+  defp collect_attachments(_scope, nil), do: []
+
+  defp collect_attachments(scope, data_url) do
+    case upload_screenshot(scope, data_url) do
+      {:ok, attachment} -> [attachment]
+      {:error, _} -> []
     end
   end
 

@@ -25,8 +25,8 @@ defmodule MarketMySpec.Engagements.Search do
   - `reason` — a human-readable string describing the failure
   """
 
-  alias MarketMySpec.Engagements.Source.ElixirForum
   alias MarketMySpec.Agents.Presence
+  alias MarketMySpec.Engagements.Source.ElixirForum
   alias MarketMySpec.Engagements.Source.Reddit
   alias MarketMySpec.Engagements.ThreadsRepository
   alias MarketMySpec.Engagements.TouchpointsRepository

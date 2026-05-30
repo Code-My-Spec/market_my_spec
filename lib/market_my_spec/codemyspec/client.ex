@@ -23,9 +23,7 @@ defmodule MarketMySpec.Codemyspec.Client do
       issue_params =
         attrs
         |> Map.put("source", "user_feedback")
-        |> then(fn params ->
-          if attachments != [], do: Map.put(params, "attachments", attachments), else: params
-        end)
+        |> maybe_put_attachments(attachments)
 
       body = Jason.encode!(%{"issue" => issue_params})
 
@@ -46,6 +44,9 @@ defmodule MarketMySpec.Codemyspec.Client do
       end
     end
   end
+
+  defp maybe_put_attachments(params, []), do: params
+  defp maybe_put_attachments(params, attachments), do: Map.put(params, "attachments", attachments)
 
   @doc """
   Gets a presigned S3 upload URL from CodeMySpec.
