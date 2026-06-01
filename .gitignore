@@ -67,3 +67,6 @@ burrito_out/
 .code_my_spec/qa/sessions/*
 !.code_my_spec/qa/sessions/README.md
 !.code_my_spec/qa/sessions/SETUP.md
+
+# Claude Code session transcripts dumped to the project root
+/20[0-9][0-9]-[0-1][0-9]-[0-3][0-9]-*.txt

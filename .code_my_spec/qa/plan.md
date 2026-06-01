@@ -1,231 +1,230 @@
-# Qa Plan
+# MarketMySpec QA Plan
 
 ## App Overview
 
-Market My Spec is a Phoenix 1.8 / LiveView 1.1 app on Bandit + Postgres + Tailwind/DaisyUI. It runs a single OTP release with one HTTP listener — Endpoint on port **4007** in dev (default Phoenix is 4000; we run 4007 to avoid colliding with the locally-running CodeMySpec server). Authentication is **session cookie–based** (`phx.gen.auth` scaffold) with magic-link sign-in plus Google + GitHub OAuth via Assent (server-issued bearer tokens for MCP clients are not yet wired — there's no MCP endpoint and no `/.well-known/oauth-authorization-server` yet). Pipelines are `:browser` (HTML, CSRF, session, scope assignment), `:api` (declared, unused), and a dev-only `Phoenix.LiveDashboard` + Swoosh mailbox preview at `/dev/dashboard` and `/dev/mailbox`. Authenticated routes use `:require_authenticated_user` for `/users/settings*` and `/integrations*`.
+MarketMySpec is a Phoenix 1.8 application running on **port 4007** (dev). It is a multi-tenant SaaS platform for marketing CodeMySpec, featuring:
 
-| Pipeline | Path patterns | Auth model | Tool |
-| --- | --- | --- | --- |
-| `:browser` (public) | `/`, `/users/log-in`, `/users/log-in/:token`, `/users/register` | none / `mount_current_scope` | Vibium MCP browser tools |
-| `:browser` + `:require_authenticated_user` | `/users/settings`, `/users/settings/confirm-email/:token`, `/integrations`, `/integrations/oauth/:provider`, `/integrations/oauth/callback/:provider` | session cookie set by `UserSessionController.create` | Vibium after seed-token sign-in |
-| `:api` | none mounted | n/a | n/a until an API scope ships |
-| dev-only | `/dev/dashboard`, `/dev/mailbox` | none in dev | curl + Vibium |
+- **Browser-based auth**: Magic-link tokens + OAuth (Google, GitHub, CodeMySpec)
+- **Three account types**: individual, agency, and client
+- **Authenticated LiveViews**: journeys, venue management, saved searches, threads, touchpoints, style guides, agent pairing
+- **MCP servers**: `/mcp/*` endpoints for engagement orchestration tools + analytics admin (both bearer-authenticated)
+- **OAuth metadata**: Public endpoints at `/.well-known/` returning issuer metadata for dev.marketmyspec.com
 
-Base URL in dev: `http://localhost:4007`. There is currently no MCP / SSE endpoint and no OAuth-authorization-server metadata document — those land with the MCPController, MCPAuth, and Skills components.
+| Endpoint | Port | Pipeline | Auth |
+|----------|------|----------|------|
+| HTML/LiveView routes | 4007 | `:browser` | Session (magic-link or OAuth) |
+| OAuth endpoints | 4007 | `:api` | Public (token/register/revoke) |
+| MCP servers | 4007 | `:mcp_authenticated` | Bearer token |
+| `/dev/dashboard` | 4007 | `:browser` | dev-only (no auth) |
 
 ## Tools Registry
 
-### Vibium (browser MCP)
+### Vibium (Browser Automation)
 
-When to use: any LiveView interaction — log-in, registration, settings, integrations index, the future MCP setup guide and consent screen.
+**When to use**: Testing authenticated LiveView routes, forms, navigation, and multi-step workflows (login, account creation, search creation, style guide paste, agent pairing).
 
-Login form selectors (from `lib/market_my_spec_web/live/user_live/login.ex`) — Phoenix names, not ids:
+**Setup**: Vibium MCP server configured in Claude Code settings. Call MCP tools directly (no CLI binary).
 
-- Magic-link form: `phx-submit="submit_magic"`, email field name `user[email]`
-- Password form: `phx-submit="submit_password"`, email name `user[email]`, password name `user[password]`, remember-me name `user[remember_me]` value `true`
-
-Example invocation (via the QA agent's MCP tools, not shell):
-
+**Example: Login via magic link**
 ```
-browser_navigate http://localhost:4007/users/log-in
-browser_fill name="user[email]" value="qa@marketmyspec.test"
-browser_click "Send magic link"
+browser_navigate(url: "http://localhost:4007/users/log-in")
+browser_fill(selector: "input[name='user[email]']", text: "qa@marketmyspec.test")
+browser_click(selector: "button[phx-submit='send_magic_link']")
+browser_wait_for_text(text: "Check your email")
 ```
 
-Or simpler — sign in directly with the seeded magic-link token (skips the email round-trip):
-
+**Example: Login via password form**
 ```
-browser_navigate <magic-link URL printed by qa_seeds.exs>
-```
-
-Screenshot landing dir on this box: Vibium writes screenshots to `~/Pictures/Vibium/<basename>` regardless of the directory portion of the `filename` argument — verified during this probe. Pass just a basename and pull from `~/Pictures/Vibium/`.
-
-### curl (controllers, JSON, dev endpoints)
-
-When to use: probing routes for status codes, hitting `UserSessionController` (the only non-LiveView controller for authenticated user actions), inspecting the dev dashboard / mailbox redirects, future API JSON endpoints, future OAuth metadata.
-
-Probe the running app:
-
-```
-curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:4007/
-curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:4007/users/log-in
-curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:4007/.well-known/oauth-authorization-server
+browser_navigate(url: "http://localhost:4007/users/log-in")
+browser_scroll_into_view(selector: "#login_form_password")
+browser_fill(selector: "#login_form_password_email", text: "qa@marketmyspec.test")
+browser_fill(selector: "#user_password", text: "hello world!")
+browser_click(selector: "#login_form_password button[name='user[remember_me]']")
+browser_wait_for_url(pattern: "/accounts")
 ```
 
-Current observed responses: `/` → 200, `/users/log-in` → 200, `/.well-known/oauth-authorization-server` → 404, `/dev/dashboard` → 302, `/dev/mailbox` → 200.
+**Common selectors**:
+- Magic-link form: `input[name='user[email]']`, `button[phx-submit='send_magic_link']`
+- Password form: `#login_form_password`, `#login_form_password_email`, `#user_password`
+- GA property ID input (AccountLive.Manage): `input[data-test='ga-property-id']`
+- Style guide form: `textarea[data-test='style-guide-form']`, `button[data-test='clear-style-guide']`
+- Style guide error display: `div[data-test='style-guide-error']`
+- Agent pairing: `form[phx-submit='pair']`, `input[data-test='pair-token']`
 
-Authenticated curl is not currently useful — every authenticated route is a LiveView, and the LiveView WebSocket flow doesn't survive plain curl. Drive authenticated flows via Vibium.
+### curl (API + MCP)
 
-### Integration verify scripts (`.code_my_spec/qa/scripts/*.sh`)
+**When to use**: Testing OAuth endpoints, MCP bearer auth, public metadata endpoints, and integration verification.
 
-When to use: verifying third-party credentials are loaded and providers are reachable. Source `envs/dev.env` first.
-
+**Example: Fetch OAuth server metadata**
 ```
-set -a; source envs/dev.env; set +a
-bash .code_my_spec/qa/scripts/verify_resend.sh
-bash .code_my_spec/qa/scripts/verify_google_oauth.sh
-bash .code_my_spec/qa/scripts/verify_github_oauth.sh
-```
-
-Each prints structured JSON; status `ok` means credentials present and provider reachable. The `exchange_*_token.sh` scripts target device-flow OAuth which the configured Google/GitHub clients don't support (web-app type for Google; device flow not enabled on the GitHub OAuth App) — full e2e validation happens by signing in via the actual app.
-
-### mix run / mix tasks
-
-When to use: seeding data, running migrations, running specific scripts that need the BEAM (one boot, in-process — never `for x in …; do mix run -e '…' ; done`).
-
-```
-mix ecto.migrate                                  # apply pending migrations
-mix run priv/repo/qa_seeds.exs                    # seed QA user + print magic-link URL
-MIX_ENV=test mix ecto.reset                       # nuke + re-create the test DB if it gets wedged
-PORT=4007 mix phx.server                          # start the dev server on 4007 explicitly
+curl -sS http://localhost:4007/.well-known/oauth-authorization-server
+curl -sS http://localhost:4007/.well-known/oauth-protected-resource
 ```
 
-Note: PORT must be passed explicitly until the dotenvy loading is verified — the `envs/dev.env` PORT=4007 entry was not picked up during this probe (server tried to bind 4000 and conflicted with another beam). See System Issues.
-
-### `just agent` — MMS Agent binary, running in-tree
-
-When to use: any QA touching the locally-installed MMS Agent — story 731 (pair flow), story 732 (channel join + presence), story 733 (Reddit-via-agent HTTP transport).
-
-The agent ships as a self-contained Burrito binary, but for QA we run it as a plain Mix application instead — boots faster, gives an `iex` REPL for inspection, no rebuild loop. Same OTP supervision tree (`MarketMySpecAgent.Application`), same code paths, just no Burrito wrap.
-
+**Example: MCP bearer token check (will 401 without token)**
 ```
-just agent                                        # start the agent in iex (MIX_ENV=dev_agent)
-just server                                       # in a second terminal — the server it talks to
+curl -sS -H "Authorization: Bearer invalid" http://localhost:4007/mcp/ -X POST \
+  -H "Content-Type: application/json" -d '{}' -w "\nStatus: %{http_code}\n"
 ```
 
-What boots: `MarketMySpecAgent.Auth.Store` (reads `~/.mms-agent/auth.json` if it exists) and `MarketMySpecAgent.Channel.Client`. The `server_url` is `http://localhost:4007` in `:dev_agent` (matches the dev Phoenix port).
-
-**Implementation status note (2026-05-19, updated):** All three components are now wired — pairing LiveView, server-side AgentChannel + Presence + Dispatcher, and the binary's `Channel.Client` Slipstream join loop. Manual end-to-end verification (server + binary running together, pair flow → channel join → Reddit dispatch round-trip) has not yet been exercised in a single session; the QA stories 731/732/733 cover the pieces.
-
-#### Story 731 — pair flow (testable today)
-
-In a first terminal, boot the server:
+**Example: MCP analytics-admin endpoint (requires valid bearer)**
 ```
-just server                                       # PORT=4007 iex -S mix phx.server
+curl -sS -H "Authorization: Bearer <token>" http://localhost:4007/mcp/analytics-admin -X POST \
+  -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"list_custom_dimensions"}}'
 ```
 
-In a second terminal, run the agent:
+**Routes by pipeline**:
+- Public metadata: `/.well-known/oauth-*` (no auth)
+- OAuth token/register/revoke: `/oauth/*` (`:api` pipeline, public)
+- Agent version check: `/api/agent/version` (public)
+- MCP main: `/mcp/` (bearer token via `RequireMcpToken` plug)
+- MCP analytics-admin: `/mcp/analytics-admin` (bearer token via same plug)
+
+### mix run (Seed scripts + dev tasks)
+
+**When to use**: Populating QA data idempotently, testing story-specific scenarios, running linting workflows.
+
+**Example: Primary seed script (3 users + accounts)**
 ```
-just agent                                        # MIX_ENV=dev_agent iex -S mix run --no-halt
-iex> MarketMySpecAgent.Pairing.run()
-# opens browser to http://localhost:4007/agents/pair?state=...&port=...&name=...
-# blocks on the loopback callback
+mix run priv/repo/qa_seeds.exs
 ```
+Output: `qa@marketmyspec.test`, `qa-agency@marketmyspec.test`, `qa-client@marketmyspec.test` with magic-link tokens.
 
-In the browser, log in (use `mix run priv/repo/qa_seeds.exs` to get a magic-link URL), then click Approve on the pairing screen. The agent terminal prints `:ok`.
-
-Verify:
+**Example: Story 684 file-tree seed**
 ```
-ls -l ~/.mms-agent/auth.json                      # must exist, -rw------- (mode 0600)
-jq . ~/.mms-agent/auth.json                       # agent_id, user_id, token, server_url, paired_at
+mix run priv/repo/qa_seeds_684.exs
 ```
+Creates: nested markdown files + one non-markdown file in qa user's workspace.
 
-Negative paths to exercise:
-- Click Deny instead → agent terminal prints `{:error, :denied}`, no auth.json created
-- Refresh the /agents/pair URL after approve → "Pairing session unavailable" rendered, no second Agent record
-- Open /agents/pair without a state param → "Invalid pairing link"
-
-#### Story 732 — channel + presence (deferred until Channel.Client lands)
-
-Once `MarketMySpecAgent.Channel.Client` is implemented (Slipstream-based join + auto-reconnect):
+**Example: Story 696 member-invitation seed**
 ```
-# server iex (just server)
-iex> MarketMySpec.Agents.Presence.online_agent_ids(<user_id>)
-# expect a MapSet with the agent_id once the binary has joined
+mix run priv/repo/qa_seeds_696.exs
 ```
+Creates: invitations + invite tokens for multi-user member management flows.
 
-For now this can be exercised via the BDD spex only — `mix spex test/spex/732_*` runs through Phoenix.ChannelTest with a real channel join, which is the same code path the binary will hit.
-
-The Agents page at `http://localhost:4007/agents` shows the current presence state — once the binary's Channel.Client joins, the Online pill should flip without a refresh.
-
-#### Story 733 — Reddit-via-agent dispatch (deferred until Channel.Client lands)
-
-Once Channel.Client is live and joined, from the server iex:
+**Example: Story 738 polish_touchpoint scenarios (NOT a typical seed)**
 ```
-iex> {:ok, agent} = ... # find the agent for your user
-iex> user = MarketMySpec.Users.get_user!(<user_id>)
-iex> MarketMySpec.Agents.Dispatcher.dispatch_http(user, %{
-  method: :get,
-  url: "https://oauth.reddit.com/r/elixir/about.json",
-  headers: [],
-  body: ""
-})
-# {:ok, %{status: 200, headers: ..., body: ...}}
+VALE_STYLES_PATH=/path/to/styles MIX_ENV=dev mix run priv/repo/qa_738_scenarios.exs
 ```
-
-Expected error shapes:
-- `{:error, :host_not_allowed}` for a URL outside the allowlist
-- `{:error, :agent_offline}` when no agent is connected
-- `{:error, :timeout}` if the binary doesn't respond within 30s
-- `{:error, :agent_disconnected}` if the binary drops mid-flight
-
-The user-facing surface for "no online agent" is the SearchEngagements MCP tool — if no agent is paired+joined for a reddit venue, the response text contains "Pair or start an agent at /agents."
-
-To validate the **packaged** binary instead of the in-tree app, use `just build-agent` once, then run the produced executable from `burrito_out/` directly. Day-to-day QA does NOT need this — only worth doing right before a release.
-
-### Burrito binary release
-
-When to use: shipping a release to Homebrew. Day-to-day QA uses `just agent` above.
-
-```
-just build-agent                                  # MIX_ENV=prod_agent mix release market_my_spec_agent
-ls burrito_out/                                   # output binary per target
-./burrito_out/market_my_spec_agent_macos_m1 pair  # smoke-test the packaged form
-```
-
-Output target name is `market_my_spec_agent_<target>`. Default target is `macos_m1` locally; override with `BURRITO_TARGET=macos|linux|linux_aarch64` for cross-builds (CI).
-
-### iex (interactive inspection)
-
-When to use: poking at live state during a QA session — fetching a user, verifying a token, inspecting OAuth state store contents.
-
-```
-PORT=4007 iex -S mix phx.server                   # boot with a REPL attached
-# then: MarketMySpec.Users.get_user_by_email("qa@marketmyspec.test")
-```
+Runs: 7 linting + polish scenarios in dev env. Exercises the `PolishTouchpoint` tool with clean/dirty/invalid prose variants. Output: test results (pass/fail per scenario). Rows persist in dev DB for inspection.
 
 ## Seed Strategy
 
-Single Postgres Repo (`MarketMySpec.Repo`, `Ecto.Adapters.Postgres`) — no SQLite, no second DB. One seed script covers all of it.
+### Primary seed: qa_seeds.exs
 
-### `priv/repo/qa_seeds.exs`
+**Invocation**: `mix run priv/repo/qa_seeds.exs`
 
-Run with `mix run priv/repo/qa_seeds.exs`. Idempotent — safe to re-run.
+**What it creates**:
+- **qa@marketmyspec.test** — individual account user (Journeys 1–3). Single account auto-created.
+- **qa-agency@marketmyspec.test** — agency-account owner (Journeys 4 + 5 agency side). Agency account with type `:agency`.
+- **qa-client@marketmyspec.test** — client-account owner (Journey 5 client side). Individual account with type `:individual`.
 
-Creates / updates:
+**Credentials printed**:
+- Email, user ID, account name + ID + slug, magic-link token (20 min expiry) per user.
 
-- `qa@marketmyspec.test` user (registered via `MarketMySpec.Users.register_user/1`, force-confirmed via `Repo.update!` so QA flows don't need to click an email link)
-- A fresh single-use `users_tokens` row with context `login` so the magic-link sign-in URL works without sending email
+**Idempotency**: Checks for existing users by email; reuses if found. Confirms all users. Mints fresh tokens on every run.
 
-Outputs:
+### Story 684: qa_seeds_684.exs
 
-- The seeded email + user id
-- A direct magic-link sign-in URL of the form `http://localhost:4007/users/log-in/<encoded_token>` — copy/paste into Vibium to skip email-click
+**Invocation**: `mix run priv/repo/qa_seeds_684.exs`
 
-Run before any QA session that needs an authenticated user. Re-run between sessions if the token has been consumed (single-use).
+**Prerequisite**: `qa_seeds.exs` must have been run (auto-runs transitively if needed).
+
+**What it creates**:
+- Markdown files (nested structure) in qa@marketmyspec.test's workspace.
+- One non-markdown artifact (tests the "out-of-scope" path in FilesLive).
+- Cross-account record (different user/account) to verify scoping.
+
+**Idempotency**: Deletes + recreates files each run.
+
+### Story 696: qa_seeds_696.exs
+
+**Invocation**: `mix run priv/repo/qa_seeds_696.exs`
+
+**Prerequisite**: `qa_seeds.exs` must have been run.
+
+**What it creates**:
+- Member invitations (story 696 workflow).
+- Invite tokens for acceptance workflow testing.
+
+**Credentials printed**: Email, token, acceptance URL per invite.
+
+### Story 738: qa_738_scenarios.exs
+
+**Invocation**: `VALE_STYLES_PATH=/path/to/styles MIX_ENV=dev mix run priv/repo/qa_738_scenarios.exs`
+
+**What it does** (NOT a typical seed):
+- Stages 7 touchpoints on a test thread.
+- Calls `PolishTouchpoint` with clean/dirty/lint-fail/valid-json prose variants.
+- Validates Vale config parsing and lint output JSON.
+- Returns test results (pass/fail) to stdout; DB rows persist for inspection.
+
+**Setup requirement**: Vale 3.14.2 must be in `PATH` (built into Docker runtime image). Local dev requires `VALE_STYLES_PATH` env var pointing to vendored styles in `priv/vale/styles/write-good/*.yml`.
 
 ## System Issues
 
-### dotenvy doesn't pick up envs/dev.env in `mix phx.server`
+### 1. MCP analytics-admin 401 on missing bearer (recently resolved)
 
-What went wrong: `envs/dev.env` has `PORT=4007` but `mix phx.server` (no env prefix) bound 4000 and crashed with `:eaddrinuse` against the locally-running CodeMySpec beam on the same port. Other env vars (Google/GitHub/Resend creds) loaded fine when the verify scripts pre-sourced the file in shell, but Phoenix didn't see PORT.
+**Issue**: The `/mcp/analytics-admin` endpoint crashed with `:persistent_term` error when accessed without a bearer token (before Story 736 completion).
 
-Workaround: pass `PORT=4007 mix phx.server` explicitly. Confirmed boots cleanly on 4007 that way.
+**Resolution**: The supervised child for the analytics-admin server was added in commit `4ed3d2c`. The endpoint now 401s cleanly with `Plugs.RequireMcpToken` validation. No further action needed.
 
-Status: open. Likely a Dotenvy load-order issue (Dotenvy.source! runs in `config/runtime.exs`, but Phoenix's HTTP port is configured at compile time in `config/dev.exs` indirectly via the Endpoint). Investigate whether dev's Endpoint config needs a runtime port override or whether the dotenvy invocation needs `overload!: true` to win against System.get_env's empty default. Until fixed, every `mix phx.server` invocation in dev needs an explicit `PORT=4007` prefix and any other secret env vars need shell-side pre-sourcing.
+### 2. Vale styles path for local dev
 
-### No OAuth authorization-server metadata yet
+**Issue**: Vale CLI requires `VALE_STYLES_PATH` env var to locate the vendored style pack (`priv/vale/styles/write-good/*.yml`).
 
-What went wrong: probing `/.well-known/oauth-authorization-server` returns 404. The MCPAuth context and the MCPController surface haven't been built yet, so MCP clients can't discover the OAuth endpoints.
+**Resolution**: Set via `envs/dev.env` or inline before running `qa_738_scenarios.exs`. The Docker runtime image (UAT+prod) has Vale 3.14.2 + styles pre-baked.
 
-Workaround: none — this is expected pre-implementation state. Note in QA briefs that any MCP-side flow is non-testable until those components ship.
+### 3. OAuth issuer mismatch (dev.marketmyspec.com)
 
-Status: open. Resolves when the MCPAuth + MCPController components are implemented.
+**Issue**: OAuth metadata endpoints return `issuer: "https://dev.marketmyspec.com"`, which requires DNS resolution or a tunnel from localhost.
 
-### Vibium screenshot landing dir ignores path
+**Status**: Not a blocker for browser-based auth (magic-link tokens work locally). Matters only for OAuth bearer token generation scripts that call `/.well-known/oauth-authorization-server` programmatically.
 
-What went wrong: `browser_screenshot { filename: "x/y.png" }` writes to `~/Pictures/Vibium/y.png` regardless of the `x/` portion. Verified on this box.
+### 4. Google Analytics property ID requirement for MCP
 
-Workaround: pass just a basename (`filename: "qa-login.png"`) and read from `~/Pictures/Vibium/`. If the QA brief needs a per-run subdir, copy from `~/Pictures/Vibium/` after the screenshot lands.
+**Issue**: The `polish_touchpoint` MCP tool (story 738) and the analytics-admin MCP server (story 736) require `Account.google_analytics_property_id` to be populated.
 
-Status: open / external — Vibium-side issue, not ours.
+**Workaround**: The `AccountLive.Manage` form (at `/accounts/:id/manage`) now has a "Google Analytics 4 Property ID" input field (`data-test='ga-property-id'`). Paste a numeric property ID to enable analytics tools. Empty string clears the field.
+
+### 5. Deployment: Hetzner + Kamal, not Fly.io
+
+**Issue**: MarketMySpec deploys to Hetzner + Docker Compose (NOT Fly.io). Bootstrap creds via SSM at `/market_my_spec/{uat,prod}/*`.
+
+**System**: UAT host 46.225.105.88 (nbg1), prod host 178.156.143.212 (ash). Per-env files at `/opt/market_my_spec/{uat,prod}.env` injected via `--env-file`. Kamal + Docker Compose on the host.
+
+**Known trap**: `scripts/deploy` can silently push empty AWS keys if `render-env` fails in the `set -a; source <(...)` pipeline (fixed in `scripts/deploy` + `scripts/deploy-uat`, commits `4ed3d2c` / `cc38bad`). If container fails SSM auth, check `/opt/market_my_spec/*.env` for empty values and re-run deploy.
+
+## Notes
+
+### CodeMySpec OAuth integration
+
+A third OAuth provider (`Integrations.Providers.Codemyspec`) is now available alongside Google + GitHub. It is configured via `CODEMYSPEC_CLIENT_ID`, `CODEMYSPEC_CLIENT_SECRET`, `CODEMYSPEC_URL` env vars and powers the floating feedback widget (`lib/market_my_spec_web/live/feedback_widget.ex`). The widget is mounted in `Layouts.app` and renders nothing if the user has not signed in to CodeMySpec via `/integrations`.
+
+Issues filed through the widget POST to `<CODEMYSPEC_URL>/api/issues` via `MarketMySpec.Codemyspec.Client`.
+
+### Vale linting in story 738
+
+The `polish_touchpoint` MCP tool (and underlying `Linter.Vale` module) shells out to Vale CLI:
+- `vale ls-config` — validates config syntax
+- `vale --output JSON` — returns lint results as JSON
+
+Lint loop is the only path for writing `touchpoints.polished_body`; direct DB updates bypass validation.
+
+### New LiveView routes (stories 708, 710, 716, 731–733, 736)
+
+- `/accounts/:id/venues` — `VenueLive.Index` (story 708 engagement search)
+- `/accounts/:id/searches` — `SearchLive.Index` (story 710 saved searches)
+- `/accounts/:id/threads` — `ThreadLive.Index` (thread list)
+- `/accounts/:account_id/threads/:thread_id` — `ThreadLive.Show` (thread detail + comment form)
+- `/accounts/:account_id/touchpoints` — `TouchpointLive.Index` (touchpoint list)
+- `/accounts/:account_id/touchpoints/:touchpoint_id` — `TouchpointLive.Show` (story 716 lifecycle, comment_url paste form)
+- `/accounts/:account_id/style-guide` — `LinterLive.StyleGuide` (story 736 Vale config paste, clears)
+- `/oauth/authorize` — `McpAuthorizationLive` (MCP OAuth approval screen)
+- `/agents`, `/agents/pair` — `AgentLive.Index`/`AgentLive.Pair` (stories 731–732 agent install + pair)
+
+All routes require `:require_authenticated_user` (+ account membership). Test with Vibium MCP after login.
+
+### Port stability
+
+Dev port is consistently **4007** (configured in dev.exs, not 4000 to avoid collision with code_my_spec dev server).
