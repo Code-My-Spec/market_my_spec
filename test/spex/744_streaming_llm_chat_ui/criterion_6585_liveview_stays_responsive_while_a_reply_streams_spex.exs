@@ -5,9 +5,9 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
 
   Rule R3: LLM calls run in a supervised background task, so the LiveView never
   blocks. With a reply still streaming (the `:chat_llm` fixture hangs), the
-  founder can still change the model selector and send another message, and the
-  UI keeps responding. The synchronous LiveView process issues no provider call
-  of its own — if it did, these interactions would block behind the stream.
+  founder can still send another message and the UI keeps responding. The
+  LiveView process issues no synchronous provider call of its own — if it did,
+  this interaction would block behind the in-flight stream.
 
   Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
   """
@@ -22,7 +22,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
   end
 
   spex "the founder can interact with the page mid-stream" do
-    scenario "change the model and send another message while a reply streams" do
+    scenario "send another message while a reply streams" do
       given_ "a signed-in founder with a reply streaming indefinitely", context do
         user = Fixtures.user_fixture()
         _account = Fixtures.account_fixture(user)
@@ -40,11 +40,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 
-      when_ "the founder changes the provider and sends another message mid-stream", context do
-        context.view
-        |> form("[data-test='model-form']", conversation: %{provider: "openai"})
-        |> render_change()
-
+      when_ "the founder sends another message mid-stream", context do
         context.view
         |> form("[data-test='chat-form']", message: %{content: "second prompt while streaming"})
         |> render_submit()
@@ -52,7 +48,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
         {:ok, context}
       end
 
-      then_ "the second message is accepted and the page is still streaming", context do
+      then_ "the second message is accepted while the reply is still streaming", context do
         html = render(context.view)
 
         assert html =~ "second prompt while streaming"
@@ -61,10 +57,9 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
         {:ok, context}
       end
 
-      then_ "the configured model updates to the new provider's default", context do
-        # Provider is selectable; the model is configured per provider — switching
-        # to OpenAI applies its configured default (gpt-5-mini), shown read-only.
-        assert has_element?(context.view, "[data-test='current-model']", "gpt-5-mini")
+      then_ "the input stays usable", context do
+        assert has_element?(context.view, "[data-test='chat-form']")
+        refute has_element?(context.view, "[data-test='chat-form'] [disabled]")
         {:ok, context}
       end
     end

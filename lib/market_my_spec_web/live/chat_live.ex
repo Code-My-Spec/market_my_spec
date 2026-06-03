@@ -21,8 +21,6 @@ defmodule MarketMySpecWeb.ChatLive do
   alias MarketMySpec.Chat
   alias MarketMySpec.Chat.{ActiveTasks, Message, Runner}
 
-  @providers [:anthropic, :openai]
-
   @impl true
   def render(assigns) do
     ~H"""
@@ -42,26 +40,10 @@ defmodule MarketMySpecWeb.ChatLive do
       <div
         data-test="chat"
         data-chat-id={@conversation.id}
-        class="mx-auto flex h-[calc(100vh_-_7rem)] max-w-3xl flex-col"
+        class="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col"
       >
         <header class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 pb-3">
           <h1 class="text-lg font-semibold">Chat</h1>
-
-          <.form
-            for={@model_form}
-            phx-change="change_model"
-            data-test="model-form"
-            class="flex items-center gap-2"
-          >
-            <select name="conversation[provider]" class="select select-bordered select-xs">
-              <option :for={p <- @providers} value={p} selected={to_string(p) == to_string(@conversation.provider)}>
-                {p}
-              </option>
-            </select>
-            <span data-test="current-model" class="badge badge-ghost badge-sm" title="Configured model for this provider">
-              {@conversation.model}
-            </span>
-          </.form>
 
           <div class="flex shrink-0 items-center gap-2">
             <span data-test="token-badge" class="badge badge-neutral badge-sm">{@token_total} tokens</span>
@@ -173,8 +155,6 @@ defmodule MarketMySpecWeb.ChatLive do
     socket =
       socket
       |> assign(:conversation, conversation)
-      |> assign(:providers, @providers)
-      |> assign(:model_form, model_form(conversation))
       |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
       |> assign(:streaming, restore_streaming(conversation, List.last(streaming_messages)))
       |> assign(:token_total, token_total)
@@ -196,20 +176,6 @@ defmodule MarketMySpecWeb.ChatLive do
       {:error, _changeset} ->
         {:noreply, socket}
     end
-  end
-
-  def handle_event("change_model", %{"conversation" => %{"provider" => provider}}, socket) do
-    # The provider is selectable; the model is configured per provider (not
-    # user-pickable). Switching provider applies the configured default model.
-    provider = String.to_existing_atom(provider)
-
-    {:ok, conversation} =
-      Chat.update_model(socket.assigns.conversation, provider, Chat.default_model(provider))
-
-    {:noreply,
-     socket
-     |> assign(:conversation, conversation)
-     |> assign(:model_form, model_form(conversation))}
   end
 
   def handle_event("retry", _params, socket) do
@@ -312,14 +278,7 @@ defmodule MarketMySpecWeb.ChatLive do
     }
   end
 
-  # --- selectors + formatting ---
-
-  defp model_form(conversation) do
-    to_form(
-      %{"provider" => to_string(conversation.provider), "model" => conversation.model},
-      as: :conversation
-    )
-  end
+  # --- formatting ---
 
   defp totals(messages) do
     token_total =
