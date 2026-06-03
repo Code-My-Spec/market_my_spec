@@ -25,7 +25,7 @@ defmodule MarketMySpecSpex.Story695.Criterion6002Spex do
       when_ "Alice signs in and submits subdomain 'acme-marketing'", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/settings")
 
         view
         |> form("[data-test='subdomain-form']", subdomain: %{subdomain: "acme-marketing"})
@@ -35,7 +35,7 @@ defmodule MarketMySpecSpex.Story695.Criterion6002Spex do
       end
 
       then_ "the value is accepted and prefilled on reload", context do
-        {:ok, view, html} = live(context.conn, "/agency/settings")
+        {:ok, view, html} = live(context.conn, "/app/agency/settings")
         assert html =~ ~r/value=['"]acme-marketing['"]/,
                "expected the saved subdomain to be prefilled"
 

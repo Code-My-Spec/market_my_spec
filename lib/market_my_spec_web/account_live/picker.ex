@@ -71,7 +71,7 @@ defmodule MarketMySpecWeb.AccountLive.Picker do
         {:noreply,
          socket
          |> put_flash(:info, "Account selected")
-         |> push_navigate(to: ~p"/files")}
+         |> push_navigate(to: ~p"/app/files")}
 
       {:error, :not_a_member} ->
         {:noreply, put_flash(socket, :error, "You don't have access to this account")}

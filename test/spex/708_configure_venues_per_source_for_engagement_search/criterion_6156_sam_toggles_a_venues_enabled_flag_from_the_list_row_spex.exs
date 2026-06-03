@@ -23,7 +23,7 @@ defmodule MarketMySpecSpex.Story708.Criterion6156Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(authed_conn, "/accounts/#{account.id}/venues")
+        {:ok, view, _html} = live(authed_conn, "/app/accounts/#{account.id}/venues")
 
         # Add a venue first
         view

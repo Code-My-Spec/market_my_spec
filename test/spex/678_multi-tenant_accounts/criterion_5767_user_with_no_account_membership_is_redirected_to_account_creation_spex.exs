@@ -32,8 +32,8 @@ defmodule MarketMySpecSpex.Story678.Criterion5767Spex do
       end
 
       then_ "visiting /users/settings redirects to the account-creation entry point", context do
-        assert {:error, {:live_redirect, %{to: "/accounts/new"}}} =
-                 live(context.conn, "/users/settings")
+        assert {:error, {:live_redirect, %{to: "/app/accounts/new"}}} =
+                 live(context.conn, "/app/users/settings")
 
         {:ok, context}
       end

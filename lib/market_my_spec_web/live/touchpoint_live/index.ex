@@ -134,7 +134,7 @@ defmodule MarketMySpecWeb.TouchpointLive.Index do
         {:ok,
          socket
          |> put_flash(:error, "Account not found")
-         |> redirect(to: ~p"/accounts")}
+         |> redirect(to: ~p"/app/accounts")}
 
       account ->
         touchpoints = Engagements.list_touchpoints(current_scope, preload: [:thread])
@@ -161,13 +161,13 @@ defmodule MarketMySpecWeb.TouchpointLive.Index do
   @impl true
   def handle_event("filter_state", %{"state" => ""}, socket) do
     account_id = socket.assigns.account.id
-    {:noreply, push_patch(socket, to: ~p"/accounts/#{account_id}/touchpoints")}
+    {:noreply, push_patch(socket, to: ~p"/app/accounts/#{account_id}/touchpoints")}
   end
 
   def handle_event("filter_state", %{"state" => state}, socket)
       when state in @valid_states do
     account_id = socket.assigns.account.id
-    {:noreply, push_patch(socket, to: ~p"/accounts/#{account_id}/touchpoints?state=#{state}")}
+    {:noreply, push_patch(socket, to: ~p"/app/accounts/#{account_id}/touchpoints?state=#{state}")}
   end
 
   def handle_event("filter_state", _params, socket) do
@@ -178,7 +178,7 @@ defmodule MarketMySpecWeb.TouchpointLive.Index do
     account_id = socket.assigns.account.id
 
     {:noreply,
-     push_navigate(socket, to: ~p"/accounts/#{account_id}/touchpoints/#{touchpoint_id}")}
+     push_navigate(socket, to: ~p"/app/accounts/#{account_id}/touchpoints/#{touchpoint_id}")}
   end
 
   # --- Private helpers -------------------------------------------------------

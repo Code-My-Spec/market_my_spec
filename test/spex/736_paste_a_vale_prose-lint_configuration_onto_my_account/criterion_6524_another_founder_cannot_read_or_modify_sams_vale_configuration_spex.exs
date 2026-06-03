@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story736.Criterion6524Spex do
 
         sam_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => sam_token}})
 
-        {:ok, sam_view, _} = live(sam_conn, "/accounts/#{sam_account.id}/style-guide")
+        {:ok, sam_view, _} = live(sam_conn, "/app/accounts/#{sam_account.id}/style-guide")
 
         sam_view
         |> form("[data-test='style-guide-form']", style_guide: %{vale_ini: @sams_vale_ini})
@@ -58,10 +58,10 @@ defmodule MarketMySpecSpex.Story736.Criterion6524Spex do
 
       when_ "Bea attempts to visit Sam's style-guide URL", context do
         bea_mount_result =
-          live(context.bea_conn, "/accounts/#{context.sam_account.id}/style-guide")
+          live(context.bea_conn, "/app/accounts/#{context.sam_account.id}/style-guide")
 
         {:ok, _sam_view, sam_fresh_html} =
-          live(context.sam_conn, "/accounts/#{context.sam_account.id}/style-guide")
+          live(context.sam_conn, "/app/accounts/#{context.sam_account.id}/style-guide")
 
         {:ok,
          Map.merge(context, %{

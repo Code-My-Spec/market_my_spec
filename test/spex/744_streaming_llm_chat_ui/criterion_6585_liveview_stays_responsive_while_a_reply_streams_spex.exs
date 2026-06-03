@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
   LiveView process issues no synchronous provider call of its own — if it did,
   this interaction would block behind the in-flight stream.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -31,7 +31,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
 
         Application.put_env(:market_my_spec, :chat_llm, %{chunks: ["streaming"], hang: true})
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
 
         view
         |> form("[data-test='chat-form']", message: %{content: "first prompt"})

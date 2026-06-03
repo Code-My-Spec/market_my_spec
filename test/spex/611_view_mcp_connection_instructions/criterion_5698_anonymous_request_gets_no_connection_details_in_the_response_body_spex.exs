@@ -13,7 +13,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
       end
 
       when_ "they send a plain HTTP GET to /mcp-setup", context do
-        conn = get(context.conn, "/mcp-setup")
+        conn = get(context.conn, "/app/mcp-setup")
         {:ok, Map.put(context, :conn, conn)}
       end
 
@@ -45,7 +45,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5698Spex do
       end
 
       when_ "their browser attempts to mount the MCP setup LiveView", context do
-        result = live(context.conn, "/mcp-setup")
+        result = live(context.conn, "/app/mcp-setup")
         {:ok, Map.put(context, :result, result)}
       end
 

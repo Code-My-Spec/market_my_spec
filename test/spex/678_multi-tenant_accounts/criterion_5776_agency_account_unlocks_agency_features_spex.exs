@@ -36,7 +36,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5776Spex do
       end
 
       then_ "the agency dashboard nav link is present", context do
-        {:ok, view, _html} = live(context.conn, "/accounts")
+        {:ok, view, _html} = live(context.conn, "/app/accounts")
         assert has_element?(view, "[data-test='nav-agency-dashboard']"),
                "expected agency dashboard nav link in agency account context"
 

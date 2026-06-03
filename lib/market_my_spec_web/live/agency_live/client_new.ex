@@ -44,7 +44,7 @@ defmodule MarketMySpecWeb.AgencyLive.ClientNew do
             />
 
             <div class="flex justify-end gap-2">
-              <.button navigate={~p"/agency"} class="btn-ghost">
+              <.button navigate={~p"/app/agency"} class="btn-ghost">
                 Cancel
               </.button>
               <.button type="submit" phx-disable-with="Creating...">
@@ -88,7 +88,7 @@ defmodule MarketMySpecWeb.AgencyLive.ClientNew do
             {:noreply,
              socket
              |> put_flash(:info, "Client account created successfully")
-             |> push_navigate(to: ~p"/agency")}
+             |> push_navigate(to: ~p"/app/agency")}
 
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, form: to_form(changeset, as: :client))}

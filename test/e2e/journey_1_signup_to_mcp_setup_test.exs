@@ -39,7 +39,7 @@ defmodule MarketMySpecWeb.Journeys.Journey1SignupToMcpSetupTest do
 
     # Step 5: Navigate to /mcp-setup — all three steps and troubleshooting blocks must render.
     session
-    |> visit("/mcp-setup")
+    |> visit("/app/mcp-setup")
     |> assert_has(css("[data-test='install-step']"))
     |> assert_has(css("[data-test='oauth-step']"))
     |> assert_has(css("[data-test='interview-step']"))

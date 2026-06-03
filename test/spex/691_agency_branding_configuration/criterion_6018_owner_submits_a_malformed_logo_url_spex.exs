@@ -24,7 +24,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6018Spex do
       when_ "Alice signs in and submits a malformed logo URL", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/settings")
 
         result =
           view
@@ -41,7 +41,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6018Spex do
         assert context.submit_result =~ ~r/invalid url|must be a valid url|url format/i,
                "expected a URL-format error in the rendered form"
 
-        {:ok, _view, html} = live(context.conn, "/agency/settings")
+        {:ok, _view, html} = live(context.conn, "/app/agency/settings")
 
         refute html =~ ~r/value=['"]not-a-url['"]/,
                "expected the malformed URL to NOT be persisted as the prefilled value"

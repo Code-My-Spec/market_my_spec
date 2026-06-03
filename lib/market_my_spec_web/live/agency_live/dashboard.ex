@@ -24,14 +24,14 @@ defmodule MarketMySpecWeb.AgencyLive.Dashboard do
       <div data-test="agency-client-dashboard" class="mt-8">
         <div :if={@grants == []} class="text-center py-12 text-base-content/60">
           <p class="font-mono text-sm">No client accounts yet.</p>
-          <.button navigate={~p"/agency/clients/new"} class="btn-primary mt-4">
+          <.button navigate={~p"/app/agency/clients/new"} class="btn-primary mt-4">
             Add Client Account
           </.button>
         </div>
 
         <div :if={@grants != []}>
           <div class="flex justify-end mb-4">
-            <.button navigate={~p"/agency/clients/new"} class="btn-primary btn-sm">
+            <.button navigate={~p"/app/agency/clients/new"} class="btn-primary btn-sm">
               Add Client Account
             </.button>
           </div>
@@ -139,7 +139,7 @@ defmodule MarketMySpecWeb.AgencyLive.Dashboard do
     if Agencies.user_has_agency_access_to_client?(user, account_id) do
       case Accounts.set_active_client_context(user, account_id) do
         {:ok, _user} ->
-          {:noreply, push_navigate(socket, to: ~p"/accounts")}
+          {:noreply, push_navigate(socket, to: ~p"/app/accounts")}
 
         {:error, _reason} ->
           {:noreply, put_flash(socket, :error, "Failed to switch client context")}

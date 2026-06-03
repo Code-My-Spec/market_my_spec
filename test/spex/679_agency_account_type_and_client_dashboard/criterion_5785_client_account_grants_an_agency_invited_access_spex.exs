@@ -37,7 +37,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5785Spex do
         client_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.client_token}})
 
-        {:ok, view, _html} = live(client_conn, "/accounts/new")
+        {:ok, view, _html} = live(client_conn, "/app/accounts/new")
 
         view
         |> form("[data-test='account-form']", account: %{name: "Inviting Client Co"})
@@ -47,7 +47,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5785Spex do
       end
 
       when_ "the client owner grants the agency access at level 'account_manager'", context do
-        {:ok, view, _html} = live(context.client_conn, ~p"/accounts")
+        {:ok, view, _html} = live(context.client_conn, ~p"/app/accounts")
 
         view
         |> form("[data-test='grant-agency-access-form']",
@@ -66,7 +66,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5785Spex do
           Phoenix.ConnTest.build_conn()
           |> post("/users/log-in", %{"user" => %{"token" => context.agency_token}})
 
-        {:ok, view, dashboard_html} = live(agency_conn, "/agency")
+        {:ok, view, dashboard_html} = live(agency_conn, "/app/agency")
 
         assert dashboard_html =~ ~r/Inviting Client Co/,
                "expected the new client to appear on the agency dashboard"

@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6598Spex do
   continuation; the continuation — only reachable after the tool result is fed
   back into the model — appears in the final assistant message.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -33,7 +33,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6598Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
 
         view
         |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})

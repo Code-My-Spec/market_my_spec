@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6582Spex do
   nothing is persisted. The thread gains no user bubble and a fresh mount of
   the chat is still empty.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -29,7 +29,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6582Spex do
 
         Application.put_env(:market_my_spec, :chat_llm, %{chunks: [], hang: true})
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 
@@ -50,7 +50,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6582Spex do
       end
 
       then_ "nothing was persisted — a fresh mount is still empty", context do
-        {:ok, fresh_view, _html} = live(context.conn, "/chat")
+        {:ok, fresh_view, _html} = live(context.conn, "/app/chat")
 
         assert has_element?(fresh_view, "[data-test='chat-form']")
         refute has_element?(fresh_view, "[data-test='user-message']")

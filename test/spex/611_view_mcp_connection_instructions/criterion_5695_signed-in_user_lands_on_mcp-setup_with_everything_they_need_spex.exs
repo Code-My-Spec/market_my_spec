@@ -22,7 +22,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5695Spex do
       end
 
       when_ "they visit the MCP setup page", context do
-        {:ok, view, html} = live(context.conn, "/mcp-setup")
+        {:ok, view, html} = live(context.conn, "/app/mcp-setup")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5695Spex do
       end
 
       when_ "they visit the MCP setup page", context do
-        {:ok, view, _html} = live(context.conn, "/mcp-setup")
+        {:ok, view, _html} = live(context.conn, "/app/mcp-setup")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -70,7 +70,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5695Spex do
       end
 
       when_ "they visit the MCP setup page", context do
-        {:ok, view, _html} = live(context.conn, "/mcp-setup")
+        {:ok, view, _html} = live(context.conn, "/app/mcp-setup")
         {:ok, Map.put(context, :view, view)}
       end
 

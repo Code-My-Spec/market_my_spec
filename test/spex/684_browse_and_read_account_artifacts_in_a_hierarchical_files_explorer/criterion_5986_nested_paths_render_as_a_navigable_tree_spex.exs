@@ -38,7 +38,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5986Spex do
       when_ "the user opens the files explorer", context do
         {token, _raw} = Fixtures.generate_user_magic_link_token(context.user)
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
-        {:ok, view, _html} = live(authed_conn, "/files")
+        {:ok, view, _html} = live(authed_conn, "/app/files")
         {:ok, Map.merge(context, %{conn: authed_conn, view: view})}
       end
 

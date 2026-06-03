@@ -47,7 +47,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5985Spex do
       when_ "the user signs in (A is active) and tries to load that path directly", context do
         {token, _raw} = Fixtures.generate_user_magic_link_token(context.user)
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
-        {:ok, view, _html} = live(authed_conn, "/files/" <> @foreign_path)
+        {:ok, view, _html} = live(authed_conn, "/app/files/" <> @foreign_path)
         {:ok, Map.merge(context, %{conn: authed_conn, view: view})}
       end
 

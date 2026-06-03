@@ -32,7 +32,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5778Spex do
       end
 
       then_ "the agency management dashboard nav link is visible", context do
-        {:ok, view, _html} = live(context.conn, "/accounts")
+        {:ok, view, _html} = live(context.conn, "/app/accounts")
 
         assert has_element?(view, "[data-test='nav-agency-dashboard']"),
                "expected agency dashboard nav link in admin-provisioned agency account"
@@ -41,7 +41,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5778Spex do
       end
 
       then_ "white label settings are accessible in account settings", context do
-        {:ok, view, _html} = live(context.conn, ~p"/accounts/#{context.agency.id}/manage")
+        {:ok, view, _html} = live(context.conn, ~p"/app/accounts/#{context.agency.id}/manage")
 
         assert has_element?(view, "[data-test='white-label-settings']"),
                "expected white-label settings to be accessible in agency account settings"

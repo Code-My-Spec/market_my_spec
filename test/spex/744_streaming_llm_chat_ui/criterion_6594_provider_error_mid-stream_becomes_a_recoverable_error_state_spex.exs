@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6594Spex do
   other chats unaffected. The `:chat_llm` fixture fails the stream; the founder
   sees an error message with a retry button and a still-usable chat.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -30,7 +30,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6594Spex do
 
         Application.put_env(:market_my_spec, :chat_llm, %{error: :rate_limited})
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 

@@ -24,7 +24,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5774Spex do
 
       when_ "owner A signs in and creates 'Slug Test Workspace'", context do
         conn_a = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token_a}})
-        {:ok, view, _html} = live(conn_a, "/accounts/new")
+        {:ok, view, _html} = live(conn_a, "/app/accounts/new")
 
         view
         |> form("[data-test='account-form']", account: %{name: "Slug Test Workspace"})
@@ -38,7 +38,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5774Spex do
           Phoenix.ConnTest.build_conn()
           |> post("/users/log-in", %{"user" => %{"token" => context.token_b}})
 
-        {:ok, view, _html} = live(conn_b, "/accounts/new")
+        {:ok, view, _html} = live(conn_b, "/app/accounts/new")
 
         result =
           view

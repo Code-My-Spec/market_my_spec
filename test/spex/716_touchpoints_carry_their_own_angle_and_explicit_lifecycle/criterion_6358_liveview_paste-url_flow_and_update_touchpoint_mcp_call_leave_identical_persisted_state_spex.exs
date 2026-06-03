@@ -81,7 +81,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6358Spex do
         pasted_url = "https://www.reddit.com/r/elixir/comments/ui360/_/xyz"
 
         ui_path =
-          "/accounts/#{context.scope.active_account_id}/touchpoints/#{context.touchpoint_id}"
+          "/app/accounts/#{context.scope.active_account_id}/touchpoints/#{context.touchpoint_id}"
 
         case Phoenix.LiveViewTest.live(context.conn, ui_path) do
           {:ok, view, _html} ->

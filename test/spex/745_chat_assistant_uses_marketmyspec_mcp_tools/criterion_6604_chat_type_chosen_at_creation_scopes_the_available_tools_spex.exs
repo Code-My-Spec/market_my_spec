@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6604Spex do
   creation is reflected on the chat, and choosing the other type yields the
   other type's chat.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -27,7 +27,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6604Spex do
         {token, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 
@@ -51,7 +51,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6604Spex do
         {token, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 

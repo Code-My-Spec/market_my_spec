@@ -41,7 +41,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5990Spex do
 
         outcome =
           try do
-            {:ok, view, _html} = live(authed_conn, "/files/" <> @path)
+            {:ok, view, _html} = live(authed_conn, "/app/files/" <> @path)
             {:rendered, render(view)}
           rescue
             _ -> {:crashed, :error}

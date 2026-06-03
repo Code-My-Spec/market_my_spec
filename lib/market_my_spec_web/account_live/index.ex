@@ -64,15 +64,15 @@ defmodule MarketMySpecWeb.AccountLive.Index do
                     <.link
                       :if={account.type == :agency}
                       data-test="nav-agency-dashboard"
-                      navigate={~p"/agency"}
+                      navigate={~p"/app/agency"}
                       class="btn btn-sm btn-ghost"
                     >
                       Agency Dashboard
                     </.link>
-                    <.button navigate={~p"/accounts/#{account}/members"} class="btn-sm btn-ghost">
+                    <.button navigate={~p"/app/accounts/#{account}/members"} class="btn-sm btn-ghost">
                       Members
                     </.button>
-                    <.button navigate={~p"/accounts/#{account}"} class="btn-sm">
+                    <.button navigate={~p"/app/accounts/#{account}"} class="btn-sm">
                       Manage
                     </.button>
                   </div>

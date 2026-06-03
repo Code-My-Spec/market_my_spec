@@ -24,7 +24,7 @@ defmodule MarketMySpecSpex.Story695.Criterion6004Spex do
       when_ "Alice signs in and submits subdomain 'admin'", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/settings")
 
         result =
           view

@@ -22,7 +22,7 @@ defmodule MarketMySpecSpex.Story634.Criterion5705Spex do
       end
 
       when_ "they visit the MCP setup guide", context do
-        {:ok, view, html} = live(context.conn, "/mcp-setup")
+        {:ok, view, html} = live(context.conn, "/app/mcp-setup")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 

@@ -30,14 +30,14 @@ defmodule MarketMySpecSpex.Story678.Criterion5779Spex do
       end
 
       then_ "visiting /users/settings redirects to /accounts/new", context do
-        assert {:error, {:live_redirect, %{to: "/accounts/new"}}} =
-                 live(context.conn, "/users/settings")
+        assert {:error, {:live_redirect, %{to: "/app/accounts/new"}}} =
+                 live(context.conn, "/app/users/settings")
 
         {:ok, context}
       end
 
       then_ "the account-creation page exposes a name field but no type selector", context do
-        {:ok, view, _html} = live(context.conn, "/accounts/new")
+        {:ok, view, _html} = live(context.conn, "/app/accounts/new")
 
         assert has_element?(view, "[data-test='account-form'] [name='account[name]']"),
                "expected name input on the account-creation form"

@@ -36,7 +36,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5786Spex do
         agency_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.agency_token}})
 
-        {:ok, view, _html} = live(agency_conn, "/agency")
+        {:ok, view, _html} = live(agency_conn, "/app/agency")
 
         view
         |> element("[data-test='revoke-grant-modal-#{context.grant.id}-confirm']")
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5786Spex do
       end
 
       then_ "the client no longer appears on the agency dashboard", context do
-        {:ok, _view, dashboard_html} = live(context.conn, "/agency")
+        {:ok, _view, dashboard_html} = live(context.conn, "/app/agency")
 
         refute dashboard_html =~ ~r/Revoke Test Client/,
                "expected the revoked client to be absent from the agency dashboard"

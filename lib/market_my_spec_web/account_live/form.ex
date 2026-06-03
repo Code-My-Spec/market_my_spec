@@ -133,6 +133,6 @@ defmodule MarketMySpecWeb.AccountLive.Form do
     end
   end
 
-  defp return_path(_scope, "index", _account), do: ~p"/accounts"
-  defp return_path(_scope, "show", account), do: ~p"/accounts/#{account}"
+  defp return_path(_scope, "index", _account), do: ~p"/app/accounts"
+  defp return_path(_scope, "show", account), do: ~p"/app/accounts/#{account}"
 end

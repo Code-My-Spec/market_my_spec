@@ -42,7 +42,7 @@ defmodule MarketMySpecWeb.HomeLive do
             >
               Copy install command
             </button>
-            <.link navigate={~p"/mcp-setup"} class="btn btn-ghost">
+            <.link navigate={~p"/app/mcp-setup"} class="btn btn-ghost">
               Setup guide
             </.link>
           </div>

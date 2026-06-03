@@ -26,7 +26,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5768Spex do
       end
 
       when_ "the user creates a new account named 'Owner Test Workspace'", context do
-        {:ok, view, _html} = live(context.conn, "/accounts/new")
+        {:ok, view, _html} = live(context.conn, "/app/accounts/new")
 
         view
         |> form("[data-test='account-form']", account: %{name: "Owner Test Workspace"})
@@ -36,7 +36,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5768Spex do
       end
 
       then_ "the accounts list shows the new account labeled with the owner role", context do
-        {:ok, _view, html} = live(context.conn, "/accounts")
+        {:ok, _view, html} = live(context.conn, "/app/accounts")
 
         assert html =~ ~r/Owner Test Workspace/,
                "expected new account name in the accounts list"

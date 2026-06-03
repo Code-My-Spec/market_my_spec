@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6586Spex do
   hanging or dying. The `:chat_llm` fixture is set to crash the streaming task.
   The founder still has a live, usable chat afterward.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -30,7 +30,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6586Spex do
 
         Application.put_env(:market_my_spec, :chat_llm, %{crash: true})
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 

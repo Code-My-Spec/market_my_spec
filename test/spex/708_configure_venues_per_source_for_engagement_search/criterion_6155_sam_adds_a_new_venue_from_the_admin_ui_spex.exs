@@ -23,7 +23,7 @@ defmodule MarketMySpecSpex.Story708.Criterion6155Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(authed_conn, "/accounts/#{account.id}/venues")
+        {:ok, view, _html} = live(authed_conn, "/app/accounts/#{account.id}/venues")
 
         {:ok, Map.merge(context, %{sam: sam, account: account, view: view})}
       end
@@ -64,7 +64,7 @@ defmodule MarketMySpecSpex.Story708.Criterion6155Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(authed_conn, "/accounts/#{account.id}/venues")
+        {:ok, view, _html} = live(authed_conn, "/app/accounts/#{account.id}/venues")
 
         {:ok, Map.merge(context, %{sam: sam, account: account, view: view})}
       end
@@ -105,7 +105,7 @@ defmodule MarketMySpecSpex.Story708.Criterion6155Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(authed_conn, "/accounts/#{account.id}/venues")
+        {:ok, view, _html} = live(authed_conn, "/app/accounts/#{account.id}/venues")
 
         view
         |> element("[data-test='add-venue-button']")

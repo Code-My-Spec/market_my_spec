@@ -140,7 +140,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6536Spex do
       then_ "the Frame detail LiveView surfaces an empty-Gather notification to the founder",
             context do
         {:ok, view, _html} =
-          live(context.authed_conn, "/problem-discovery/frames/#{context.frame_id}")
+          live(context.authed_conn, "/app/problem-discovery/frames/#{context.frame_id}")
 
         assert has_element?(view, "[data-test='empty-gather-notice']"),
                "expected the Frame detail page to surface a [data-test='empty-gather-notice'] element"

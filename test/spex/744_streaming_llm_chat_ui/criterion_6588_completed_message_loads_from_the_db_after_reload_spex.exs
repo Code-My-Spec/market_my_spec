@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6588Spex do
   fixture completes normally; after the stream is done the founder reloads and
   sees the persisted reply and no in-progress indicator.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -37,7 +37,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6588Spex do
           model: "claude-sonnet-4-6"
         })
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
 
         view
         |> form("[data-test='chat-form']", message: %{content: "is the shop open?"})
@@ -47,7 +47,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6588Spex do
       end
 
       when_ "the founder reloads the page after the reply finished", context do
-        {:ok, reloaded_view, html} = live(context.conn, "/chat")
+        {:ok, reloaded_view, html} = live(context.conn, "/app/chat")
         {:ok, Map.merge(context, %{reloaded_view: reloaded_view, html: html})}
       end
 

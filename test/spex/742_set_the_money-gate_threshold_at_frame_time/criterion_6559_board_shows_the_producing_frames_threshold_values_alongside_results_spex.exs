@@ -68,7 +68,7 @@ defmodule MarketMySpecSpex.Story742.Criterion6559Spex do
 
       when_ "the founder opens the Frame detail page", context do
         {:ok, view, html} =
-          live(context.authed_conn, "/problem-discovery/frames/#{context.frame_id}")
+          live(context.authed_conn, "/app/problem-discovery/frames/#{context.frame_id}")
 
         {:ok, Map.merge(context, %{view: view, html: html})}
       end

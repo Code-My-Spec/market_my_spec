@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6584Spex do
   shown — proving the reply renders progressively rather than all-at-once at the
   end.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6584Spex do
           hang: true
         })
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 

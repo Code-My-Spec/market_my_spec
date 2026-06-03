@@ -131,7 +131,7 @@ defmodule MarketMySpecWeb.VenueLive.Index do
         {:ok,
          socket
          |> put_flash(:error, "Account not found")
-         |> redirect(to: "/accounts")}
+         |> redirect(to: "/app/accounts")}
 
       account ->
         venues = Engagements.list_venues(current_scope)

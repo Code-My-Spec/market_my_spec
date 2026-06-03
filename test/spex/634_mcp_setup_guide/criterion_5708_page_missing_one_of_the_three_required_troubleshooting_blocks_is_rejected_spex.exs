@@ -25,7 +25,7 @@ defmodule MarketMySpecSpex.Story634.Criterion5708Spex do
       end
 
       when_ "they visit the MCP setup guide", context do
-        {:ok, view, _html} = live(context.conn, "/mcp-setup")
+        {:ok, view, _html} = live(context.conn, "/app/mcp-setup")
         {:ok, Map.put(context, :view, view)}
       end
 

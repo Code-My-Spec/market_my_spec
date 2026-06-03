@@ -40,7 +40,7 @@ defmodule MarketMySpecSpex.Story736.Criterion6522Spex do
 
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(authed_conn, "/accounts/#{account.id}/style-guide")
+        {:ok, view, _html} = live(authed_conn, "/app/accounts/#{account.id}/style-guide")
 
         view
         |> form("[data-test='style-guide-form']", style_guide: %{vale_ini: @first_vale_ini})
@@ -51,7 +51,7 @@ defmodule MarketMySpecSpex.Story736.Criterion6522Spex do
 
       when_ "Sam pastes a different valid .vale.ini and submits", context do
         {:ok, view, _html} =
-          live(context.authed_conn, "/accounts/#{context.account.id}/style-guide")
+          live(context.authed_conn, "/app/accounts/#{context.account.id}/style-guide")
 
         view
         |> form("[data-test='style-guide-form']",
@@ -60,7 +60,7 @@ defmodule MarketMySpecSpex.Story736.Criterion6522Spex do
         |> render_submit()
 
         {:ok, _fresh_view, fresh_html} =
-          live(context.authed_conn, "/accounts/#{context.account.id}/style-guide")
+          live(context.authed_conn, "/app/accounts/#{context.account.id}/style-guide")
 
         {:ok, Map.put(context, :fresh_html, fresh_html)}
       end

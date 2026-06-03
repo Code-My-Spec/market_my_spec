@@ -26,7 +26,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5766Spex do
       end
 
       when_ "the user visits the accounts list", context do
-        {:ok, view, html} = live(context.conn, "/accounts")
+        {:ok, view, html} = live(context.conn, "/app/accounts")
         {:ok, Map.merge(context, %{accounts_view: view, accounts_html: html})}
       end
 

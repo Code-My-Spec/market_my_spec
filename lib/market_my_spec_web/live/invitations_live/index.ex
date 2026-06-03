@@ -63,7 +63,7 @@ defmodule MarketMySpecWeb.InvitationsLive.Index do
         {:ok,
          socket
          |> put_flash(:error, "Account not found")
-         |> redirect(to: ~p"/accounts")}
+         |> redirect(to: ~p"/app/accounts")}
 
       account ->
         pending_invitations = Accounts.list_pending_invitations(current_scope, account.id)

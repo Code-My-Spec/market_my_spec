@@ -38,7 +38,7 @@ defmodule MarketMySpecSpex.Story696.Criterion6106Spex do
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
         {:ok, view, _html} =
-          live(authed_conn, "/accounts/#{context.account.id}/invitations")
+          live(authed_conn, "/app/accounts/#{context.account.id}/invitations")
 
         view
         |> element("[phx-click='toggle_invite_form']")

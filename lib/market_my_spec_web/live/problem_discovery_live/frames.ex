@@ -40,7 +40,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
         {:noreply,
          socket
          |> put_flash(:info, "Frame created.")
-         |> push_navigate(to: ~p"/problem-discovery/frames/#{frame.id}")}
+         |> push_navigate(to: ~p"/app/problem-discovery/frames/#{frame.id}")}
 
       {:error, changeset} ->
         {:noreply,
@@ -110,7 +110,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
           <h1 class="text-2xl font-semibold">Problem Discovery Frames</h1>
           <.link
             :if={@live_action != :new}
-            navigate={~p"/problem-discovery/frames/new"}
+            navigate={~p"/app/problem-discovery/frames/new"}
             class="btn btn-primary btn-sm"
           >
             New Frame
@@ -190,7 +190,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
               </div>
 
               <div class="flex justify-end gap-2">
-                <.link navigate={~p"/problem-discovery/frames"} class="btn btn-ghost">Cancel</.link>
+                <.link navigate={~p"/app/problem-discovery/frames"} class="btn btn-ghost">Cancel</.link>
                 <button type="submit" class="btn btn-primary">Commit Frame</button>
               </div>
             </div>
@@ -212,7 +212,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
               data-test="frame-row"
             >
               <.link
-                navigate={~p"/problem-discovery/frames/#{frame.id}"}
+                navigate={~p"/app/problem-discovery/frames/#{frame.id}"}
                 class="block"
               >
                 <p class="font-medium truncate">{frame.title || frame.description}</p>

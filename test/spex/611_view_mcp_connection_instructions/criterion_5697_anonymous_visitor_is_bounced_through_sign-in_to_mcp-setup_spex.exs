@@ -15,7 +15,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5697Spex do
       end
 
       when_ "they attempt to visit the MCP setup page", context do
-        result = live(context.conn, "/mcp-setup")
+        result = live(context.conn, "/app/mcp-setup")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -39,7 +39,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5697Spex do
       end
 
       when_ "they try to visit the MCP setup page before signing in", context do
-        conn = get(context.conn, "/mcp-setup")
+        conn = get(context.conn, "/app/mcp-setup")
         {:ok, Map.put(context, :conn, conn)}
       end
 
@@ -49,7 +49,7 @@ defmodule MarketMySpecSpex.Story611.Criterion5697Spex do
       end
 
       then_ "they are returned to the MCP setup page", context do
-        assert redirected_to(context.conn) == "/mcp-setup"
+        assert redirected_to(context.conn) == "/app/mcp-setup"
         {:ok, context}
       end
     end

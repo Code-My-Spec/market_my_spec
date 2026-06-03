@@ -187,7 +187,7 @@ defmodule MarketMySpecWeb.TouchpointLive.Show do
         {:ok,
          socket
          |> put_flash(:error, "Touchpoint not found")
-         |> push_navigate(to: "/accounts")}
+         |> push_navigate(to: "/app/accounts")}
 
       {:ok, touchpoint} ->
         thread = load_thread(scope, touchpoint.thread_id)
@@ -315,7 +315,7 @@ defmodule MarketMySpecWeb.TouchpointLive.Show do
         {:noreply,
          socket
          |> put_flash(:info, "Touchpoint deleted")
-         |> push_navigate(to: "/accounts/#{scope.active_account_id}/threads")}
+         |> push_navigate(to: "/app/accounts/#{scope.active_account_id}/threads")}
 
       {:error, :not_found} ->
         {:noreply, put_flash(socket, :error, "Touchpoint not found")}

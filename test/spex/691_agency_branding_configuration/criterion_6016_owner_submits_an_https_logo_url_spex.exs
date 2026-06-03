@@ -25,7 +25,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6016Spex do
       when_ "Alice signs in and submits the branding form with an HTTPS logo URL", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/settings")
 
         result =
           view
@@ -42,7 +42,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6016Spex do
         # absent) or re-render the form with the saved value. Either
         # way, the next mount of the form must show the saved URL with
         # no validation error.
-        {:ok, view, html} = live(context.conn, "/agency/settings")
+        {:ok, view, html} = live(context.conn, "/app/agency/settings")
 
         assert has_element?(view, "[data-test='branding-form']"),
                "expected the branding form to render"

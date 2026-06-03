@@ -117,7 +117,7 @@ defmodule MarketMySpecWeb.AgencyLive.Settings do
         {:ok,
          socket
          |> put_flash(:error, "No agency account found")
-         |> push_navigate(to: ~p"/agency")}
+         |> push_navigate(to: ~p"/app/agency")}
 
       agency ->
         authorize_or_redirect(socket, agency)
@@ -127,7 +127,7 @@ defmodule MarketMySpecWeb.AgencyLive.Settings do
   defp authorize_or_redirect(socket, agency) do
     case Authorization.authorize(:manage_account, socket.assigns.current_scope, agency.id) do
       true -> {:ok, mount_forms(socket, agency)}
-      false -> {:ok, push_navigate(socket, to: ~p"/agency")}
+      false -> {:ok, push_navigate(socket, to: ~p"/app/agency")}
     end
   end
 

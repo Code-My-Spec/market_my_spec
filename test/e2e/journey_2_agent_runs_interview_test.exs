@@ -47,7 +47,7 @@ defmodule MarketMySpecWeb.Journeys.Journey2AgentRunsInterviewTest do
 
     # Navigate to /files — the hierarchical tree explorer (story 684) lists
     # all 3 artifacts as file nodes under the "marketing" folder.
-    session = visit(session, "/files")
+    session = visit(session, "/app/files")
 
     assert_has(session, css("[data-test='file-tree']"))
     assert_has(session, css("summary", text: "marketing"))

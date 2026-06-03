@@ -29,7 +29,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5781Spex do
       end
 
       then_ "the agency dashboard renders with the client portfolio container", context do
-        {:ok, view, _html} = live(context.conn, "/agency")
+        {:ok, view, _html} = live(context.conn, "/app/agency")
         assert has_element?(view, "[data-test='agency-client-dashboard']"),
                "expected the agency client dashboard container at /agency"
 

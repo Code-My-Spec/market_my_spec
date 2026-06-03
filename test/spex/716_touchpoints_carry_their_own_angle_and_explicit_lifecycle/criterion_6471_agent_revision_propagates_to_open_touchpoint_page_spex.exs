@@ -74,7 +74,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6471Spex do
           |> Plug.Conn.put_session(:user_token, token)
 
         path =
-          "/accounts/#{scope.active_account_id}/touchpoints/#{touchpoint_id}"
+          "/app/accounts/#{scope.active_account_id}/touchpoints/#{touchpoint_id}"
 
         {:ok, view, initial_html} = Phoenix.LiveViewTest.live(conn, path)
 

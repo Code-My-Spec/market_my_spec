@@ -27,7 +27,7 @@ defmodule MarketMySpecSpex.Story696.Criterion6104Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        result = live(authed_conn, "/accounts/#{context.account.id}/invitations")
+        result = live(authed_conn, "/app/accounts/#{context.account.id}/invitations")
 
         {:ok, Map.merge(context, %{conn: authed_conn, mount_result: result})}
       end

@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5789Spex do
       when_ "the agency owner signs in and switches into the read-only client", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency")
+        {:ok, view, _html} = live(authed_conn, "/app/agency")
 
         view
         |> element(
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5789Spex do
       end
 
       then_ "the client manage page exposes no edit or delete affordances", context do
-        {:ok, view, _html} = live(context.conn, ~p"/accounts/#{context.client_account.id}/manage")
+        {:ok, view, _html} = live(context.conn, ~p"/app/accounts/#{context.client_account.id}/manage")
 
         refute has_element?(view, "[data-test='account-form'] button[type='submit']"),
                "expected no submit button on the manage form for a read_only agency user"

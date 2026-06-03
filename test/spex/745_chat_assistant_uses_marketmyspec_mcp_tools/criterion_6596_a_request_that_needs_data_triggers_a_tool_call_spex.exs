@@ -11,7 +11,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6596Spex do
   The `:chat_llm` fixture scripts the model to emit the tool call; the tool step
   is observable in the thread.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -36,7 +36,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6596Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
 
         view
         |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})

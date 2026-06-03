@@ -48,7 +48,7 @@ defmodule MarketMySpecWeb.Journeys.Journey3IterationTest do
     session = log_in_via_magic_link(session, encoded_token)
 
     # /files shows all 3 prior artifacts in the tree explorer (story 684).
-    session = visit(session, "/files")
+    session = visit(session, "/app/files")
 
     assert_has(session, css("[data-test='file-tree']"))
     assert_has(session, link("01_current_state.md"))

@@ -104,7 +104,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6528Spex do
 
       when_ "the founder opens the Frame detail LiveView with the inline Board", context do
         {:ok, view, html} =
-          live(context.authed_conn, "/problem-discovery/frames/#{context.frame_id}")
+          live(context.authed_conn, "/app/problem-discovery/frames/#{context.frame_id}")
 
         {:ok, Map.merge(context, %{view: view, html: html})}
       end

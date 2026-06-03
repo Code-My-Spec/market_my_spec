@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5790Spex do
       when_ "the client owner signs in and tries to grant the same agency a second time", context do
         client_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(client_conn, ~p"/accounts")
+        {:ok, view, _html} = live(client_conn, ~p"/app/accounts")
 
         result =
           view

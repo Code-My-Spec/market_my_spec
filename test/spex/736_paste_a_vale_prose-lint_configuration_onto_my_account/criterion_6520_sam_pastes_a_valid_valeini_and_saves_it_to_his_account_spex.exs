@@ -37,7 +37,7 @@ defmodule MarketMySpecSpex.Story736.Criterion6520Spex do
 
       when_ "Sam pastes the .vale.ini into the form and submits", context do
         {:ok, view, _html} =
-          live(context.authed_conn, "/accounts/#{context.account.id}/style-guide")
+          live(context.authed_conn, "/app/accounts/#{context.account.id}/style-guide")
 
         view
         |> form("[data-test='style-guide-form']",
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story736.Criterion6520Spex do
         |> render_submit()
 
         {:ok, fresh_view, fresh_html} =
-          live(context.authed_conn, "/accounts/#{context.account.id}/style-guide")
+          live(context.authed_conn, "/app/accounts/#{context.account.id}/style-guide")
 
         {:ok, Map.merge(context, %{view: view, fresh_view: fresh_view, fresh_html: fresh_html})}
       end

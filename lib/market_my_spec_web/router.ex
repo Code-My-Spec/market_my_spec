@@ -67,16 +67,34 @@ defmodule MarketMySpecWeb.Router do
 
   ## Authentication routes
 
+  # OAuth authorize LiveView — MCP clients link directly to /oauth/authorize,
+  # so the path must stay stable (not under /app). Requires authentication
+  # and account membership like the rest of the app shell.
   scope "/", MarketMySpecWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_authenticated_user_oauth_authorize,
+      on_mount: [
+        {MarketMySpecWeb.UserAuth, :require_authenticated},
+        {MarketMySpecWeb.UserAuth, :require_account_membership}
+      ] do
+      live "/oauth/authorize", McpAuthorizationLive, :index
+    end
+  end
+
+  # Authenticated app shell — every LiveView under /app/* is the "app" surface
+  # (the root layout uses the /app prefix as the source of truth to choose
+  # the app chrome vs. marketing chrome).
+  scope "/app", MarketMySpecWeb do
     pipe_through [:browser, :require_authenticated_user]
 
     # Account creation + onboarding routes — require authentication but NOT
     # an existing account membership. Users without an account land on /app,
-    # which forces account creation inline; /accounts/new is the bare CRUD
+    # which forces account creation inline; /app/accounts/new is the bare CRUD
     # form kept for the "create another workspace" flow.
     live_session :require_authenticated_user_no_account_check,
       on_mount: [{MarketMySpecWeb.UserAuth, :require_authenticated}] do
-      live "/app", AppLive.Overview, :index
+      live "/", AppLive.Overview, :index
       live "/accounts/new", AccountLive.Form, :new
     end
 
@@ -122,8 +140,6 @@ defmodule MarketMySpecWeb.Router do
       live "/files/*key", FilesLive.Browser, :show
 
       live "/mcp-setup", McpSetupLive, :index
-
-      live "/oauth/authorize", McpAuthorizationLive, :index
 
       live "/problem-discovery/frames", ProblemDiscoveryLive.Frames, :index
       live "/problem-discovery/frames/new", ProblemDiscoveryLive.Frames, :new

@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6601Spex do
   tool errors; the error is fed back to the model as a tool result (not a
   runner crash), the assistant continues, and the LiveView stays usable.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -33,7 +33,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6601Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
 
         view
         |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})

@@ -24,13 +24,13 @@ defmodule MarketMySpecSpex.Story678.Criterion5780Spex do
       when_ "the user signs in and creates 'Picker Workspace A' and 'Picker Workspace B'", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view_a, _html_a} = live(authed_conn, "/accounts/new")
+        {:ok, view_a, _html_a} = live(authed_conn, "/app/accounts/new")
 
         view_a
         |> form("[data-test='account-form']", account: %{name: "Picker Workspace A"})
         |> render_submit()
 
-        {:ok, view_b, _html_b} = live(authed_conn, "/accounts/new")
+        {:ok, view_b, _html_b} = live(authed_conn, "/app/accounts/new")
 
         view_b
         |> form("[data-test='account-form']", account: %{name: "Picker Workspace B"})
@@ -40,7 +40,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5780Spex do
       end
 
       when_ "the user visits /accounts/picker", context do
-        {:ok, view, html} = live(context.conn, "/accounts/picker")
+        {:ok, view, html} = live(context.conn, "/app/accounts/picker")
         {:ok, Map.merge(context, %{picker_view: view, picker_html: html})}
       end
 

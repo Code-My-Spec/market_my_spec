@@ -24,7 +24,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5784Spex do
 
       when_ "the user signs in and creates a client 'Originator Client'", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        {:ok, view, _html} = live(authed_conn, "/agency/clients/new")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/clients/new")
 
         view
         |> form("[data-test='client-form']", client: %{name: "Originator Client"})
@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5784Spex do
       end
 
       then_ "the originator row exposes no revoke control", context do
-        {:ok, view, _html} = live(context.conn, "/agency")
+        {:ok, view, _html} = live(context.conn, "/app/agency")
 
         assert has_element?(view, "[data-test='client-row-originator']"),
                "anchor: expected an originator-marked client row"

@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6600Spex do
   step and the final answer are still there (loaded from persisted :tool /
   assistant messages).
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
 
   use MarketMySpecSpex.Case
@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6600Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
 
         view
         |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})
@@ -53,7 +53,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6600Spex do
       end
 
       when_ "the founder reloads the chat", context do
-        {:ok, reloaded_view, html} = live(context.conn, "/chat")
+        {:ok, reloaded_view, html} = live(context.conn, "/app/chat")
         {:ok, Map.merge(context, %{reloaded_view: reloaded_view, html: html})}
       end
 

@@ -45,7 +45,7 @@ defmodule MarketMySpecSpex.Story742.Criterion6556Spex do
         {token, _} = Fixtures.generate_user_magic_link_token(scope.user)
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _} = live(authed_conn, "/problem-discovery/frames/new")
+        {:ok, view, _} = live(authed_conn, "/app/problem-discovery/frames/new")
 
         {:ok,
          Map.merge(context, %{

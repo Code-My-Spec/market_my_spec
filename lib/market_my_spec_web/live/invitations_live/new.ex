@@ -88,7 +88,7 @@ defmodule MarketMySpecWeb.InvitationsLive.New do
         {:ok,
          socket
          |> put_flash(:error, "Account not found")
-         |> redirect(to: ~p"/accounts")}
+         |> redirect(to: ~p"/app/accounts")}
 
       account ->
         if Authorization.authorize(:manage_members, current_scope, account.id) do
@@ -100,7 +100,7 @@ defmodule MarketMySpecWeb.InvitationsLive.New do
           {:ok,
            socket
            |> put_flash(:error, "You are not authorized to invite users")
-           |> redirect(to: ~p"/accounts/#{account.id}/invitations")}
+           |> redirect(to: ~p"/app/accounts/#{account.id}/invitations")}
         end
     end
   end
@@ -122,7 +122,7 @@ defmodule MarketMySpecWeb.InvitationsLive.New do
         {:noreply,
          socket
          |> put_flash(:info, "Invitation sent successfully")
-         |> push_navigate(to: ~p"/accounts/#{socket.assigns.account.id}/invitations")}
+         |> push_navigate(to: ~p"/app/accounts/#{socket.assigns.account.id}/invitations")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
@@ -152,6 +152,6 @@ defmodule MarketMySpecWeb.InvitationsLive.New do
   end
 
   def handle_event("cancel", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/accounts/#{socket.assigns.account.id}/invitations")}
+    {:noreply, push_navigate(socket, to: ~p"/app/accounts/#{socket.assigns.account.id}/invitations")}
   end
 end

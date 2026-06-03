@@ -78,65 +78,65 @@ defmodule MarketMySpecWeb.Layouts do
           </div>
           <ul class="menu p-4 text-base-content flex-1">
             <li>
-              <.link navigate={~p"/chat"} data-test="nav-chat">
+              <.link navigate={~p"/app/chat"} data-test="nav-chat">
                 <.icon name="hero-chat-bubble-oval-left" class="size-4" /> Chat
               </.link>
             </li>
             <li>
-              <.link navigate={~p"/files"}>
+              <.link navigate={~p"/app/files"}>
                 <.icon name="hero-folder" class="size-4" /> Files
               </.link>
             </li>
             <li>
-              <.link navigate={~p"/accounts"}>
+              <.link navigate={~p"/app/accounts"}>
                 <.icon name="hero-building-office-2" class="size-4" /> Accounts
               </.link>
             </li>
             <li :if={@current_scope && @current_scope.active_account_id}>
-              <.link navigate={~p"/accounts/#{@current_scope.active_account_id}/venues"}>
+              <.link navigate={~p"/app/accounts/#{@current_scope.active_account_id}/venues"}>
                 <.icon name="hero-map-pin" class="size-4" /> Venues
               </.link>
             </li>
             <li :if={@current_scope && @current_scope.active_account_id}>
-              <.link navigate={~p"/accounts/#{@current_scope.active_account_id}/searches"}>
+              <.link navigate={~p"/app/accounts/#{@current_scope.active_account_id}/searches"}>
                 <.icon name="hero-magnifying-glass" class="size-4" /> Saved searches
               </.link>
             </li>
             <li :if={@current_scope && @current_scope.active_account_id}>
-              <.link navigate={~p"/accounts/#{@current_scope.active_account_id}/threads"}>
+              <.link navigate={~p"/app/accounts/#{@current_scope.active_account_id}/threads"}>
                 <.icon name="hero-chat-bubble-left-right" class="size-4" /> Threads
               </.link>
             </li>
             <li :if={@current_scope && @current_scope.active_account_id}>
-              <.link navigate={~p"/accounts/#{@current_scope.active_account_id}/touchpoints"}>
+              <.link navigate={~p"/app/accounts/#{@current_scope.active_account_id}/touchpoints"}>
                 <.icon name="hero-paper-airplane" class="size-4" /> Touchpoints
               </.link>
             </li>
             <li :if={@current_scope && @current_scope.active_account_id}>
               <.link
-                navigate={~p"/accounts/#{@current_scope.active_account_id}/style-guide"}
+                navigate={~p"/app/accounts/#{@current_scope.active_account_id}/style-guide"}
                 data-test="nav-style-guide"
               >
                 <.icon name="hero-book-open" class="size-4" /> Style guide
               </.link>
             </li>
             <li :if={@current_scope && @current_scope.active_account_id}>
-              <.link navigate={~p"/problem-discovery/frames"} data-test="nav-problem-discovery">
+              <.link navigate={~p"/app/problem-discovery/frames"} data-test="nav-problem-discovery">
                 <.icon name="hero-light-bulb" class="size-4" /> Problem discovery
               </.link>
             </li>
             <li>
-              <.link navigate={~p"/integrations"}>
+              <.link navigate={~p"/app/integrations"}>
                 <.icon name="hero-puzzle-piece" class="size-4" /> Integrations
               </.link>
             </li>
             <li>
-              <.link navigate={~p"/mcp-setup"}>
+              <.link navigate={~p"/app/mcp-setup"}>
                 <.icon name="hero-command-line" class="size-4" /> MCP setup
               </.link>
             </li>
             <li class="mt-2 border-t border-base-300 pt-2">
-              <.link navigate={~p"/users/settings"}>
+              <.link navigate={~p"/app/users/settings"}>
                 <.icon name="hero-cog-6-tooth" class="size-4" /> Settings
               </.link>
             </li>

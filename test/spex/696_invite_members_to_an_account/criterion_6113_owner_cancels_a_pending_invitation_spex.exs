@@ -40,7 +40,7 @@ defmodule MarketMySpecSpex.Story696.Criterion6113Spex do
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
         {:ok, view, _html} =
-          live(authed_conn, "/accounts/#{context.account.id}/invitations")
+          live(authed_conn, "/app/accounts/#{context.account.id}/invitations")
 
         # Click the confirm button inside the cancel modal.
         # The confirm button has data-test="cancel-invitation-modal-{id}-confirm"

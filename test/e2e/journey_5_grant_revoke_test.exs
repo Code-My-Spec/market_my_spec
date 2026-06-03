@@ -50,14 +50,14 @@ defmodule MarketMySpecWeb.Journeys.Journey5GrantRevokeTest do
     client_session = log_in_via_magic_link(client_session, client_token)
 
     client_session
-    |> visit("/accounts")
+    |> visit("/app/accounts")
     |> assert_has(css("[data-test='grant-agency-access-form']"))
 
     # Step 3: Agency owner signs in, navigates /agency, sees the invited client row.
     agency_session = log_in_via_magic_link(agency_session, agency_token)
 
     agency_session
-    |> visit("/agency")
+    |> visit("/app/agency")
     |> assert_has(css("[data-test='client-row-invited']"))
 
     # Step 4: Click the Revoke button (opens the confirm modal via showModal()),
@@ -68,7 +68,7 @@ defmodule MarketMySpecWeb.Journeys.Journey5GrantRevokeTest do
 
     # Step 5: Dashboard re-renders — invited client row no longer present.
     agency_session
-    |> visit("/agency")
+    |> visit("/app/agency")
     |> refute_has(css("[data-test='client-row-invited']"))
   end
 end

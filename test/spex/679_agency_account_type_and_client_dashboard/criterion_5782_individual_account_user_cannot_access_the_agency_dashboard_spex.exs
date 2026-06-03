@@ -26,15 +26,15 @@ defmodule MarketMySpecSpex.Story679.Criterion5782Spex do
       end
 
       then_ "/agency redirects away rather than rendering the dashboard", context do
-        result = live(context.conn, "/agency")
+        result = live(context.conn, "/app/agency")
 
         case result do
           {:error, {:live_redirect, %{to: to}}} ->
-            refute to == "/agency"
+            refute to == "/app/agency"
             assert to =~ ~r/^\/(accounts|$)/, "expected redirect to /accounts or /, got #{to}"
 
           {:error, {:redirect, %{to: to}}} ->
-            refute to == "/agency"
+            refute to == "/app/agency"
             assert to =~ ~r/^\/(accounts|$)/, "expected redirect to /accounts or /, got #{to}"
 
           {:ok, _view, _html} ->

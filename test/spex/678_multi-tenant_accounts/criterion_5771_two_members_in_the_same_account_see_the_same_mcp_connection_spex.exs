@@ -30,13 +30,13 @@ defmodule MarketMySpecSpex.Story678.Criterion5771Spex do
         owner_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.owner_token}})
 
-        {:ok, view, _html} = live(owner_conn, "/accounts/new")
+        {:ok, view, _html} = live(owner_conn, "/app/accounts/new")
 
         view
         |> form("[data-test='account-form']", account: %{name: "Shared MCP Account"})
         |> render_submit()
 
-        {:ok, accounts_view, _html} = live(owner_conn, ~p"/accounts")
+        {:ok, accounts_view, _html} = live(owner_conn, ~p"/app/accounts")
 
         accounts_view
         |> form("[data-test='invite-member-form']",
@@ -48,14 +48,14 @@ defmodule MarketMySpecSpex.Story678.Criterion5771Spex do
       end
 
       when_ "owner and member each visit /mcp-setup in their own sessions", context do
-        {:ok, _owner_view, owner_mcp_html} = live(context.owner_conn, "/mcp-setup")
+        {:ok, _owner_view, owner_mcp_html} = live(context.owner_conn, "/app/mcp-setup")
 
         member_conn = Phoenix.ConnTest.build_conn()
 
         member_conn =
           post(member_conn, "/users/log-in", %{"user" => %{"token" => context.member_token}})
 
-        {:ok, _member_view, member_mcp_html} = live(member_conn, "/mcp-setup")
+        {:ok, _member_view, member_mcp_html} = live(member_conn, "/app/mcp-setup")
 
         {:ok,
          Map.merge(context, %{

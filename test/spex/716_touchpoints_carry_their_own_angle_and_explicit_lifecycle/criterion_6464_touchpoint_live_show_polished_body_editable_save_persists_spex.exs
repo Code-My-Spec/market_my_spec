@@ -35,7 +35,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6464Spex do
 
       when_ "operator edits polished_body in the form and submits Save", context do
         path =
-          "/accounts/#{context.scope.active_account_id}/touchpoints/#{context.touchpoint.id}"
+          "/app/accounts/#{context.scope.active_account_id}/touchpoints/#{context.touchpoint.id}"
 
         {:ok, view, html} = Phoenix.LiveViewTest.live(context.conn, path)
 

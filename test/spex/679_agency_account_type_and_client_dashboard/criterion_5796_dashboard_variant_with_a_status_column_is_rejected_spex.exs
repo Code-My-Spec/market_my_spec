@@ -23,7 +23,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5796Spex do
 
       when_ "the agency owner signs in and visits the dashboard", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        {:ok, view, html} = live(authed_conn, "/agency")
+        {:ok, view, html} = live(authed_conn, "/app/agency")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 

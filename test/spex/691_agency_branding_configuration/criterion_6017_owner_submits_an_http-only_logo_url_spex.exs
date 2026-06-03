@@ -24,7 +24,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6017Spex do
       when_ "Alice signs in and submits an http-only logo URL", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/settings")
 
         result =
           view
@@ -47,7 +47,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6017Spex do
 
         # Reload the form independently and confirm the bad URL was not
         # persisted.
-        {:ok, _view, html} = live(context.conn, "/agency/settings")
+        {:ok, _view, html} = live(context.conn, "/app/agency/settings")
 
         refute html =~ "http://acme.example/logo.svg",
                "expected the http-only URL to NOT be persisted"

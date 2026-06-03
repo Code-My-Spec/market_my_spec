@@ -27,7 +27,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5777Spex do
       end
 
       when_ "the user submits the form with name only and again with type=agency smuggled in", context do
-        {:ok, view, _html} = live(context.conn, "/accounts/new")
+        {:ok, view, _html} = live(context.conn, "/app/accounts/new")
 
         # The form should not expose an agency type selector at all.
         refute has_element?(view, "[data-test='account-form'] [name='account[type]']"),
@@ -37,7 +37,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5777Spex do
         |> form("[data-test='account-form']", account: %{name: "Self Service Test"})
         |> render_submit()
 
-        {:ok, view2, _html2} = live(context.conn, "/accounts/new")
+        {:ok, view2, _html2} = live(context.conn, "/app/accounts/new")
 
         view2
         |> form("[data-test='account-form']",
@@ -49,7 +49,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5777Spex do
       end
 
       then_ "both accounts appear on /accounts marked as individual, never as agency", context do
-        {:ok, _view, accounts_html} = live(context.conn, "/accounts")
+        {:ok, _view, accounts_html} = live(context.conn, "/app/accounts")
 
         assert accounts_html =~ ~r/Self Service Test/,
                "expected the self-service account to be present"

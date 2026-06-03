@@ -26,7 +26,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6020Spex do
       when_ "Alice signs in and submits a CSS color name as the primary value", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/settings")
 
         result =
           view
@@ -43,7 +43,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6020Spex do
         assert context.submit_result =~ ~r/#rrggbb|hex|invalid color|must be a valid color/i,
                "expected a hex-format error in the rendered form"
 
-        {:ok, _view, html} = live(context.conn, "/agency/settings")
+        {:ok, _view, html} = live(context.conn, "/app/agency/settings")
 
         refute html =~ ~r/value=['"]blue['"]/,
                "expected 'blue' to NOT be persisted as the prefilled primary_color"

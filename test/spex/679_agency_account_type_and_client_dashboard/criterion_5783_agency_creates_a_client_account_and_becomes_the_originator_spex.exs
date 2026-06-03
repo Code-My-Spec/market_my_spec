@@ -24,7 +24,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5783Spex do
       when_ "the user signs in and creates a client 'Bright Ideas Co' from /agency", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/clients/new")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/clients/new")
 
         view
         |> form("[data-test='client-form']", client: %{name: "Bright Ideas Co"})
@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5783Spex do
       end
 
       then_ "the agency dashboard lists 'Bright Ideas Co' marked as originator", context do
-        {:ok, view, dashboard_html} = live(context.conn, "/agency")
+        {:ok, view, dashboard_html} = live(context.conn, "/app/agency")
 
         assert dashboard_html =~ ~r/Bright Ideas Co/,
                "expected the new client to appear in the dashboard"

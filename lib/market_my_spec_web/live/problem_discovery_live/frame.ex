@@ -30,7 +30,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
         {:ok,
          socket
          |> put_flash(:error, "Frame not found")
-         |> push_navigate(to: ~p"/problem-discovery/frames")}
+         |> push_navigate(to: ~p"/app/problem-discovery/frames")}
     end
   end
 
@@ -123,7 +123,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-6xl py-8">
-        <.link navigate={~p"/problem-discovery/frames"} class="text-sm link link-hover">
+        <.link navigate={~p"/app/problem-discovery/frames"} class="text-sm link link-hover">
           ← All Frames
         </.link>
 

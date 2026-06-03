@@ -112,7 +112,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6534Spex do
 
       when_ "the founder mounts the Frame detail LiveView", context do
         {:ok, view, _html} =
-          live(context.authed_conn, "/problem-discovery/frames/#{context.frame_id}")
+          live(context.authed_conn, "/app/problem-discovery/frames/#{context.frame_id}")
 
         board_assign = :sys.get_state(view.pid).socket.assigns[:board]
 

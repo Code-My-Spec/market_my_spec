@@ -129,7 +129,7 @@ defmodule MarketMySpecWeb.AppLive.Overview do
         <ul class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <li :if={@current_scope.active_account_id}>
             <.link
-              navigate={~p"/problem-discovery/frames"}
+              navigate={~p"/app/problem-discovery/frames"}
               class="block rounded border border-base-300 p-4 hover:bg-base-200"
             >
               <div class="font-medium">Problem discovery</div>
@@ -140,7 +140,7 @@ defmodule MarketMySpecWeb.AppLive.Overview do
           </li>
           <li :if={@current_scope.active_account_id}>
             <.link
-              navigate={~p"/accounts/#{@current_scope.active_account_id}/searches"}
+              navigate={~p"/app/accounts/#{@current_scope.active_account_id}/searches"}
               class="block rounded border border-base-300 p-4 hover:bg-base-200"
             >
               <div class="font-medium">Saved searches</div>
@@ -151,7 +151,7 @@ defmodule MarketMySpecWeb.AppLive.Overview do
           </li>
           <li>
             <.link
-              navigate={~p"/chat"}
+              navigate={~p"/app/chat"}
               class="block rounded border border-base-300 p-4 hover:bg-base-200"
             >
               <div class="font-medium">Chat</div>
@@ -162,7 +162,7 @@ defmodule MarketMySpecWeb.AppLive.Overview do
           </li>
           <li>
             <.link
-              navigate={~p"/integrations"}
+              navigate={~p"/app/integrations"}
               class="block rounded border border-base-300 p-4 hover:bg-base-200"
             >
               <div class="font-medium">Integrations</div>
@@ -179,7 +179,7 @@ defmodule MarketMySpecWeb.AppLive.Overview do
         <ul class="mt-3 space-y-2">
           <li :for={a <- @accounts}>
             <.link
-              navigate={~p"/accounts/#{a.id}"}
+              navigate={~p"/app/accounts/#{a.id}"}
               class="block rounded border border-base-300 px-4 py-2 hover:bg-base-200"
             >
               <span class="font-medium">{a.name}</span>
@@ -187,7 +187,7 @@ defmodule MarketMySpecWeb.AppLive.Overview do
             </.link>
           </li>
           <li>
-            <.link navigate={~p"/accounts/new"} class="text-xs link link-hover">
+            <.link navigate={~p"/app/accounts/new"} class="text-xs link link-hover">
               + Create another workspace
             </.link>
           </li>

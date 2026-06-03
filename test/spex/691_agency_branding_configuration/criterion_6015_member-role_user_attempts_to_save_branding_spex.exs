@@ -28,7 +28,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6015Spex do
 
       when_ "Bob signs in and attempts to reach the branding form", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        result = live(authed_conn, "/agency/settings")
+        result = live(authed_conn, "/app/agency/settings")
 
         {:ok, Map.merge(context, %{conn: authed_conn, mount_result: result})}
       end
@@ -36,13 +36,13 @@ defmodule MarketMySpecSpex.Story691.Criterion6015Spex do
       then_ "Bob is either redirected away or sees no submit affordance on the branding form", context do
         case context.mount_result do
           {:error, {:redirect, %{to: redirect_to}}} ->
-            refute redirect_to =~ "/agency/settings",
+            refute redirect_to =~ "/app/agency/settings",
                    "expected redirect to leave the branding route, got: #{inspect(redirect_to)}"
 
             {:ok, context}
 
           {:error, {:live_redirect, %{to: redirect_to}}} ->
-            refute redirect_to =~ "/agency/settings",
+            refute redirect_to =~ "/app/agency/settings",
                    "expected live_redirect to leave the branding route, got: #{inspect(redirect_to)}"
 
             {:ok, context}

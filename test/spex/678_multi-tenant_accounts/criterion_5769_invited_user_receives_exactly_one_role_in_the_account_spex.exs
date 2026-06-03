@@ -29,7 +29,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5769Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.owner_token}})
 
-        {:ok, view, _html} = live(authed_conn, "/accounts/new")
+        {:ok, view, _html} = live(authed_conn, "/app/accounts/new")
 
         view
         |> form("[data-test='account-form']", account: %{name: "Invite Test Workspace"})
@@ -39,7 +39,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5769Spex do
       end
 
       when_ "the owner invites the invitee as a member and the invitee accepts", context do
-        {:ok, accounts_view, _html} = live(context.conn, ~p"/accounts")
+        {:ok, accounts_view, _html} = live(context.conn, ~p"/app/accounts")
 
         accounts_view
         |> form("[data-test='invite-member-form']",
@@ -51,7 +51,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5769Spex do
       end
 
       then_ "the members list shows the invitee exactly once with role 'member'", context do
-        {:ok, _view, members_html} = live(context.conn, ~p"/accounts")
+        {:ok, _view, members_html} = live(context.conn, ~p"/app/accounts")
 
         invitee_count =
           members_html

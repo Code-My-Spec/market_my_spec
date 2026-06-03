@@ -47,7 +47,7 @@ defmodule MarketMySpecSpex.Story716.Criterion6467Spex do
 
       when_ "operator opens the touchpoint Show page", context do
         path =
-          "/accounts/#{context.scope.active_account_id}/touchpoints/#{context.touchpoint.id}"
+          "/app/accounts/#{context.scope.active_account_id}/touchpoints/#{context.touchpoint.id}"
 
         case Phoenix.LiveViewTest.live(context.conn, path) do
           {:ok, _view, html} -> {:ok, Map.put(context, :html, html)}

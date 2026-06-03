@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6581Spex do
   at once, with the input still free to accept another — no assistant content
   has to exist yet. Persistence is proven by a fresh mount of the same chat.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   The external LLM is held off via the `:chat_llm` fixture so the assertion
   is purely about the user echo, independent of any reply.
   """
@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6581Spex do
         # echo, not the assistant reply.
         Application.put_env(:market_my_spec, :chat_llm, %{chunks: [], hang: true})
 
-        {:ok, view, _html} = live(conn, "/chat")
+        {:ok, view, _html} = live(conn, "/app/chat")
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 
@@ -63,7 +63,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6581Spex do
       end
 
       then_ "the message is persisted — a fresh mount still shows it", context do
-        {:ok, _fresh_view, fresh_html} = live(context.conn, "/chat")
+        {:ok, _fresh_view, fresh_html} = live(context.conn, "/app/chat")
 
         assert fresh_html =~ "draft a launch post for the granite shop"
         {:ok, context}

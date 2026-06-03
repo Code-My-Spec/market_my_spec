@@ -22,7 +22,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5775Spex do
       end
 
       when_ "the user creates an individual account named 'Solo Workspace'", context do
-        {:ok, view, _html} = live(context.conn, "/accounts/new")
+        {:ok, view, _html} = live(context.conn, "/app/accounts/new")
 
         view
         |> form("[data-test='account-form']", account: %{name: "Solo Workspace"})
@@ -33,7 +33,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5775Spex do
 
       when_ "the user visits the accounts list", context do
         accounts_html =
-          case live(context.conn, "/accounts") do
+          case live(context.conn, "/app/accounts") do
             {:ok, _view, html} -> html
             _ -> ""
           end

@@ -27,13 +27,13 @@ defmodule MarketMySpecSpex.Story678.Criterion5772Spex do
       end
 
       when_ "the user creates 'Workspace A' and 'Workspace B'", context do
-        {:ok, view_a, _html_a} = live(context.conn, "/accounts/new")
+        {:ok, view_a, _html_a} = live(context.conn, "/app/accounts/new")
 
         view_a
         |> form("[data-test='account-form']", account: %{name: "Workspace A"})
         |> render_submit()
 
-        {:ok, view_b, _html_b} = live(context.conn, "/accounts/new")
+        {:ok, view_b, _html_b} = live(context.conn, "/app/accounts/new")
 
         view_b
         |> form("[data-test='account-form']", account: %{name: "Workspace B"})
@@ -43,7 +43,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5772Spex do
       end
 
       when_ "the user opens the picker and selects 'Workspace B'", context do
-        {:ok, picker_view, picker_html} = live(context.conn, "/accounts/picker")
+        {:ok, picker_view, picker_html} = live(context.conn, "/app/accounts/picker")
 
         picker_view
         |> element("[data-test='account-picker-item-workspace-b']")
@@ -63,7 +63,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5772Spex do
       end
 
       then_ "after switching, the dashboard is scoped to Workspace B", context do
-        {:ok, _view, dashboard_html} = live(context.conn, "/accounts")
+        {:ok, _view, dashboard_html} = live(context.conn, "/app/accounts")
 
         assert dashboard_html =~ ~r/Workspace B/,
                "expected the dashboard to render Workspace B context after switching"

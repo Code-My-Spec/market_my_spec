@@ -27,7 +27,7 @@ defmodule MarketMySpecSpex.Story695.Criterion6007Spex do
 
       when_ "Bob signs in and attempts to reach the settings page", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        result = live(authed_conn, "/agency/settings")
+        result = live(authed_conn, "/app/agency/settings")
 
         {:ok, Map.merge(context, %{conn: authed_conn, mount_result: result})}
       end
@@ -35,13 +35,13 @@ defmodule MarketMySpecSpex.Story695.Criterion6007Spex do
       then_ "Bob is either redirected away or sees no submit affordance for the subdomain form", context do
         case context.mount_result do
           {:error, {:redirect, %{to: redirect_to}}} ->
-            refute redirect_to =~ "/agency/settings",
+            refute redirect_to =~ "/app/agency/settings",
                    "expected redirect to leave the settings route, got: #{inspect(redirect_to)}"
 
             {:ok, context}
 
           {:error, {:live_redirect, %{to: redirect_to}}} ->
-            refute redirect_to =~ "/agency/settings",
+            refute redirect_to =~ "/app/agency/settings",
                    "expected live_redirect to leave the settings route, got: #{inspect(redirect_to)}"
 
             {:ok, context}

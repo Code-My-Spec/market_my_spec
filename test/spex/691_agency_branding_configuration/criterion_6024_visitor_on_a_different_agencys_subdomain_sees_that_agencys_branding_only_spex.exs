@@ -25,7 +25,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6024Spex do
 
         # Configure Acme: subdomain "acme", primary "#22c55e".
         alice_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => alice_token}})
-        {:ok, acme_view, _} = live(alice_conn, "/agency/settings")
+        {:ok, acme_view, _} = live(alice_conn, "/app/agency/settings")
 
         acme_view
         |> form("[data-test='subdomain-form']", subdomain: %{subdomain: "acme"})
@@ -40,7 +40,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6024Spex do
           Phoenix.ConnTest.build_conn()
           |> post("/users/log-in", %{"user" => %{"token" => bob_token}})
 
-        {:ok, beta_view, _} = live(bob_conn, "/agency/settings")
+        {:ok, beta_view, _} = live(bob_conn, "/app/agency/settings")
 
         beta_view
         |> form("[data-test='subdomain-form']", subdomain: %{subdomain: "beta"})

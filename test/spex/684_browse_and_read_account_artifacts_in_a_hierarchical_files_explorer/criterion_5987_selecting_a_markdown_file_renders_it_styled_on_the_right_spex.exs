@@ -47,7 +47,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5987Spex do
       when_ "the user signs in and opens /files", context do
         {token, _raw} = Fixtures.generate_user_magic_link_token(context.user)
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
-        {:ok, view, _html} = live(authed_conn, "/files")
+        {:ok, view, _html} = live(authed_conn, "/app/files")
         {:ok, Map.merge(context, %{conn: authed_conn, view: view})}
       end
 
@@ -70,7 +70,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5987Spex do
 
       then_ "the URL is at /files/<key> and the same LiveView is still mounted",
             context do
-        assert_patched(context.view, "/files/" <> @path)
+        assert_patched(context.view, "/app/files/" <> @path)
         assert has_element?(context.view, "[data-test='file-tree']")
         {:ok, context}
       end

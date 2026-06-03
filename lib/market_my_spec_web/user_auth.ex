@@ -274,7 +274,7 @@ defmodule MarketMySpecWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, "You need an agency account to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/accounts")
+        |> Phoenix.LiveView.redirect(to: ~p"/app/accounts")
 
       {:halt, socket}
     end

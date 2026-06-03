@@ -86,7 +86,7 @@ defmodule MarketMySpecWeb.ThreadLive.Index do
         {:ok,
          socket
          |> put_flash(:error, "Account not found")
-         |> redirect(to: ~p"/accounts")}
+         |> redirect(to: ~p"/app/accounts")}
 
       account ->
         threads = Engagements.list_threads(current_scope)
@@ -105,7 +105,7 @@ defmodule MarketMySpecWeb.ThreadLive.Index do
     account_id = socket.assigns.account.id
 
     {:noreply,
-     push_navigate(socket, to: ~p"/accounts/#{account_id}/threads/#{thread_id}")}
+     push_navigate(socket, to: ~p"/app/accounts/#{account_id}/threads/#{thread_id}")}
   end
 
   # --- Private helpers -------------------------------------------------------

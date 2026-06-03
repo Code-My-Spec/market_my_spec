@@ -119,7 +119,7 @@ defmodule MarketMySpecWeb.AccountLive.Manage do
         {:ok,
          socket
          |> put_flash(:error, "Account not found")
-         |> redirect(to: ~p"/accounts")}
+         |> redirect(to: ~p"/app/accounts")}
 
       account ->
         Phoenix.PubSub.subscribe(MarketMySpec.PubSub, "account:#{account.id}")
@@ -168,7 +168,7 @@ defmodule MarketMySpecWeb.AccountLive.Manage do
         {:noreply,
          socket
          |> put_flash(:info, "Account deleted successfully")
-         |> redirect(to: ~p"/accounts")}
+         |> redirect(to: ~p"/app/accounts")}
 
       {:error, _reason} ->
         {:noreply,

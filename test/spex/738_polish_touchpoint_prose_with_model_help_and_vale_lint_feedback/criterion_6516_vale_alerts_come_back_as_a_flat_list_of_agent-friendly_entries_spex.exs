@@ -55,7 +55,7 @@ defmodule MarketMySpecSpex.Story738.Criterion6516Spex do
         {token, _} = Fixtures.generate_user_magic_link_token(scope.user)
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _} = live(authed_conn, "/accounts/#{scope.active_account_id}/style-guide")
+        {:ok, view, _} = live(authed_conn, "/app/accounts/#{scope.active_account_id}/style-guide")
 
         view
         |> form("[data-test='style-guide-form']",

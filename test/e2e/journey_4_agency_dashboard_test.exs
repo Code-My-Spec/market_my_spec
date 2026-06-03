@@ -33,19 +33,19 @@ defmodule MarketMySpecWeb.Journeys.Journey4AgencyDashboardTest do
 
     # Step 1: Nav shows the agency-dashboard link on /accounts.
     session
-    |> visit("/accounts")
+    |> visit("/app/accounts")
     |> assert_has(css("[data-test='nav-agency-dashboard']"))
 
     # Step 2: Navigate to /agency — empty dashboard renders.
     session
-    |> visit("/agency")
+    |> visit("/app/agency")
     |> assert_has(css("[data-test='agency-client-dashboard']"))
 
     # Step 3: Fill client creation form and submit.
     client_name = "Journey4 Client #{System.unique_integer([:positive])}"
 
     session
-    |> visit("/agency/clients/new")
+    |> visit("/app/agency/clients/new")
     |> assert_has(css("[data-test='client-form']"))
     |> fill_in(css("input[name='client[name]']"), with: client_name)
     |> click(css("button[type='submit']"))
@@ -53,7 +53,7 @@ defmodule MarketMySpecWeb.Journeys.Journey4AgencyDashboardTest do
     # Step 4: Redirected to /agency — dashboard shows the new client row.
     # The row is marked as originator (agency created it).
     session
-    |> visit("/agency")
+    |> visit("/app/agency")
     |> assert_has(css("[data-test='client-row-originator']"))
     |> assert_has(css("[data-test='enter-client']"))
 
@@ -62,7 +62,7 @@ defmodule MarketMySpecWeb.Journeys.Journey4AgencyDashboardTest do
 
     # Step 6: After scope switch, /accounts shows the inside-client indicator.
     session
-    |> visit("/accounts")
+    |> visit("/app/accounts")
     |> assert_has(css("[data-test='inside-client-indicator']"))
   end
 end

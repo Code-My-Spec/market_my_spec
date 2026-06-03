@@ -26,7 +26,7 @@ defmodule MarketMySpecSpex.Story696.Criterion6109Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        result = live(authed_conn, "/accounts/#{context.account.id}/invitations")
+        result = live(authed_conn, "/app/accounts/#{context.account.id}/invitations")
 
         {:ok, Map.merge(context, %{conn: authed_conn, mount_result: result})}
       end
@@ -34,13 +34,13 @@ defmodule MarketMySpecSpex.Story696.Criterion6109Spex do
       then_ "Dave is redirected away and cannot access the invitations list", context do
         case context.mount_result do
           {:error, {:redirect, %{to: redirect_to}}} ->
-            refute redirect_to =~ "/accounts/#{context.account.id}/invitations",
+            refute redirect_to =~ "/app/accounts/#{context.account.id}/invitations",
                    "expected redirect away from the invitations page for a non-member"
 
             {:ok, context}
 
           {:error, {:live_redirect, %{to: redirect_to}}} ->
-            refute redirect_to =~ "/accounts/#{context.account.id}/invitations",
+            refute redirect_to =~ "/app/accounts/#{context.account.id}/invitations",
                    "expected live_redirect away from the invitations page for a non-member"
 
             {:ok, context}

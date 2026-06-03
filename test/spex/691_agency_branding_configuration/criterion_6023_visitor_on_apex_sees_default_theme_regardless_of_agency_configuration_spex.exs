@@ -22,7 +22,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6023Spex do
 
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, settings_view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, settings_view, _html} = live(authed_conn, "/app/agency/settings")
 
         settings_view
         |> form("[data-test='subdomain-form']", subdomain: %{subdomain: "acme"})

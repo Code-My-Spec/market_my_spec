@@ -29,7 +29,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5770Spex do
         authed_conn =
           post(context.conn, "/users/log-in", %{"user" => %{"token" => context.owner_token}})
 
-        {:ok, view, _html} = live(authed_conn, "/accounts/new")
+        {:ok, view, _html} = live(authed_conn, "/app/accounts/new")
 
         view
         |> form("[data-test='account-form']", account: %{name: "Duplicate Member Test"})
@@ -39,7 +39,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5770Spex do
       end
 
       when_ "the owner invites the member, then attempts to invite the same email again", context do
-        {:ok, view, _html} = live(context.conn, ~p"/accounts")
+        {:ok, view, _html} = live(context.conn, ~p"/app/accounts")
 
         view
         |> form("[data-test='invite-member-form']",

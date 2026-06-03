@@ -55,7 +55,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5988Spex do
             context do
         {token, _raw} = Fixtures.generate_user_magic_link_token(context.user)
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
-        {:ok, view_a, _html} = live(authed_conn, "/files/specs/alpha-auth.md")
+        {:ok, view_a, _html} = live(authed_conn, "/app/files/specs/alpha-auth.md")
         a_html = render(view_a)
         {:ok, Map.merge(context, %{conn: authed_conn, view_a: view_a, a_html: a_html})}
       end
@@ -66,7 +66,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5988Spex do
       end
 
       when_ "the user goes to the account picker and selects Account B", context do
-        {:ok, picker_view, _html} = live(context.conn, "/accounts/picker")
+        {:ok, picker_view, _html} = live(context.conn, "/app/accounts/picker")
 
         picker_view
         |> element(~s|[phx-value-account-id="#{context.account_b.id}"]|)
@@ -76,7 +76,7 @@ defmodule MarketMySpecSpex.Story684.Criterion5988Spex do
       end
 
       when_ "the user revisits /files after the switch", context do
-        {:ok, view_b, _html} = live(context.conn, "/files")
+        {:ok, view_b, _html} = live(context.conn, "/app/files")
         {:ok, Map.put(context, :view_b, view_b)}
       end
 

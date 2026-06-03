@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5792Spex do
 
       when_ "the team member signs in and clicks the client row from /agency", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
-        {:ok, view, _html} = live(authed_conn, "/agency")
+        {:ok, view, _html} = live(authed_conn, "/app/agency")
 
         view
         |> element(
@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story679.Criterion5792Spex do
       end
 
       then_ "the inside-client indicator is present and names the target client", context do
-        {:ok, view, html} = live(context.conn, "/accounts")
+        {:ok, view, html} = live(context.conn, "/app/accounts")
 
         assert has_element?(view, "[data-test='inside-client-indicator']"),
                "expected the inside-client indicator after a non-owner navigates into a client"

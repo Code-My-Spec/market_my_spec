@@ -22,7 +22,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5773Spex do
       end
 
       when_ "the user creates an account named 'My Marketing Workspace'", context do
-        {:ok, view, _html} = live(context.conn, "/accounts/new")
+        {:ok, view, _html} = live(context.conn, "/app/accounts/new")
 
         result =
           view
@@ -34,7 +34,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5773Spex do
 
       then_ "the accounts list shows the new account with a URL-safe slug rendering", context do
         accounts_html =
-          case live(context.conn, "/accounts") do
+          case live(context.conn, "/app/accounts") do
             {:ok, _view, html} -> html
             _ -> ""
           end
@@ -51,7 +51,7 @@ defmodule MarketMySpecSpex.Story678.Criterion5773Spex do
 
       then_ "the rendered slug contains no uppercase or whitespace characters", context do
         accounts_html =
-          case live(context.conn, "/accounts") do
+          case live(context.conn, "/app/accounts") do
             {:ok, _view, html} -> html
             _ -> ""
           end

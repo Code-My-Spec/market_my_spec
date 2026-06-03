@@ -26,7 +26,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6014Spex do
       when_ "Alice signs in and submits the branding form with all three values", context do
         authed_conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => context.token}})
 
-        {:ok, view, _html} = live(authed_conn, "/agency/settings")
+        {:ok, view, _html} = live(authed_conn, "/app/agency/settings")
 
         view
         |> form("[data-test='branding-form']",
@@ -42,7 +42,7 @@ defmodule MarketMySpecSpex.Story691.Criterion6014Spex do
       end
 
       then_ "the saved values are prefilled on the form when reloaded", context do
-        {:ok, view, html} = live(context.conn, "/agency/settings")
+        {:ok, view, html} = live(context.conn, "/app/agency/settings")
 
         assert has_element?(view, "[data-test='branding-form']"),
                "expected the branding form to render after save"

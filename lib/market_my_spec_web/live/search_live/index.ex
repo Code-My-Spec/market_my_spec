@@ -247,7 +247,7 @@ defmodule MarketMySpecWeb.SearchLive.Index do
         {:ok,
          socket
          |> put_flash(:error, "Account not found")
-         |> redirect(to: "/accounts")}
+         |> redirect(to: "/app/accounts")}
 
       account ->
         searches = Engagements.list_saved_searches(current_scope)
