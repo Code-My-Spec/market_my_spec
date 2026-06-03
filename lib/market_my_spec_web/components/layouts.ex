@@ -115,6 +115,11 @@ defmodule MarketMySpecWeb.Layouts do
                 <.icon name="hero-book-open" class="size-4" /> Style guide
               </.link>
             </li>
+            <li :if={@current_scope && @current_scope.active_account_id}>
+              <.link navigate={~p"/problem-discovery/frames"} data-test="nav-problem-discovery">
+                <.icon name="hero-light-bulb" class="size-4" /> Problem discovery
+              </.link>
+            </li>
             <li>
               <.link navigate={~p"/integrations"}>
                 <.icon name="hero-puzzle-piece" class="size-4" /> Integrations
