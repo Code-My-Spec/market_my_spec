@@ -28,6 +28,13 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.ListCandidates do
     end
   end
 
+  # Embeddings and centroids deliberately omitted — they're 1536 floats
+  # each (a single full list_candidates payload was ~5MB of vector data),
+  # and the agent never reads them: refinement uses labels, scores, gated
+  # counts, and the postings themselves (via list_postings_for_candidate).
+  # The mean-of-members invariant is a Pipeline.Cluster correctness
+  # property, not an agent contract — assert it from the test layer
+  # via Repo, not via the MCP read surface.
   defp encode(c) do
     %{
       id: c.id,
@@ -37,28 +44,9 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.ListCandidates do
       gated_in_count: gated_in_count(c.paid_job_signals),
       verdict: verdict(c.red_team_verdict),
       job_posting_ids: Enum.map(c.job_postings || [], & &1.id),
-      centroid: centroid(c.centroid),
-      member_embeddings: member_embeddings(c.job_postings),
       inserted_at: c.inserted_at
     }
   end
-
-  defp centroid(nil), do: nil
-  defp centroid(%Pgvector{} = vec), do: Pgvector.to_list(vec)
-  defp centroid(vec) when is_list(vec), do: vec
-
-  defp member_embeddings(%Ecto.Association.NotLoaded{}), do: []
-
-  defp member_embeddings(postings) when is_list(postings) do
-    Enum.flat_map(postings, fn
-      %{embedding: nil} -> []
-      %{embedding: %Pgvector{} = e} -> [Pgvector.to_list(e)]
-      %{embedding: e} when is_list(e) -> [e]
-      _ -> []
-    end)
-  end
-
-  defp member_embeddings(_), do: []
 
   defp gated_in_count(%Ecto.Association.NotLoaded{}), do: 0
   defp gated_in_count(signals) when is_list(signals),

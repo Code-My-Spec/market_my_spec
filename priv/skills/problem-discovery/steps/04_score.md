@@ -52,9 +52,9 @@ The PaidJobSignal classifications update in place — no records are deleted or 
 
 ### 4. Inspect the high-signal Candidates
 
-For the top 3-5 Candidates by `gated_in` count, call `ListPaidJobSignals` for each:
+For the top 3-5 Candidates by `gated_in` count, call `ListPostingsForCandidate` for each:
 
-> Call `ListPaidJobSignals` with `{candidate_id: <id>, filter: :gated_in}`.
+> Call `ListPostingsForCandidate` with `{candidate_id: <id>}`. Each posting carries its `classification` (`gated_in` / `gated_out` / `nil`) — filter to `gated_in` client-side.
 
 Read the gated_in postings. Look for:
 

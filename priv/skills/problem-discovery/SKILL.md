@@ -54,8 +54,8 @@ Greet the user briefly, confirm the seed (or get one), and confirm they want to 
 |---|---|---|---|---|
 | 1 | Frame | Iterative interview + probe-mode Gather | `ListFrames`, `CreateFrame`, `UpdateFrame`, `GetFrame`, `RunGather` (probe) | Frame artifact (description + saved searches + money_gate + kill_condition) |
 | 2 | Gather | Per-saved-search execution | `RunGather` | JobPosting rows (one per result, with embeddings) |
-| 3 | Cluster | KMeans seed + 3-pass agent refinement | `RunCluster`, `ListCandidates`, `SetPainDescriptor`, `MergeCandidates`, `SplitCandidate`, `LabelCandidate` | Candidates (groups of JobPostings, semantically labeled) |
-| 4 | Score | Apply money gate, classify | `RunScore`, `ListPaidJobSignals` | PaidJobSignal classifications + Candidate aggregated scores |
+| 3 | Cluster | KMeans seed + 3-pass agent refinement | `RunCluster`, `ListCandidates`, `ListPostingsForCandidate`, `SetPainDescriptor`, `MergeCandidates`, `SplitCandidate`, `LabelCandidate` | Candidates (groups of JobPostings, semantically labeled) |
+| 4 | Score | Apply money gate, classify | `RunScore`, `ListPostingsForCandidate` | PaidJobSignal classifications + Candidate aggregated scores |
 | 5 | Red-team | Per-Candidate conversational prosecution | `RedTeamCandidate`, `ListCandidates` | RedTeamVerdict per Candidate (overwrites Score's verdict) |
 | 6 | Board | Assemble + hand off to founder | `GetBoard` | Killable-in-one-click table + kill_condition status |
 

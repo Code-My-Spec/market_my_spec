@@ -14,6 +14,7 @@ defmodule MarketMySpec.McpServers.ProblemDiscoveryServer do
   component(MarketMySpec.McpServers.ProblemDiscovery.Tools.RunCluster)
   component(MarketMySpec.McpServers.ProblemDiscovery.Tools.RunScore)
   component(MarketMySpec.McpServers.ProblemDiscovery.Tools.ListCandidates)
+  component(MarketMySpec.McpServers.ProblemDiscovery.Tools.ListPostingsForCandidate)
   component(MarketMySpec.McpServers.ProblemDiscovery.Tools.LabelCandidate)
   component(MarketMySpec.McpServers.ProblemDiscovery.Tools.MergeCandidates)
   component(MarketMySpec.McpServers.ProblemDiscovery.Tools.SplitCandidate)

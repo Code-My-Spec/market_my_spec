@@ -21,8 +21,12 @@ defmodule MarketMySpecSpex.Story739.Criterion6578Spex do
   alias MarketMySpec.McpServers.ProblemDiscovery.Tools.ListCandidates
   alias MarketMySpec.McpServers.ProblemDiscovery.Tools.RunCluster
   alias MarketMySpec.McpServers.ProblemDiscovery.Tools.RunGather
+  alias MarketMySpec.ProblemDiscovery.Candidate
+  alias MarketMySpec.Repo
   alias MarketMySpecSpex.Fixtures
   alias MarketMySpecSpex.ProblemDiscoveryHelpers
+
+  import Ecto.Query
 
   defp build_frame(scope) do
     %{
@@ -107,12 +111,29 @@ defmodule MarketMySpecSpex.Story739.Criterion6578Spex do
 
       then_ "each Candidate's centroid equals the mean of its member JobPostings' embeddings",
             context do
-        for cand <- context.candidates do
-          centroid = cand["centroid"] || cand[:centroid]
-          member_embeddings = cand["member_embeddings"] || cand[:member_embeddings] || []
+        # The mean-of-members invariant is a Pipeline.Cluster correctness
+        # property, not part of the agent's MCP read surface — list_candidates
+        # deliberately omits centroid + member_embeddings (1536 floats each;
+        # full payload was ~5MB of vector data the agent never reads).
+        # Re-fetch via Repo with preloads so the assertion stays meaningful.
+        candidate_records =
+          from(c in Candidate,
+            where: c.frame_id == ^context.frame_id,
+            preload: [:job_postings]
+          )
+          |> Repo.all()
 
-          assert is_list(member_embeddings) and member_embeddings != [],
-                 "expected non-empty member_embeddings for Candidate #{inspect(cand["id"] || cand[:id])}"
+        for cand <- candidate_records do
+          centroid = Pgvector.to_list(cand.centroid)
+
+          member_embeddings =
+            cand.job_postings
+            |> Enum.map(& &1.embedding)
+            |> Enum.reject(&is_nil/1)
+            |> Enum.map(&Pgvector.to_list/1)
+
+          assert member_embeddings != [],
+                 "expected non-empty member_embeddings for Candidate #{cand.id}"
 
           dim = length(hd(member_embeddings))
 

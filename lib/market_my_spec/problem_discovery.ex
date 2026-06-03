@@ -283,6 +283,41 @@ defmodule MarketMySpec.ProblemDiscovery do
 
   # --- JobPostings --------------------------------------------------------
 
+  @doc """
+  List JobPostings for a Candidate with the fields the agent needs for
+  the 3-pass refinement (title, description, url, money signals, +
+  paid_job_signal classification when scored). Scoped by account_id
+  via the parent Frame.
+  """
+  @spec list_postings_for_candidate(Scope.t(), Ecto.UUID.t()) ::
+          {:ok, [JobPosting.t()]} | {:error, :not_found}
+  def list_postings_for_candidate(%Scope{active_account_id: account_id}, candidate_id) do
+    candidate =
+      Repo.one(
+        from(c in Candidate,
+          join: f in assoc(c, :frame),
+          where: c.id == ^candidate_id and f.account_id == ^account_id
+        )
+      )
+
+    case candidate do
+      nil ->
+        {:error, :not_found}
+
+      %Candidate{} ->
+        postings =
+          Repo.all(
+            from(jp in JobPosting,
+              where: jp.candidate_id == ^candidate_id,
+              preload: [:paid_job_signal],
+              order_by: [asc: jp.source, asc: jp.source_id]
+            )
+          )
+
+        {:ok, postings}
+    end
+  end
+
   @doc "Write a pain_descriptor on a JobPosting (SetPainDescriptor tool — pass 1 of 3-pass refinement)."
   @spec set_pain_descriptor(Scope.t(), Ecto.UUID.t(), String.t()) ::
           {:ok, JobPosting.t()} | {:error, :not_found | Ecto.Changeset.t()}

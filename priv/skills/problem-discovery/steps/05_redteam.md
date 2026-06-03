@@ -22,7 +22,7 @@ For each Candidate with `score >= 3`, do this loop. **One at a time.** Do not re
 
 ### 1. Load the evidence
 
-> Call `ListPaidJobSignals` with `{candidate_id: <id>, filter: :gated_in}` to get the gated_in member signals.
+> Call `ListPostingsForCandidate` with `{candidate_id: <id>}` to get each member JobPosting with its money signals + `classification`. Filter to `gated_in` client-side.
 
 Read each posting carefully. Note:
 - Total spend per client
