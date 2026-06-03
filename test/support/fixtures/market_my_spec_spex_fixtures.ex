@@ -104,36 +104,6 @@ defmodule MarketMySpecSpex.Fixtures do
   defdelegate venue_fixture(scope), to: MarketMySpec.EngagementsFixtures
   defdelegate venue_fixture(scope, attrs), to: MarketMySpec.EngagementsFixtures
 
-  # --- Agents -------------------------------------------------------------
-  #
-  # No agent CREATION fixtures by design — Agent records are created
-  # by exercising the pairing LiveView at `/agents/pair`. Reaching for
-  # a fixture there would skip the very behavior under test.
-  #
-  # Everything else (UI drive, channel join, PubSub interception,
-  # response broadcasting, channel kill, revoke-via-UI) is exposed
-  # through helpers in `MarketMySpec.AgentsTestHelpers` so spex never
-  # ref MarketMySpecWeb or Phoenix.PubSub directly.
-
-  defdelegate list_paired_agents(user_id), to: MarketMySpec.Agents, as: :list_agents
-  defdelegate pair_via_ui(conn, user, opts \\ []), to: MarketMySpec.AgentsTestHelpers
-  defdelegate join_agent_channel(user_id, agent_id, token, opts \\ []),
-    to: MarketMySpec.AgentsTestHelpers
-
-  defdelegate subscribe_to_agent_topic(user_id), to: MarketMySpec.AgentsTestHelpers
-
-  defdelegate expect_http_request_envelope(timeout \\ 2_000),
-    to: MarketMySpec.AgentsTestHelpers
-
-  defdelegate receive_http_request_envelope(timeout), to: MarketMySpec.AgentsTestHelpers
-
-  defdelegate respond_to_envelope(envelope, status, headers, body),
-    to: MarketMySpec.AgentsTestHelpers
-
-  defdelegate kill_channel(socket), to: MarketMySpec.AgentsTestHelpers
-  defdelegate revoke_via_agents_page(conn, agent_id), to: MarketMySpec.AgentsTestHelpers
-  defdelegate dispatch_http(user, req, opts \\ []), to: MarketMySpec.Agents.Dispatcher
-
   # --- MCP tools (no fixture needed) --------------------------------------
   #
   # Specs drive MCP tools by calling the tool module's execute/2 callback

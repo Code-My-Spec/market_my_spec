@@ -12,10 +12,9 @@ defmodule MarketMySpec.Engagements.Search do
   of the result envelope so callers (LLM or UI) can surface which venues
   errored without crashing the whole call.
 
-  When a Reddit venue is searched without an online MMS Agent the search
-  falls back to anonymous public Reddit access and emits an informational
-  `notices` entry (distinct from `failures`) so the caller knows agent
-  pairing would enable authenticated OAuth access.
+  Reddit is read anonymously via its public RSS feeds, served directly from
+  the server (no OAuth, no proxy). The `notices` field (distinct from
+  `failures`) remains available for any future informational messages.
 
   ## Failure envelope shape
 
@@ -25,7 +24,6 @@ defmodule MarketMySpec.Engagements.Search do
   - `reason` — a human-readable string describing the failure
   """
 
-  alias MarketMySpec.Agents.Presence
   alias MarketMySpec.Engagements.Source.ElixirForum
   alias MarketMySpec.Engagements.Source.Reddit
   alias MarketMySpec.Engagements.ThreadsRepository
@@ -125,52 +123,17 @@ defmodule MarketMySpec.Engagements.Search do
     end)
   end
 
-  # Reddit's RSS feeds are served anonymously and are reachable from
-  # datacenter IPs, so search hits Reddit directly from the server. The
-  # paired+online agent is now only a fallback for when the direct call
-  # fails (e.g. a host that lands on Reddit's block list); it is slated
-  # for removal once direct RSS is proven out in prod.
-  defp search_venue(venue, query, cursor, scope) do
+  # Every source hits its adapter directly. Reddit's RSS feeds are served
+  # anonymously and reachable from datacenter IPs (verified on prod), so no
+  # residential-IP proxy is needed.
+  defp search_venue(venue, query, cursor, _scope) do
     adapter = adapter_for(venue.source)
-    opts = [cursor: cursor]
-
-    case venue.source do
-      :reddit -> search_reddit_venue(venue, query, opts, scope)
-      _ -> adapter.search(venue, query, opts)
-    end
+    adapter.search(venue, query, cursor: cursor)
   rescue
     error -> {:error, error}
   end
 
-  # Direct server-side RSS first; fall back to the residential-IP agent
-  # transport only if the direct call errors AND an agent is online.
-  defp search_reddit_venue(venue, query, opts, scope) do
-    case Reddit.search(venue, query, opts) do
-      {:ok, result} ->
-        {:ok, result}
-
-      {:error, _reason} = error ->
-        if Presence.most_recently_connected(scope.user.id) do
-          Reddit.search(venue, query, [{:scope, scope} | opts])
-        else
-          error
-        end
-    end
-  end
-
   # Format a failure reason into a human-readable string.
-  defp format_reason(:reddit, :agent_offline),
-    do: "No online MMS Agent. Pair or start an agent at /agents."
-
-  defp format_reason(:reddit, :agent_disconnected),
-    do: "MMS Agent disconnected mid-request. Check /agents and try again."
-
-  defp format_reason(:reddit, :timeout),
-    do: "MMS Agent didn't respond within 30s. Check /agents."
-
-  defp format_reason(:reddit, :host_not_allowed),
-    do: "Refused by binary-side host allowlist."
-
   defp format_reason(_source, {:http_status, 429}),
     do: "Rate limited (HTTP 429 Too Many Requests)"
 

@@ -8,16 +8,11 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   and — confirmed empirically — are reachable from datacenter IPs that get
   403 on the JSON endpoints. So every read funnels through `.rss`.
 
-  ## Transport: direct vs agent
+  ## Transport
 
-  `search/3` still supports the paired MMS Agent transport (residential IP)
-  as belt-and-suspenders in case a specific host lands on Reddit's RSS
-  block list, but the direct path from the server is now the expected path:
-
-    * with a `:scope` opt → dispatched through the user's online agent
-    * without `:scope` (or no agent) → hits Reddit directly via `Req`
-
-  No OAuth is involved on either path; both hit `www.reddit.com/.../*.rss`.
+  All reads hit Reddit directly from the server via `Req` — RSS is served
+  anonymously and reachable from datacenter IPs (verified on prod's Hetzner
+  host), so no residential-IP proxy/agent is needed. No OAuth involved.
 
   ## What RSS gives up vs JSON
 
@@ -42,7 +37,6 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
 
   import SweetXml, only: [sigil_x: 2]
 
-  alias MarketMySpec.Agents.Dispatcher
   alias MarketMySpec.Engagements.HTTP
 
   @snippet_length 280
@@ -72,20 +66,11 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   HTTP 200, or `{:error, reason}` on non-200 / network failure.
 
   Accepts an optional `:cursor` opt for pagination — passed as Reddit's
-  `after` query param. When a `:scope` opt is present the request is
-  dispatched through the user's online agent; otherwise it hits Reddit
-  directly.
+  `after` query param.
   """
   @spec search(map(), String.t(), keyword()) ::
           {:ok, %{candidates: [map()], next_cursor: nil | String.t()}} | {:error, term()}
   def search(venue, query, opts \\ []) when is_binary(query) do
-    case Keyword.get(opts, :scope) do
-      nil -> search_direct(venue, query, opts)
-      scope -> search_via_agent(venue, query, opts, scope)
-    end
-  end
-
-  defp search_direct(venue, query, opts) do
     case Req.get(HTTP.reddit_client(),
            url: "/r/#{venue.identifier}/search.rss",
            params: search_params(query, Keyword.get(opts, :cursor))
@@ -94,31 +79,6 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
         {:ok, normalize_feed(to_xml(body))}
 
       {:ok, %Req.Response{status: status}} ->
-        {:error, {:http_status, status}}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
-
-  # Dispatches the anonymous public `search.rss` feed THROUGH the agent.
-  # Belt-and-suspenders for the (now unlikely) case Reddit blocks the
-  # server's IP on RSS too. No OAuth — the binary just GETs the public feed.
-  defp search_via_agent(venue, query, opts, scope) do
-    url =
-      "https://www.reddit.com/r/#{venue.identifier}/search.rss?" <>
-        URI.encode_query(search_params(query, Keyword.get(opts, :cursor)))
-
-    case Dispatcher.dispatch_http(scope.user, %{
-           method: :get,
-           url: url,
-           headers: [{"user-agent", "market_my_spec/0.1 by /u/johns10davenport"}],
-           body: ""
-         }) do
-      {:ok, %{status: 200, body: body}} ->
-        {:ok, normalize_feed(to_xml(body))}
-
-      {:ok, %{status: status}} ->
         {:error, {:http_status, status}}
 
       {:error, reason} ->

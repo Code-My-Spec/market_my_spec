@@ -116,11 +116,6 @@ defmodule MarketMySpecWeb.Layouts do
               </.link>
             </li>
             <li>
-              <.link navigate={~p"/agents"} data-test="nav-agents">
-                <.icon name="hero-cpu-chip" class="size-4" /> Agents
-              </.link>
-            </li>
-            <li>
               <.link navigate={~p"/integrations"}>
                 <.icon name="hero-puzzle-piece" class="size-4" /> Integrations
               </.link>

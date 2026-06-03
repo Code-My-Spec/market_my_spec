@@ -9,10 +9,8 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.SearchEngagements do
   Failing sources degrade gracefully — their errors are surfaced in the
   `failures` field of the response envelope without crashing the tool.
 
-  When a Reddit venue is searched without an online MMS Agent, the tool falls
-  back to anonymous public Reddit access and includes an informational `notices`
-  list in the payload so the caller knows agent pairing enables authenticated
-  OAuth access (e.g. `Pair or start an agent at /agents`).
+  Reddit is read anonymously via its public RSS feeds, served directly from
+  the server — no OAuth, no agent pairing required.
 
   Pass `cursor` (returned as `next_cursor` from a prior call) to fetch the
   next page of results.

@@ -23,41 +23,7 @@ defmodule MarketMySpec.MixProject do
         applications: [runtime_tools: :permanent],
         steps: [:assemble, :tar]
       ]
-    ] ++ agent_release()
-  end
-
-  # The agent binary is a separate Burrito-wrapped release. Only built
-  # when Mix.env() is :prod_agent (CI) or :dev_agent (local). In other
-  # envs the release entry is omitted entirely so `mix release` and the
-  # server build are unaffected.
-  defp agent_release do
-    if Mix.env() in [:dev_agent, :prod_agent] do
-      [
-        market_my_spec_agent: [
-          steps: [:assemble, &Burrito.wrap/1],
-          burrito: [
-            targets: burrito_targets(),
-            extra_steps: [
-              fetch: [pre: [MarketMySpecAgent.Release.PatchLauncherStep]]
-            ]
-          ]
-        ]
-      ]
-    else
-      []
-    end
-  end
-
-  # When BURRITO_TARGET is set (CI), build only that target.
-  # Otherwise build the host-native target for local dev.
-  defp burrito_targets do
-    case System.get_env("BURRITO_TARGET") do
-      "macos_m1" -> [macos_m1: [os: :darwin, cpu: :aarch64]]
-      "macos" -> [macos: [os: :darwin, cpu: :x86_64]]
-      "linux" -> [linux: [os: :linux, cpu: :x86_64]]
-      "linux_aarch64" -> [linux_aarch64: [os: :linux, cpu: :aarch64]]
-      _ -> [macos_m1: [os: :darwin, cpu: :aarch64]]
-    end
+    ]
   end
 
   defp compilers(:test),
@@ -71,21 +37,12 @@ defmodule MarketMySpec.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: app_module(),
+      mod: {MarketMySpecWeb.Application, []},
       # :ex_aws_ssm and :hackney are listed here so they're booted by the
       # release before MarketMySpec.Secrets.load!/1 is called from
       # config/runtime.exs — no manual Application.ensure_all_started.
       extra_applications: [:logger, :runtime_tools, :ex_aws_ssm, :hackney, :castore]
     ]
-  end
-
-  # In :dev_agent / :prod_agent the OTP entry point is the agent's
-  # Application (which boots the channel client + auth store). Every
-  # other env runs the Phoenix server.
-  defp app_module do
-    if Mix.env() in [:dev_agent, :prod_agent],
-      do: {MarketMySpecAgent.Application, []},
-      else: {MarketMySpecWeb.Application, []}
   end
 
   def cli do
@@ -95,15 +52,7 @@ defmodule MarketMySpec.MixProject do
   end
 
   # Specifies which paths to compile per environment.
-  #
-  # `lib_agent_release/` holds Burrito build-step modules that
-  # reference Burrito.Builder.Context / .Step — only resolvable when
-  # Burrito is in the dep tree (:dev_agent / :prod_agent). All other
-  # agent code lives in `lib/market_my_spec_agent/` and compiles
-  # everywhere; it just never starts unless MarketMySpecAgent.Application
-  # is the `mod:` (also gated on agent env).
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(env) when env in [:dev_agent, :prod_agent], do: ["lib", "lib_agent_release"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
@@ -169,22 +118,7 @@ defmodule MarketMySpec.MixProject do
       {:mdex, "~> 0.5"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
       {:req_cassette, "~> 0.6.0", only: :test},
-      {:code_my_spec_generators, path: "../code_my_spec_generators", only: :dev, runtime: false},
-
-      # MarketMySpecAgent — long-lived channel client for the binary side.
-      # Included in every env because the agent module compiles into the
-      # main lib/ tree; the server release simply never starts the GenServer.
-      {:slipstream, "~> 1.1"},
-
-      # Agent binary release only — Burrito wraps the BEAM into a
-      # self-contained executable, Optimus parses argv inside it.
-      {:burrito,
-       github: "Code-My-Spec/burrito",
-       ref: "d44eb28befa146f1c12f6b7b4a2cbc598b3c9686",
-       only: [:dev_agent, :prod_agent],
-       runtime: false,
-       override: true},
-      {:optimus, "~> 0.5", only: [:dev_agent, :prod_agent]}
+      {:code_my_spec_generators, path: "../code_my_spec_generators", only: :dev, runtime: false}
     ]
   end
 
