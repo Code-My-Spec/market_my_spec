@@ -14,3 +14,4 @@ context
 - MarketMySpec.Chat.ActiveTasks
 - MarketMySpec.Chat.ToolRegistry
 - MarketMySpec.Chat.NullToolRegistry
+- MarketMySpec.Chat.McpToolRegistry
