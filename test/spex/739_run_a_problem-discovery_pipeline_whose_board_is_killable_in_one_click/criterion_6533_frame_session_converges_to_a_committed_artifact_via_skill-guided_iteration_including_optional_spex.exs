@@ -59,23 +59,25 @@ defmodule MarketMySpecSpex.Story739.Criterion6533Spex do
         draft_v1 = %{
           description: "Vendor onboarding pain (draft v1)",
           saved_searches: [
-            %{source: "upwork", query: "vendor onboarding"},
-            %{source: "upwork", query: "supplier intake"},
-            %{source: "upwork", query: "third party setup"}
+            "upwork|vendor onboarding",
+            "upwork|supplier intake",
+            "upwork|third party setup"
           ],
-          money_gate: %{total_spent_min: 1_000, hire_rate_min: 30},
-          kill_condition: %{min_money_gated_candidates: 1}
+          total_spent_min: 1_000,
+          hire_rate_min: 30,
+          min_money_gated_candidates: 1
         }
 
         draft_v2 = %{
           description: "Vendor onboarding pain (draft v2 — vocabulary refined)",
           saved_searches: [
-            %{source: "upwork", query: "vendor onboarding migration"},
-            %{source: "upwork", query: "supplier portal consolidation"},
-            %{source: "upwork", query: "agency sub-account intake"}
+            "upwork|vendor onboarding migration",
+            "upwork|supplier portal consolidation",
+            "upwork|agency sub-account intake"
           ],
-          money_gate: %{total_spent_min: 5_000, hire_rate_min: 50},
-          kill_condition: %{min_money_gated_candidates: 3}
+          total_spent_min: 5_000,
+          hire_rate_min: 50,
+          min_money_gated_candidates: 3
         }
 
         result =

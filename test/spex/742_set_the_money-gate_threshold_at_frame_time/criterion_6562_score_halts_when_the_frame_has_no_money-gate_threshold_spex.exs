@@ -27,7 +27,7 @@ defmodule MarketMySpecSpex.Story742.Criterion6562Spex do
           description: "Frame with no money_gate",
           saved_searches: [],
           money_gate: nil,
-          kill_condition: %{min_money_gated_candidates: 1}
+          min_money_gated_candidates: 1
         }
 
         {:ok, Map.put(context, :frame, frame)}

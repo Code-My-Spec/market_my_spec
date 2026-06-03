@@ -57,9 +57,10 @@ defmodule MarketMySpecSpex.Story743.Criterion6571Spex do
               CreateFrame.execute(
                 %{
                   description: "ID stability across threshold change",
-                  saved_searches: [%{source: "upwork", query: "vendor onboarding"}],
-                  money_gate: %{total_spent_min: 100, hire_rate_min: 10},
-                  kill_condition: %{min_money_gated_candidates: 1}
+                  saved_searches: ["upwork|vendor onboarding"],
+                  total_spent_min: 100,
+                  hire_rate_min: 10,
+                  min_money_gated_candidates: 1
                 },
                 agent_frame
               )
@@ -83,7 +84,8 @@ defmodule MarketMySpecSpex.Story743.Criterion6571Spex do
           UpdateFrame.execute(
             %{
               frame_id: context.frame_id,
-              money_gate: %{total_spent_min: 100_000, hire_rate_min: 95}
+              total_spent_min: 100_000,
+              hire_rate_min: 95
             },
             context.agent_frame
           )

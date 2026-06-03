@@ -57,11 +57,12 @@ defmodule MarketMySpecSpex.Story741.Criterion6547Spex do
                 %{
                   description: "Prosecution evidence disjointness",
                   saved_searches: [
-                    %{source: "upwork", query: "vendor onboarding migration"},
-                    %{source: "upwork", query: "supplier portal consolidation"}
+                    "upwork|vendor onboarding migration",
+                    "upwork|supplier portal consolidation"
                   ],
-                  money_gate: %{total_spent_min: 1_000, hire_rate_min: 30},
-                  kill_condition: %{min_money_gated_candidates: 2}
+                  total_spent_min: 1_000,
+                  hire_rate_min: 30,
+                  min_money_gated_candidates: 2
                 },
                 agent_frame
               )

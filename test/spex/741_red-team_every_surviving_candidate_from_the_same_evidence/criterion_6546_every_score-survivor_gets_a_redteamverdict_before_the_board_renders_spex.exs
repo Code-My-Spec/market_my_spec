@@ -54,9 +54,10 @@ defmodule MarketMySpecSpex.Story741.Criterion6546Spex do
               CreateFrame.execute(
                 %{
                   description: "Survivor must be Red-teamed",
-                  saved_searches: [%{source: "upwork", query: "vendor onboarding"}],
-                  money_gate: %{total_spent_min: 1_000, hire_rate_min: 30},
-                  kill_condition: %{min_money_gated_candidates: 1}
+                  saved_searches: ["upwork|vendor onboarding"],
+                  total_spent_min: 1_000,
+                  hire_rate_min: 30,
+                  min_money_gated_candidates: 1
                 },
                 agent_frame
               )

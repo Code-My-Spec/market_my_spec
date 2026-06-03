@@ -21,8 +21,9 @@ defmodule MarketMySpecSpex.Story742.Criterion6563Spex do
         attrs = %{
           account_id: Ecto.UUID.generate(),
           description: "Frame missing kill_condition",
-          saved_searches: [%{source: "upwork", query: "anything"}],
-          money_gate: %{total_spent_min: 5000, hire_rate_min: 50}
+          saved_searches: ["upwork|anything"],
+          total_spent_min: 5000,
+          hire_rate_min: 50
           # kill_condition intentionally omitted
         }
 

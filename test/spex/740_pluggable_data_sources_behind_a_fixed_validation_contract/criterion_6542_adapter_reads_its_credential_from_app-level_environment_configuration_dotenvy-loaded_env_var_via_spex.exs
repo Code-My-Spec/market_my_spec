@@ -35,7 +35,7 @@ defmodule MarketMySpecSpex.Story740.Criterion6542Spex do
       end
 
       when_ "the agent invokes Source.Upwork.search/2 with no api_key opt", context do
-        result = Upwork.search(%{source: "upwork", query: "anything"}, limit: 1)
+        result = Upwork.search("upwork|anything", limit: 1)
 
         {:ok, Map.put(context, :result, result)}
       end

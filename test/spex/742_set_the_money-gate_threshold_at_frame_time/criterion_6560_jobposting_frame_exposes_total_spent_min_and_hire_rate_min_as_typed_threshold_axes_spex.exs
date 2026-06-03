@@ -24,9 +24,9 @@ defmodule MarketMySpecSpex.Story742.Criterion6560Spex do
         attrs = %{
           account_id: Ecto.UUID.generate(),
           description: "Missing total_spent_min axis",
-          saved_searches: [%{source: "upwork", query: "anything"}],
+          saved_searches: ["upwork|anything"],
           money_gate: %{hire_rate_min: 50},
-          kill_condition: %{min_money_gated_candidates: 1}
+          min_money_gated_candidates: 1
         }
 
         {:ok, Map.put(context, :attrs, attrs)}
@@ -53,9 +53,10 @@ defmodule MarketMySpecSpex.Story742.Criterion6560Spex do
         attrs = %{
           account_id: Ecto.UUID.generate(),
           description: "Typed money_gate axes",
-          saved_searches: [%{source: "upwork", query: "anything"}],
-          money_gate: %{total_spent_min: 5000, hire_rate_min: 50},
-          kill_condition: %{min_money_gated_candidates: 1}
+          saved_searches: ["upwork|anything"],
+          total_spent_min: 5000,
+          hire_rate_min: 50,
+          min_money_gated_candidates: 1
         }
 
         {:ok, Map.put(context, :attrs, attrs)}

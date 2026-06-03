@@ -53,9 +53,10 @@ defmodule MarketMySpecSpex.Story739.Criterion6525Spex do
           CreateFrame.execute(
             %{
               description: "Vendor onboarding pain — agencies migrating sub-accounts",
-              saved_searches: [%{source: "upwork", query: "vendor onboarding"}],
-              money_gate: %{total_spent_min: 1, hire_rate_min: 1},
-              kill_condition: %{min_money_gated_candidates: 1}
+              saved_searches: ["upwork|vendor onboarding"],
+              total_spent_min: 1,
+              hire_rate_min: 1,
+              min_money_gated_candidates: 1
             },
             frame
           )

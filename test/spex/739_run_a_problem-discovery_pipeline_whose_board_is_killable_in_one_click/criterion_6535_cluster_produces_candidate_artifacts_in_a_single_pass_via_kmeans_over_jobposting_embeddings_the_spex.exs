@@ -59,12 +59,13 @@ defmodule MarketMySpecSpex.Story739.Criterion6535Spex do
                 %{
                   description: "Single-pass cluster validation",
                   saved_searches: [
-                    %{source: "upwork", query: "vendor onboarding"},
-                    %{source: "upwork", query: "supplier consolidation"},
-                    %{source: "upwork", query: "intake automation"}
+                    "upwork|vendor onboarding",
+                    "upwork|supplier consolidation",
+                    "upwork|intake automation"
                   ],
-                  money_gate: %{total_spent_min: 5_000, hire_rate_min: 50},
-                  kill_condition: %{min_money_gated_candidates: 1}
+                  total_spent_min: 5_000,
+                  hire_rate_min: 50,
+                  min_money_gated_candidates: 1
                 },
                 frame
               )

@@ -23,7 +23,7 @@ defmodule MarketMySpecSpex.Story740.Criterion6538Spex do
   spex "UpworkAdapter returns raw posting + client metadata fields only" do
     scenario "Calling Source.Upwork.search/2 returns attribute maps with raw fields, no computed signals" do
       given_ "the Upwork adapter is configured with a test API key", context do
-        {:ok, Map.put(context, :saved_search, %{source: "upwork", query: "vendor onboarding"})}
+        {:ok, Map.put(context, :saved_search, "upwork|vendor onboarding")}
       end
 
       when_ "the agent invokes Source.Upwork.search/2 against the saved search",

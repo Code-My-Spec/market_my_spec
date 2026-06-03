@@ -54,11 +54,12 @@ defmodule MarketMySpecSpex.Story743.Criterion6566Spex do
                 %{
                   description: "Additive Gather",
                   saved_searches: [
-                    %{source: "upwork", query: "vendor onboarding"},
-                    %{source: "upwork", query: "supplier consolidation"}
+                    "upwork|vendor onboarding",
+                    "upwork|supplier consolidation"
                   ],
-                  money_gate: %{total_spent_min: 1_000, hire_rate_min: 30},
-                  kill_condition: %{min_money_gated_candidates: 1}
+                  total_spent_min: 1_000,
+                  hire_rate_min: 30,
+                  min_money_gated_candidates: 1
                 },
                 agent_frame
               )
@@ -89,9 +90,9 @@ defmodule MarketMySpecSpex.Story743.Criterion6566Spex do
                 %{
                   frame_id: context.frame_id,
                   saved_searches: [
-                    %{source: "upwork", query: "vendor onboarding"},
-                    %{source: "upwork", query: "supplier consolidation"},
-                    %{source: "upwork", query: "agency intake"}
+                    "upwork|vendor onboarding",
+                    "upwork|supplier consolidation",
+                    "upwork|agency intake"
                   ]
                 },
                 context.agent_frame

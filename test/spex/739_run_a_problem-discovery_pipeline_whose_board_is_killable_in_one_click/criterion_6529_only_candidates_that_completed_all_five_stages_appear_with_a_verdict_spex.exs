@@ -56,12 +56,13 @@ defmodule MarketMySpecSpex.Story739.Criterion6529Spex do
                 %{
                   description: "Score-only pipeline state",
                   saved_searches: [
-                    %{source: "upwork", query: "vendor onboarding migration"},
-                    %{source: "upwork", query: "supplier consolidation"},
-                    %{source: "upwork", query: "intake workflow rebuild"}
+                    "upwork|vendor onboarding migration",
+                    "upwork|supplier consolidation",
+                    "upwork|intake workflow rebuild"
                   ],
-                  money_gate: %{total_spent_min: 5_000, hire_rate_min: 50},
-                  kill_condition: %{min_money_gated_candidates: 3}
+                  total_spent_min: 5_000,
+                  hire_rate_min: 50,
+                  min_money_gated_candidates: 3
                 },
                 frame
               )

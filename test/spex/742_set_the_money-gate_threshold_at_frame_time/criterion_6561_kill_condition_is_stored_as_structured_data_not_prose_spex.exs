@@ -23,8 +23,9 @@ defmodule MarketMySpecSpex.Story742.Criterion6561Spex do
         attrs = %{
           account_id: Ecto.UUID.generate(),
           description: "Prose kill_condition",
-          saved_searches: [%{source: "upwork", query: "anything"}],
-          money_gate: %{total_spent_min: 5000, hire_rate_min: 50},
+          saved_searches: ["upwork|anything"],
+          total_spent_min: 5000,
+          hire_rate_min: 50,
           kill_condition: "fewer than 3 money-gated candidates"
         }
 
@@ -50,9 +51,10 @@ defmodule MarketMySpecSpex.Story742.Criterion6561Spex do
         attrs = %{
           account_id: Ecto.UUID.generate(),
           description: "Structured kill_condition",
-          saved_searches: [%{source: "upwork", query: "anything"}],
-          money_gate: %{total_spent_min: 5000, hire_rate_min: 50},
-          kill_condition: %{min_money_gated_candidates: 3}
+          saved_searches: ["upwork|anything"],
+          total_spent_min: 5000,
+          hire_rate_min: 50,
+          min_money_gated_candidates: 3
         }
 
         {:ok, Map.put(context, :attrs, attrs)}

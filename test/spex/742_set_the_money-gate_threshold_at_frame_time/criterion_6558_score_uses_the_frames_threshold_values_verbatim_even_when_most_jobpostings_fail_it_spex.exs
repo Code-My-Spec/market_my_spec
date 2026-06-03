@@ -56,9 +56,10 @@ defmodule MarketMySpecSpex.Story742.Criterion6558Spex do
               CreateFrame.execute(
                 %{
                   description: "High-bar money gate",
-                  saved_searches: [%{source: "upwork", query: "vendor onboarding"}],
-                  money_gate: %{total_spent_min: 50_000, hire_rate_min: 80},
-                  kill_condition: %{min_money_gated_candidates: 1}
+                  saved_searches: ["upwork|vendor onboarding"],
+                  total_spent_min: 50_000,
+                  hire_rate_min: 80,
+                  min_money_gated_candidates: 1
                 },
                 agent_frame
               )

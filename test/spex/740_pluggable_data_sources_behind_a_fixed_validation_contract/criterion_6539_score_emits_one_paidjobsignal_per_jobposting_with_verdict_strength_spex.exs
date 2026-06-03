@@ -54,10 +54,11 @@ defmodule MarketMySpecSpex.Story740.Criterion6539Spex do
                 %{
                   description: "One PaidJobSignal per posting",
                   saved_searches: [
-                    %{source: "upwork", query: "vendor onboarding migration"}
+                    "upwork|vendor onboarding migration"
                   ],
-                  money_gate: %{total_spent_min: 5_000, hire_rate_min: 50},
-                  kill_condition: %{min_money_gated_candidates: 1}
+                  total_spent_min: 5_000,
+                  hire_rate_min: 50,
+                  min_money_gated_candidates: 1
                 },
                 frame
               )

@@ -45,9 +45,9 @@ defmodule MarketMySpecSpex.Story740.Criterion6544Spex do
         agent_frame = build_frame(scope)
 
         saved_searches = [
-          %{source: "upwork", query: "vendor onboarding migration"},
-          %{source: "upwork", query: "GoHighLevel sub-account consolidation"},
-          %{source: "upwork", query: "supplier intake automation"}
+          "upwork|vendor onboarding migration",
+          "upwork|GoHighLevel sub-account consolidation",
+          "upwork|supplier intake automation"
         ]
 
         {:ok,
@@ -63,8 +63,9 @@ defmodule MarketMySpecSpex.Story740.Criterion6544Spex do
             %{
               description: "Source-query pair round-trip",
               saved_searches: context.saved_searches,
-              money_gate: %{total_spent_min: 5_000, hire_rate_min: 50},
-              kill_condition: %{min_money_gated_candidates: 3}
+              total_spent_min: 5_000,
+              hire_rate_min: 50,
+              min_money_gated_candidates: 3
             },
             context.agent_frame
           )

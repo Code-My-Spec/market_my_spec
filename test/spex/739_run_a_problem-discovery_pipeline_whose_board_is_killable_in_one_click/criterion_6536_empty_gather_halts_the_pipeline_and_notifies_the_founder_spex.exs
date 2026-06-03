@@ -52,12 +52,13 @@ defmodule MarketMySpecSpex.Story739.Criterion6536Spex do
             %{
               description: "Empty-Gather edge case",
               saved_searches: [
-                %{source: "upwork", query: "definitively_unmatched_query_string_xyzzy_42"},
-                %{source: "upwork", query: "another_unmatched_string_quux_99"},
-                %{source: "upwork", query: "third_unmatched_qwerty_xx"}
+                "upwork|definitively_unmatched_query_string_xyzzy_42",
+                "upwork|another_unmatched_string_quux_99",
+                "upwork|third_unmatched_qwerty_xx"
               ],
-              money_gate: %{total_spent_min: 5_000, hire_rate_min: 50},
-              kill_condition: %{min_money_gated_candidates: 3}
+              total_spent_min: 5_000,
+              hire_rate_min: 50,
+              min_money_gated_candidates: 3
             },
             agent_frame
           )

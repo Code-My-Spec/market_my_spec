@@ -44,9 +44,9 @@ defmodule MarketMySpecSpex.Story743.Criterion6564Spex do
       when_ "the agent commits a Frame with description + 3 saved searches and reads it back",
             context do
         searches = [
-          %{source: "upwork", query: "vendor onboarding migration"},
-          %{source: "upwork", query: "supplier portal consolidation"},
-          %{source: "upwork", query: "agency sub-account intake"}
+          "upwork|vendor onboarding migration",
+          "upwork|supplier portal consolidation",
+          "upwork|agency sub-account intake"
         ]
 
         description = "Hypothesis: agencies struggle with sub-account consolidation post-acquisition."
@@ -56,8 +56,9 @@ defmodule MarketMySpecSpex.Story743.Criterion6564Spex do
             %{
               description: description,
               saved_searches: searches,
-              money_gate: %{total_spent_min: 5_000, hire_rate_min: 50},
-              kill_condition: %{min_money_gated_candidates: 3}
+              total_spent_min: 5_000,
+              hire_rate_min: 50,
+              min_money_gated_candidates: 3
             },
             context.agent_frame
           )

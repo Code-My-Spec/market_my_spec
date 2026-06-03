@@ -57,9 +57,10 @@ defmodule MarketMySpecSpex.Story743.Criterion6572Spex do
               CreateFrame.execute(
                 %{
                   description: "Score recomputes on threshold change",
-                  saved_searches: [%{source: "upwork", query: "vendor onboarding"}],
-                  money_gate: %{total_spent_min: 1, hire_rate_min: 1},
-                  kill_condition: %{min_money_gated_candidates: 1}
+                  saved_searches: ["upwork|vendor onboarding"],
+                  total_spent_min: 1,
+                  hire_rate_min: 1,
+                  min_money_gated_candidates: 1
                 },
                 agent_frame
               )
@@ -87,7 +88,8 @@ defmodule MarketMySpecSpex.Story743.Criterion6572Spex do
           UpdateFrame.execute(
             %{
               frame_id: context.frame_id,
-              money_gate: %{total_spent_min: 1_000_000, hire_rate_min: 99}
+              total_spent_min: 1_000_000,
+              hire_rate_min: 99
             },
             context.agent_frame
           )
