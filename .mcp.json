@@ -4,6 +4,10 @@
             "type": "http",
             "url": "https://dev.marketmyspec.com/mcp"
         },
+        "problem-discovery": {
+            "type": "http",
+            "url": "https://dev.marketmyspec.com/mcp/problem-discovery"
+        },
         "mms-analytics-admin": {
             "type": "http",
             "url": "https://dev.marketmyspec.com/mcp/analytics-admin"
