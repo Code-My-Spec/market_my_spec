@@ -15,6 +15,10 @@ defmodule MarketMySpecWeb.Application do
         MarketMySpec.Integrations.OAuthStateStore,
         {DNSCluster, query: Application.get_env(:market_my_spec, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: MarketMySpec.PubSub},
+        # Chat (streaming LLM chat UI) — supervised task runner for LLM calls
+        # so the LiveView never blocks, plus the ETS-backed in-flight registry.
+        {Task.Supervisor, name: MarketMySpec.Chat.TaskSupervisor},
+        MarketMySpec.Chat.ActiveTasks,
         # MCP servers — mounted via Anubis StreamableHTTP plug in the router.
         # Each server owns its own per-session state (persistent_term) and
         # must be supervised independently, even though they share transport.

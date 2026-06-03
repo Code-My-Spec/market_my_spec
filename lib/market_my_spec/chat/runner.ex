@@ -188,14 +188,16 @@ defmodule MarketMySpec.Chat.Runner do
   end
 
   defp fail(conversation, assistant, reason) do
+    message_text = describe_error(reason)
+
     {:ok, _message} =
       assistant
-      |> Message.changeset(%{status: :error, error_reason: error_message(reason)})
+      |> Message.changeset(%{status: :error, error_reason: message_text})
       |> Repo.update()
 
     ActiveTasks.mark_error(conversation.id)
     ActiveTasks.clear(conversation.id)
-    broadcast(conversation.id, {:stream_error, conversation.id, assistant.id, reason})
+    broadcast(conversation.id, {:stream_error, conversation.id, assistant.id, message_text})
     :ok
   end
 
@@ -302,10 +304,12 @@ defmodule MarketMySpec.Chat.Runner do
   defp normalize_error(%{__exception__: true} = e), do: Exception.message(e)
   defp normalize_error(reason), do: reason
 
-  defp error_message(reason) when is_binary(reason), do: reason
-  defp error_message(:invalid_api_key), do: "provider auth failed"
-  defp error_message(:rate_limited), do: "the provider is rate limiting requests"
-  defp error_message(reason), do: inspect(reason)
+  @doc "Human-readable description of a stream failure reason."
+  @spec describe_error(term()) :: String.t()
+  def describe_error(reason) when is_binary(reason), do: reason
+  def describe_error(:invalid_api_key), do: "provider auth failed"
+  def describe_error(:rate_limited), do: "the provider is rate limiting requests"
+  def describe_error(reason), do: inspect(reason)
 
   defp to_string_or_nil(nil), do: nil
   defp to_string_or_nil(value), do: to_string(value)

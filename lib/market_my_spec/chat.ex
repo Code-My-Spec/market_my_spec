@@ -76,6 +76,13 @@ defmodule MarketMySpec.Chat do
   end
 
   @doc """
+  Re-runs the assistant reply for the conversation's existing history. Used by
+  the retry affordance after a recoverable stream error (R8).
+  """
+  @spec regenerate(Conversation.t()) :: {:ok, pid()} | {:error, term()}
+  def regenerate(%Conversation{} = conversation), do: Runner.run(conversation)
+
+  @doc """
   Changes the conversation's provider and model. Applies to the next message
   sent — existing messages are untouched (R5).
   """
