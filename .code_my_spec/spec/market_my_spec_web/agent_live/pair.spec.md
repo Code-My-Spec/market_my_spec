@@ -5,3 +5,7 @@ Pairing approval screen. Reached when the user's binary opens a browser at /agen
 ## Type
 
 liveview
+
+## Dependencies
+
+- MarketMySpec.Agents.Pairing

@@ -5,3 +5,8 @@ Client portfolio dashboard — lists client accounts with name and agency access
 ## Type
 
 liveview
+
+## Dependencies
+
+- MarketMySpec.Accounts
+- MarketMySpec.Agencies

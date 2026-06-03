@@ -45,6 +45,7 @@ defmodule MarketMySpecWeb.Router do
 
     match :*, "/", McpController, :handle
     match :*, "/analytics-admin", AnalyticsAdminMcpController, :handle
+    match :*, "/problem-discovery", ProblemDiscoveryMcpController, :handle
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
@@ -118,6 +119,10 @@ defmodule MarketMySpecWeb.Router do
       live "/mcp-setup", McpSetupLive, :index
 
       live "/oauth/authorize", McpAuthorizationLive, :index
+
+      live "/problem-discovery/frames", ProblemDiscoveryLive.Frames, :index
+      live "/problem-discovery/frames/new", ProblemDiscoveryLive.Frames, :new
+      live "/problem-discovery/frames/:id", ProblemDiscoveryLive.Frame, :show
     end
 
     post "/users/update-password", UserSessionController, :update_password

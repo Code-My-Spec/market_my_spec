@@ -20,6 +20,7 @@ defmodule MarketMySpecWeb.Application do
         # must be supervised independently, even though they share transport.
         {MarketMySpec.McpServers.MarketingStrategyServer, transport: :streamable_http},
         {MarketMySpec.McpServers.AnalyticsAdminServer, transport: :streamable_http},
+        {MarketMySpec.McpServers.ProblemDiscoveryServer, transport: :streamable_http},
         # Start to serve requests, typically the last entry
         MarketMySpecWeb.Endpoint
       ] ++ cloudflare_tunnel_child()

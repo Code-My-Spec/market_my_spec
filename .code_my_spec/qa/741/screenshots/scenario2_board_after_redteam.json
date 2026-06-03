@@ -1,0 +1,33 @@
+{
+  "scenario": "Scenario 2 - GetBoard after red-teaming both survivors with keep_productizable",
+  "frame_id": "e135f9cf-a489-46e0-b5bb-9da74090bca7",
+  "board_response": {
+    "candidates": [
+      {
+        "id": "3a71fbd4-0245-4e83-9c1e-e4d334acee38",
+        "label": null,
+        "score": 1,
+        "verdict": "keep_productizable",
+        "cheapest_kill_test": "Cold-call 3 mid-market ops leads to verify if they still buy from external vendors for onboarding automation.",
+        "kill_argument": "This bet failed because the vendor onboarding automation market was too fragmented — enterprise buyers consolidated to internal tools before any solo founder could gain traction."
+      },
+      {
+        "id": "ebddb91b-9a26-4d19-aa0a-42691df266a9",
+        "label": null,
+        "score": 1,
+        "verdict": "keep_productizable",
+        "cheapest_kill_test": "Interview 2 prior buyers to confirm they switched to commodity vendors and ask what price point was the breaking point.",
+        "kill_argument": "This bet failed because the commodity players undercut pricing by 40% in Q2 2024 and no differentiation was sustainable without a platform moat."
+      }
+    ],
+    "awaiting_redteam": 0
+  },
+  "assertions": {
+    "candidates_count_equals_survivors": true,
+    "each_row_has_verdict": true,
+    "each_row_has_kill_argument": true,
+    "each_row_has_cheapest_kill_test": true,
+    "awaiting_redteam_zero": true
+  },
+  "result": "PASS"
+}

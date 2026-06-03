@@ -1,0 +1,20 @@
+{
+  "scenario": "Scenario 1 - GetBoard before red-teaming any survivor",
+  "frame_id": "e135f9cf-a489-46e0-b5bb-9da74090bca7",
+  "survivors_from_score": [
+    {"candidate_id": "3a71fbd4-0245-4e83-9c1e-e4d334acee38", "score": 1},
+    {"candidate_id": "ebddb91b-9a26-4d19-aa0a-42691df266a9", "score": 1}
+  ],
+  "board_response": {
+    "candidates": [],
+    "corpus_health": {"distinct_clients_in_keep_tier": 2, "postings_gated_in": 2, "total_postings": 13},
+    "kill_condition_status": "not_met",
+    "frame": {"id": "e135f9cf-a489-46e0-b5bb-9da74090bca7", "description": "QA 741 Red-team board exclusion test", "money_gate": {"hire_rate_min": 30, "total_spent_min": 1000}, "kill_condition": {"min_money_gated_candidates": 1}},
+    "awaiting_redteam": 2
+  },
+  "assertions": {
+    "candidates_empty": true,
+    "awaiting_redteam_equals_survivor_count": true
+  },
+  "result": "PASS"
+}

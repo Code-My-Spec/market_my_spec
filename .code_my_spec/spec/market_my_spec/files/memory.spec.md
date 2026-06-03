@@ -5,3 +5,7 @@ In-memory implementation of the Files behaviour; used in test
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Files.Behaviour

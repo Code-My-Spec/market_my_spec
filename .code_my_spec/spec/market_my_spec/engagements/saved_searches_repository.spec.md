@@ -5,3 +5,12 @@ Account-scoped CRUD for SavedSearch records. Functions: list_saved_searches/1, g
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Engagements.SavedSearch
+- MarketMySpec.Engagements.SavedSearchVenue
+- MarketMySpec.Engagements.Search
+- MarketMySpec.Engagements.Venue
+- MarketMySpec.Engagements.VenuesRepository
+- MarketMySpec.Users.Scope

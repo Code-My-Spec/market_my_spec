@@ -5,3 +5,9 @@ Agents page index. Lists the current user's paired agents (one user can own mult
 ## Type
 
 liveview
+
+## Dependencies
+
+- MarketMySpec.Agents
+- MarketMySpec.Agents.AgentsRepository
+- MarketMySpec.Agents.Presence

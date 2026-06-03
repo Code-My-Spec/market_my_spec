@@ -5,3 +5,7 @@ Resolves a request host to an agency account by subdomain match; validates subdo
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Accounts.Account

@@ -1,0 +1,1 @@
+{"scenario": "2 - gather populates DB, cluster reads from DB", "frame_id": "0a30de04-b422-425d-867b-d36e00ea0e17", "gather_result": {"per_saved_search": [{"index": 0, "gathered": 50, "failed": 0}, {"index": 1, "gathered": 45, "failed": 5}]}, "jp_in_db": 95, "cluster_result": {"candidate_count": 3}}

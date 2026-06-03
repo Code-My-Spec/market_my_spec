@@ -1,0 +1,17 @@
+{
+  "scenario": "Scenario 3 + 5 - All 4 verdict types tested, kill flips Score's keep",
+  "frame_id": "e135f9cf-a489-46e0-b5bb-9da74090bca7",
+  "verdicts_tested": ["keep_productizable", "keep_service_only", "watch", "kill"],
+  "board_after_kill": {
+    "candidates": [
+      {"id": "3a71fbd4-0245-4e83-9c1e-e4d334acee38", "score": 1, "verdict": "kill"},
+      {"id": "ebddb91b-9a26-4d19-aa0a-42691df266a9", "score": 1, "verdict": "watch"}
+    ]
+  },
+  "assertions": {
+    "all_4_verdicts_accepted": true,
+    "kill_overwrites_score_keep_on_board": true,
+    "survivor_with_score_1_shows_kill_not_keep": true
+  },
+  "result": "PASS"
+}

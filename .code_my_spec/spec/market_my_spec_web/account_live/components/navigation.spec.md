@@ -5,3 +5,7 @@ Tab navigation between manage/members/invitations within an account
 ## Type
 
 liveview_component
+
+## Dependencies
+
+- MarketMySpec.Authorization

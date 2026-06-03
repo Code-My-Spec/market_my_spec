@@ -17,7 +17,14 @@ config :market_my_spec, MarketMySpec.Repo,
   hostname: "localhost",
   database: "market_my_spec_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: System.schedulers_online() * 2
+  pool_size: System.schedulers_online() * 2,
+  ownership_timeout: :timer.minutes(10)
+
+# Route ProblemDiscovery clustering through the disk-cache Recorder in
+# test so spex don't pay the seconds-per-call EXLA cost on every run.
+# See lib/market_my_spec/problem_discovery/clustering/recorder.ex.
+config :market_my_spec, MarketMySpec.ProblemDiscovery.Clustering,
+  MarketMySpec.ProblemDiscovery.Clustering.Recorder
 
 # Endpoint serves in test so Wallaby feature/journey tests (test/e2e/,
 # test/journeys/) can drive it with a real browser. In-process spex use

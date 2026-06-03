@@ -61,6 +61,17 @@ if config_env() in [:dev, :prod] do
     codemyspec_client_secret: env!("CODEMYSPEC_CLIENT_SECRET")
 end
 
+# ProblemDiscovery service-account credentials — env-loaded per the
+# problem-discovery-data-sources ADR (NOT Integrations).
+if config_env() in [:dev, :test, :prod] do
+  config :market_my_spec, MarketMySpec.ProblemDiscovery.Embeddings,
+    api_key: env!("OPENAI_API_KEY", :string, nil)
+
+  config :market_my_spec, MarketMySpec.ProblemDiscovery.Source.Upwork,
+    api_key: env!("APIFY_API_TOKEN", :string, nil)
+end
+
+
 # Cloudflare named tunnel for dev — exposes the local Phoenix dev server
 # at https://dev.marketmyspec.com via `ClientUtils.CloudflareTunnel`. The
 # GenServer overrides the Endpoint's :url config after start so URL helpers
@@ -71,8 +82,12 @@ if config_env() == :dev do
   tunnel_id = env!("CLOUDFLARE_TUNNEL_ID", :string, nil)
   tunnel_secret = env!("CLOUDFLARE_TUNNEL_SECRET", :string, nil)
   account_tag = env!("CLOUDFLARE_ACCOUNT_ID", :string, nil)
+  # CLOUDFLARE_TUNNEL_DISABLED=1 lets `mix run` work in sandboxed
+  # contexts (Claude Code subagents, CI) where the tunnel can't write
+  # ~/.cloudflared/config.yml. Defaults to enabled when all creds present.
+  tunnel_disabled? = env!("CLOUDFLARE_TUNNEL_DISABLED", :string, "") not in ["", "0", "false"]
 
-  if tunnel_id && tunnel_secret && account_tag do
+  if not tunnel_disabled? and tunnel_id && tunnel_secret && account_tag do
     config :market_my_spec, :cloudflare_tunnel,
       mode: :named,
       hostname: "dev.marketmyspec.com",

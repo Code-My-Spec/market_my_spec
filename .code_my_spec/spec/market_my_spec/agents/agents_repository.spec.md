@@ -5,3 +5,7 @@ User-scoped CRUD over Agent records. list_agents/1 (per user), get_agent/2 (user
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Agents.Agent

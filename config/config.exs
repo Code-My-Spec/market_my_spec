@@ -24,6 +24,15 @@ config :market_my_spec,
   ecto_repos: [MarketMySpec.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# Route Nx ops through EXLA's native CPU backend — Scholar.KMeans +
+# silhouette_score on the pure-Elixir BinaryBackend takes minutes for
+# the ProblemDiscovery Cluster stage; EXLA brings it to milliseconds.
+config :nx, default_backend: EXLA.Backend
+
+# Register the pgvector Postgrex extension so the `vector(N)` column type
+# round-trips through Ecto. See lib/market_my_spec/postgrex_types.ex.
+config :market_my_spec, MarketMySpec.Repo, types: MarketMySpec.PostgrexTypes
+
 config :market_my_spec, :integration_providers, [:google, :github, :codemyspec]
 
 config :market_my_spec, :oauth_providers, %{

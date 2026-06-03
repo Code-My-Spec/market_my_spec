@@ -1,0 +1,2076 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-06-03T14:56:26.194255Z",
+      "request": {
+        "body_json": {
+          "includeKeywords.keywords": [
+            "vendor onboarding"
+          ],
+          "includeKeywords.matchDescription": true,
+          "includeKeywords.matchSkills": false,
+          "includeKeywords.matchTitle": true,
+          "limit": 50
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.apify.com/v2/acts/upwork-vibe~upwork-job-scraper/run-sync-get-dataset-items"
+      },
+      "response": {
+        "body_json": [
+          {
+            "applicationCost": 18,
+            "budget": {
+              "fixedBudget": 15000,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Web Development",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2024-12-18T00:00:00.000Z",
+              "countryCode": "CA",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 1,
+                "feedbackRate": 5,
+                "hireRate": 25,
+                "totalHires": 1,
+                "totalSpent": 70
+              },
+              "timezone": "Africa/Algiers"
+            },
+            "createdAt": "2026-06-03T11:09:49.598Z",
+            "customJobScore": 4.2,
+            "description": "Senior Full-Stack Development Team Needed – National Fleet & Heavy Equipment Management Platform\nProject Overview\nWe are seeking an experienced software development company or senior development team to design, develop, implement, and support a large-scale Fleet and Heavy Equipment Management Platform for a public-sector infrastructure program.\nThe platform will manage government-owned heavy-duty construction and infrastructure equipment deployed across multiple regions and project sites. The solution will serve as a centralized system for asset tracking, maintenance management, workforce management, project monitoring, fuel tracking, reporting, and real-time GPS monitoring.\nThis is a complex enterprise-grade project requiring experience in fleet management, asset management, ERP systems, GIS/GPS integrations, mobile applications, and cloud-based architectures.\n \nProject Objectives\nThe platform should provide:\n•\tCentralized management of heavy equipment assets \n•\tReal-time equipment visibility and monitoring \n•\tDeployment and assignment tracking \n•\tPreventive and corrective maintenance management \n•\tWorkforce and certification management \n•\tFuel consumption and cost tracking \n•\tVendor and contractor management \n•\tProject monitoring and utilization reporting \n•\tExecutive dashboards and analytics \n•\tMobile field operations with offline capability \n•\tGPS and telematics integration \n \nScope of Work\nThe successful bidder will be responsible for:\n1. Requirements Validation & Solution Design\n•\tBusiness requirements review \n•\tTechnical architecture design \n•\tDatabase design \n•\tUser journey mapping \n•\tUI/UX wireframes \n•\tSecurity architecture \n \n2. Web-Based Management Portal\nDevelop a responsive web platform with the following modules:\nAsset Management\n•\tAsset registration \n•\tAsset categorization \n•\tDigital asset profiles \n•\tEquipment specifications \n•\tDocument management \n•\tQR code generation \n•\tRFID readiness \nDeployment & Assignment\n•\tEquipment requests \n•\tApproval workflows \n•\tAssignment tracking \n•\tUtilization monitoring \n•\tAccountability records \nMaintenance Management\n•\tPreventive maintenance scheduling \n•\tCorrective maintenance tracking \n•\tWork orders \n•\tSpare parts tracking \n•\tService history \n•\tMaintenance alerts \nWorkforce Management\n•\tOperator registry \n•\tEngineer registry \n•\tCertification tracking \n•\tLicense management \n•\tPerformance monitoring \n•\tAttendance management \nFuel Management\n•\tFuel issuance records \n•\tFuel consumption monitoring \n•\tCost analysis \n•\tFuel anomaly detection \nVendor & Contractor Management\n•\tVendor onboarding \n•\tContract tracking \n•\tSLA monitoring \n•\tPerformance evaluations \nProject Monitoring\n•\tProject registration \n•\tEquipment allocation \n•\tProductivity tracking \n•\tResource utilization reporting \nReporting & Analytics\n•\tExecutive dashboards \n•\tOperational reporting \n•\tCost analysis \n•\tUtilization reports \n•\tMaintenance compliance reports \n•\tCustom reporting tools \n \n3. GPS & Telematics Module\nThe platform should support:\n•\tReal-time GPS tracking \n•\tLive map visualization \n•\tGeofencing \n•\tRoute history \n•\tEngine hour monitoring \n•\tUtilization tracking \n•\tIdle time monitoring \n•\tUnauthorized movement alerts \nDevelopers should indicate experience integrating with GPS and telematics providers.\n \n4. Mobile / Tablet Application\nDevelop a mobile application for Android tablets and field personnel.\nRequired features:\n•\tOffline functionality \n•\tData synchronization when connectivity is restored \n•\tIncident reporting \n•\tDaily operational reporting \n•\tFuel logging \n•\tMaintenance logging \n•\tPhoto capture and upload \n•\tDocument uploads \n•\tEquipment assignment management \n \n5. Notifications & Alerts\nThe system should provide:\n•\tMaintenance reminders \n•\tFuel anomaly alerts \n•\tEquipment idle alerts \n•\tUnauthorized movement alerts \n•\tCertification expiry alerts \n•\tAssignment notifications \nSupport for:\n•\tEmail notifications \n•\tSMS notifications \n•\tIn-app notifications \n \nTechnical Requirements\nDevelopers may recommend technologies; however, preference will be given to modern, scalable architectures.\nFrontend\n•\tReact.js \n•\tAngular \n•\tNext.js \nMobile\n•\tFlutter \n•\tReact Native \nBackend\n•\t.NET Core \n•\tNode.js \n•\tJava Spring Boot \nDatabase\n•\tPostgreSQL \n•\tMS SQL Server \nCloud Infrastructure\n•\tMicrosoft Azure \n•\tAWS \nGIS / Mapping\n•\tGoogle Maps \n•\tMapbox \n•\tOpenStreetMap \nAPIs\n•\tREST APIs \n•\tWebhooks \n•\tThird-party integrations \n \nSecurity Requirements\nThe solution must include:\n•\tRole-Based Access Control (RBAC) \n•\tMulti-Factor Authentication (MFA) \n•\tAudit logs \n•\tEncryption at rest \n•\tEncryption in transit \n•\tBackup and recovery capabilities \n•\tDisaster recovery planning \n•\tSecure API architecture \n \nExpected User Roles\nThe platform should support multiple user types including:\n•\tSystem Administrators \n•\tRegional Managers \n•\tOperations Coordinators \n•\tMaintenance Managers \n•\tWorkshop Personnel \n•\tEquipment Operators \n•\tContractors/Vendors \n•\tAuditors \n•\tExecutive Users \n \nDeliverables\nThe selected team will be expected to provide:\nDiscovery Phase\n•\tRequirements documentation \n•\tFunctional specifications \n•\tTechnical architecture \n•\tWireframes \nDevelopment Phase\n•\tBackend platform \n•\tFrontend portal \n•\tMobile application \n•\tAPIs and integrations \nTesting Phase\n•\tUnit testing \n•\tSystem testing \n•\tUser Acceptance Testing (UAT) \n•\tSecurity testing \nDeployment Phase\n•\tProduction deployment \n•\tTraining \n•\tDocumentation \n•\tKnowledge transfer \nPost-Go-Live Support\n•\tWarranty support \n•\tBug fixes \n•\tMaintenance support options \n \nRequired Experience\nApplicants must demonstrate experience in at least one of the following:\n•\tFleet Management Systems \n•\tEnterprise Asset Management (EAM) \n•\tERP Solutions \n•\tGovernment Systems \n•\tLogistics Platforms \n•\tTelematics Solutions \n•\tGIS-Based Applications \n•\tOffline Mobile Applications \nPreference will be given to teams that can provide live demonstrations, case studies, or references from similar projects.\n \nProposal Submission Requirements\nPlease include:\nCompany / Team Profile\n•\tYears in business \n•\tTeam structure \n•\tLocation \nRelevant Experience\nProvide examples of similar projects including:\n•\tProject description \n•\tTechnology stack \n•\tClient industry \n•\tScreenshots or demo links \nTechnical Proposal\nInclude:\n•\tRecommended architecture \n•\tTechnology stack \n•\tDevelopment methodology \n•\tSecurity approach \n4. Project Timeline\nProvide estimated duration for:\n•\tDiscovery \n•\tDevelopment \n•\tTesting \n•\tDeployment \n5. Cost Proposal\nProvide:\n•\tTotal estimated project cost \n•\tMilestone-based pricing \n•\tSupport and maintenance pricing \n \nEvaluation Criteria\nProposals will be evaluated based on:\n•\tRelevant experience \n•\tTechnical approach \n•\tScalability of solution \n•\tSecurity architecture \n•\tDelivery methodology \n•\tCost competitiveness \n•\tPost-implementation support capability \n \nBudget\nBudget: Open to Proposals\nDevelopers are invited to submit fixed-price or milestone-based proposals. The project owner is seeking the best combination of technical capability, experience, scalability, and value.\n \nAdditional Requirements\nThe selected development partner must:\n•\tProvide complete source code ownership upon project completion. \n•\tDeliver comprehensive technical and user documentation. \n•\tSupport cloud deployment and production rollout. \n•\tParticipate in stakeholder review sessions. \n•\tProvide a minimum warranty/support period after go-live. \n•\tBe available for periodic virtual meetings during development. \n \nApplication Instructions\nWhen applying, please include the following:\n1.\tBrief introduction of your company/team. \n2.\tSimilar projects completed within the last five years. \n3.\tProposed technology stack. \n4.\tEstimated timeline. \n5.\tEstimated budget range. \n6.\tTeam composition and key personnel. \n7.\tLinks to live systems, demos, or portfolios (if available).",
+            "externalLink": "https://www.upwork.com/jobs/~022062129622588965499",
+            "isFeatured": false,
+            "publishedAt": "2026-06-03T11:11:39.938Z",
+            "questions": null,
+            "skills": [
+              "AI App Development",
+              "AI Development",
+              "AI Agent Development",
+              "JavaScript",
+              "PHP",
+              "MySQL",
+              "Database Design",
+              "API",
+              "Web Development"
+            ],
+            "title": "Fleet & Heavy Equipment Management Platform",
+            "uid": "2062129622588965499",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "EXPERT",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 16,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 5,
+                "min": 5
+              }
+            },
+            "category": "Virtual Assistance",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2024-05-14T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 34.99966386554622,
+                "feedbackCount": 1,
+                "feedbackRate": 5,
+                "hireRate": 11,
+                "totalHires": 1,
+                "totalSpent": 2306.87
+              },
+              "timezone": "America/New_York"
+            },
+            "createdAt": "2026-06-02T12:38:29.911Z",
+            "customJobScore": 4.2,
+            "description": "Part-Time to Full-Time\n\nAbout Concierge Drop\nConcierge Drop is a premium on-demand home services company operating inside NYC luxury residential buildings. Residents book dry cleaning, home cleaning, dog walking, uniform cleaning, and more directly from our website — picked up and delivered from the building lobby. No app required.\n\nWe're in 200+ buildings across Manhattan and growing fast, with a 2026 goal of 150 new buildings. As we scale, our operations need an owner — someone who keeps vendors, systems, and processes running cleanly behind the scenes so the rest of the team can focus on growth.\n\nThe Role\nYou are the operational backbone of the business. You run the machinery that makes service delivery possible: vendor onboarding, compliance, the systems that run our orders, and the documented procedures that keep everything consistent as we grow.\n\nThis is a behind-the-scenes role for someone who loves order, hates loose ends, and gets satisfaction from turning chaos into a clean, repeatable system. You'll work closely with the Account Coordinator and report into leadership.\n\nWhat You Own:\n\n- Vendor Onboarding\nBring new vendors into the system cleanly and completely. Collect required documentation, set them up in our platforms, confirm service areas and capabilities, and make sure every vendor is ready to take orders before they go live.\n- Compliance\nKeep vendor and operational records current and in good standing. Track documentation, flag anything expiring or missing, and make sure we stay compliant across the portfolio. Nothing lapses on your watch.\n- Systems & Technical Operations\nOwn the day-to-day inside CleanCloud and Launch 27 — configuration, order routing, troubleshooting, and keeping data clean. You're the person who knows how these systems actually work and can fix things when they break.\n- Account Coordination Support\nWork hand-in-hand with the Account Coordinator. When a building needs a vendor assigned, a service set up, or an operational issue resolved, you make it happen on the backend.\n- Standard Operating Procedures & The Runbook\nBuild and maintain our internal runbook so that how we do things lives in documentation, not in someone's head. Standardize procedures, reduce knowledge silos, and make sure any process you run can be picked up by someone else if needed.\n\nWho You Are\n- Open to candidates who can overlap 4+ hours with EST\n- Excellent written and spoken English — you communicate clearly with vendors and teammates\n- Highly systems-oriented — you pick up new software fast and enjoy getting it configured right\n- Detail-obsessed — documentation, compliance, and data accuracy come naturally to you\n- Process-minded — you instinctively turn one-off tasks into repeatable procedures\n- Proactive — you flag problems before they escalate, not after\n- Experience in operations, vendor management, or a coordination-heavy role\n- Comfortable with operational software, Google Sheets, and Slack — experience with CleanCloud or Launch 27 a strong plus\n- Thinks like a business owner, not an employee\n\nThis role is NOT for you if:\n- You need constant direction to stay productive\n- You treat this as a low-commitment side job\n- You're uncomfortable owning systems and being the go-to person when something breaks\n- You'd rather follow a process than build one\n\nCompensation & Growth\n\n- Rate: $5 per hour (based on operations/systems experience)\n- Part-time to start, with a clear path to full-time based on performance\n- We build long-term with our remote team. Our CS Manager is has been with us since the beginning\n\nHow to apply:\n- A short note (3–5 sentences) on your operations or vendor management experience\n- One example of a process you documented or improved — what was broken, and what did you change?",
+            "externalLink": "https://www.upwork.com/jobs/~022061789550080053280",
+            "isFeatured": false,
+            "publishedAt": "2026-06-02T15:40:46.176Z",
+            "questions": null,
+            "skills": [
+              "Administrative Support",
+              "Customer Service",
+              "Communications",
+              "Vendor Management",
+              "Operations Management Software"
+            ],
+            "title": "Operations Manager / Coordinator — Concierge Drop",
+            "uid": "2061789550080053280",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "NATIVE",
+              "experienceLevel": "EXPERT",
+              "hireType": "INDEPENDENT",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 20,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 12,
+                "min": 7
+              }
+            },
+            "category": "Accounting & Bookkeeping",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2020-04-23T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": false,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 1,
+                "feedbackRate": 5,
+                "hireRate": 19,
+                "totalHires": 6,
+                "totalSpent": 1940
+              },
+              "timezone": "America/New_York"
+            },
+            "createdAt": "2026-05-31T22:37:57.656Z",
+            "customJobScore": 3.8,
+            "description": "Full Charge Bookkeeper\nOngoing | QuickBooks Online | Profit First\n---\n\nAbout the Engagement\n\nU.S. company seeks a skilled, proactive Full Charge Bookkeeper to own our complete bookkeeping function — independently and with high ownership.\n\nThis is a long-term, ongoing engagement. We're not looking for someone to fill a transactional role. We're looking for a trusted provider who takes initiative, surfaces issues before we ask, and keeps our books clean enough to rely on.\n---\n\nWhat You'll Own\n\n**Accounts Receivable — Top Priority**\n- Monitor and apply client payments daily; reconcile all billing channels (automated charges + manual invoices)\n- Enforce our prepay policy and manage our tiered collections process using the provided scripts\n- Create new client invoices upon signed agreement; send 15 days before due date\n\n**Accounts Payable**\n- Manage vendor payables on our 10th and 25th payment cycle (Profit First)\n- Maintain complete vendor records in QuickBooks Bill Pay; process ACH and mailed check payments\n- Verify Profit First automated account transfers on the 5th and 20th of each month\n\n**Monthly Close**\n- Fully reconcile all accounts and confirm books closed to our ownership and CPA firm by the 12th of each month\n- Download and share bank statements with our tax strategist CPA firm by the 5th\n- Attend monthly Zoom virtual CFO call with our tax strategist CPA firm \n\n**Client & Vendor Onboarding**\n- Set up new client and vendor records in QBO upon receipt of signed agreements\n- Manage prompt payment setup\n---\n\n## Requirements\n\n- **QuickBooks Online:** Proficient — this is non-negotiable\n- **Profit First:** Familiar with the methodology or willing to learn quickly\n- **English:** Clear, fluent, spoken, and written — you will occasionally join calls with our leadership team, CPA firm, and maybe clients\n- **Availability:** Reachable during U.S. Eastern business hours for occasional calls; same or next business day response to all messages\n- **Assignments:** Completed within 1–2 business days\n- **Attitude:** Proactive. You surface issues. You check QBO history before asking questions. You read related agreements before asking someone to explain it.\n---\n\n## Scope & Compensation\n\n- **Hours:** 5–15 hours per week (fluctuates with business activity)\n- **Contract type:** Ongoing hourly\n- **Location:** Fully remote\n- **Rate:** Competitive; commensurate with experience\n---",
+            "externalLink": "https://www.upwork.com/jobs/~022061215633923954374",
+            "isFeatured": false,
+            "publishedAt": "2026-05-31T22:42:51.395Z",
+            "questions": [
+              "Rate your spoken English clarity for U.S. business calls (1–5):\n1 = Heavy accent 2 = Noticeable 3 = Moderate 4 = Light 5 = Native/near-native.",
+              "What does \"books are closed\" mean to you? Walk us through what you verify before confirming close.",
+              "What is your availability during U.S. Eastern business hours, and how quickly do you typically respond to messages?",
+              "Briefly describe a situation where you caught a billing or payment error proactively — before you were asked to look for it.",
+              "How do you handle a transaction you don't recognize in QBO?"
+            ],
+            "skills": [
+              "Intuit QuickBooks",
+              "Accounts Payable",
+              "Accounts Receivable",
+              "Transaction Data Entry",
+              "Bank Reconciliation",
+              "Accounting Basics",
+              "Bookkeeping"
+            ],
+            "title": "Seeking a bookkeeper",
+            "uid": "2061215633923954374",
+            "vendor": {
+              "countryCodes": [
+                "PH",
+                "BR"
+              ],
+              "englishLevel": "FLUENT",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 0,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Web Development",
+            "client": {
+              "companySize": 0,
+              "connectedAt": null,
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": false,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "America/Chicago"
+            },
+            "createdAt": "2026-05-30T00:45:03.869Z",
+            "customJobScore": 3,
+            "description": "Project Title: Marketplace MVP Development\n\nProject Scope:\n\nPlatform: WordPress/WooCommerce with Multi-Vendor functionality.\n\nKey Features: Vendor registration, product listing, commission-based payment split (Stripe integration), and automated dashboard for vendor analytics.\n\nGoal: Launch an MVP (Minimum Viable Product) for a niche Oklahoma-based marketplace.\n\nDeliverables: Fully configured marketplace site, mobile-responsive design, and initial training/documentation for vendor onboarding.\n\nRequest: Please provide an itemized quote for the development phase, including anticipated timelines for build and testing.",
+            "externalLink": "https://www.upwork.com/jobs/~022060522845366845923",
+            "isFeatured": false,
+            "publishedAt": "2026-05-30T00:50:09.597Z",
+            "questions": [
+              "What frameworks have you worked with?",
+              "Describe your approach to testing and improving QA",
+              "Include a link to your GitHub profile and/or website",
+              "Please list any certifications related to this project",
+              "Describe your recent experience with similar projects"
+            ],
+            "skills": [
+              "WooCommerce",
+              "dokan",
+              "MultiVendorX",
+              "API",
+              "Web Development"
+            ],
+            "title": "Marketplace MVP Development",
+            "uid": "2060522845366845923",
+            "vendor": {
+              "countryCodes": [
+                "AS",
+                "AU",
+                "CX",
+                "CC",
+                "CK",
+                "FJ",
+                "PF",
+                "GU",
+                "KI",
+                "MH",
+                "FM",
+                "NR",
+                "NC",
+                "NZ",
+                "NU",
+                "NF",
+                "MP",
+                "PW",
+                "PG",
+                "PN",
+                "WS",
+                "SB",
+                "TK",
+                "TO",
+                "TV",
+                "VU",
+                "WF",
+                "AI",
+                "AG",
+                "AR",
+                "AW",
+                "BS",
+                "BB",
+                "BZ",
+                "BM",
+                "BO",
+                "BQ",
+                "BR",
+                "VG",
+                "CA",
+                "KY",
+                "CL",
+                "CO",
+                "CR",
+                "CW",
+                "DM",
+                "DO",
+                "EC",
+                "SV",
+                "FK",
+                "GF",
+                "GL",
+                "GD",
+                "GP",
+                "GT",
+                "GY",
+                "HT",
+                "HN",
+                "JM",
+                "MQ",
+                "MX",
+                "MS",
+                "NL",
+                "NI",
+                "PA",
+                "PY",
+                "PE",
+                "PR",
+                "BL",
+                "KN",
+                "LC",
+                "MF",
+                "PM",
+                "VC",
+                "SX",
+                "SR",
+                "TT",
+                "TC",
+                "US",
+                "UM",
+                "VI",
+                "UY",
+                "VE",
+                "AL",
+                "AD",
+                "AT",
+                "BY",
+                "BE",
+                "BA",
+                "BG",
+                "HR",
+                "CZ",
+                "DK",
+                "EE",
+                "FO",
+                "FI",
+                "FR",
+                "TF",
+                "DE",
+                "GI",
+                "GR",
+                "GG",
+                "VA",
+                "HU",
+                "IS",
+                "IE",
+                "IM",
+                "IT",
+                "JE",
+                "LV",
+                "LI",
+                "LT",
+                "LU",
+                "MK",
+                "MT",
+                "MD",
+                "MC",
+                "ME",
+                "NL",
+                "NO",
+                "PL",
+                "PT",
+                "RO",
+                "RU",
+                "SM",
+                "RS",
+                "SK",
+                "SI",
+                "ES",
+                "SJ",
+                "SE",
+                "CH",
+                "UA",
+                "GB"
+              ],
+              "englishLevel": "NATIVE",
+              "experienceLevel": "EXPERT",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 12,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 25,
+                "min": 15
+              }
+            },
+            "category": "Project Management",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2026-04-14T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": false,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "America/Chicago"
+            },
+            "createdAt": "2026-05-29T22:19:58.554Z",
+            "customJobScore": 2.4,
+            "description": "Company is a high-velocity, remote-first, global team changing the face of wellbeing and stress management. If you’re passionate about making a positive impact in the world and you play a driving role in a team, this is an exciting opportunity where your efforts will clearly make a difference. \n\nYou will serve as a critical execution partner to our CEO, charged with making things happen - from creating a system for engaging guest composers, to accelerating project completion, to architecting our internal data systems and administrative overhauls.  You are a proactive \"blocker-remover\" who can take a vague directive, identify potential hurdles, and see a project through to a high-quality finish with minimal oversight. This is the place where your achievement focus serves a global mission.\n\nCore Responsibilities\n\nStrategic Execution & CEO Leverage\n* Agile-style Project Management: Lead end-to-end execution of high-priority initiatives. Initial focus areas include project managing our website needs, App design upgrade & development, and new marketing initiatives. You must be ready to pivot as company priorities evolve.\n* Executive Momentum & Follow-up: Act as the \"Conductor\" for the executive team. You will track and drive the completion of critical actions from the CEO, CFO, and other leads throughout the week, ensuring that by the time the Management Team meets, \"in-progress\" items have actually moved forward.\n* High-Stakes Stakeholder Management: Communicate across the C-suite with confidence and diplomacy. You are responsible for \"managing up\"—proactively chasing updates and ensuring the CEO, CFO, and partners stay on track with their commitments.\n\nKnowledge Architecture & Systems Building\n\n* Information Management: Architect and maintain our \"Single Source of Truth.\" This includes ongoing (re)-organization and curation of our Google Drive (400+ files) into an intuitive, indexed asset library.\n* Business Intelligence (BI): Navigate our data platforms (website, App analytics, etc.) to provide clarity. When a question arises, you analyze data, check with teammates, identify trends, and provide recommendations, demonstrating operational rigor, data literacy, and startup agility to build systems from scratch.\n* Process Codification: Work with the appropriate teams to turn recurring tasks (template use, vendor onboarding) into repeatable, scalable playbooks.\n\nOperational Risk & Support\n\n* Business & Commercial Literacy: While not a legal role, you \"think in legal terms\"—identifying when decisions require formal documentation, when contracts need closer scrutiny, and how to protect company assets through organized record-keeping.\n* Autonomous Research: Follow a \"Research → Recommend → Execute\" framework. You identify the best tools or paths forward, explain the \"Why\" to the CEO, and execute once signed off.\n\nRequired Qualifications\n\n* 4+ years of Project Management in a fast-paced, high-growth startup environment (0-to-1 or Series A experience highly preferred).\n* Exceptional Communication: You are comfortable \"managing up\" and holding senior leaders accountable to deadlines without creating friction.\n* The \"Natural Organizer\": You find genuine satisfaction in turning digital chaos into structured, searchable, and scalable systems.\n* Data Savviness: Expert-level proficiency in Google Workspace and a knack for navigating data dashboards to extract actionable insights.\n* Independent Drive: Ability to work with forensic attention to detail while knowing when to proactively seek clarification to guide next steps.",
+            "externalLink": "https://www.upwork.com/jobs/~022060486332341173872",
+            "isFeatured": false,
+            "publishedAt": "2026-05-29T22:23:38.014Z",
+            "questions": [
+              "Describe your recent experience with similar projects"
+            ],
+            "skills": [
+              "Digital Project Management",
+              "Project Timelines",
+              "Responsive Design",
+              "Mobile App",
+              "Figma",
+              "User Interface Design",
+              "Wireframing",
+              "Usability Testing",
+              "User Experience Design",
+              "Project Management",
+              "Product Design",
+              "Prototyping",
+              "Agile Project Management",
+              "Administrative Support",
+              "Web Analytics"
+            ],
+            "title": "Special Projects Lead",
+            "uid": "2060486332341173872",
+            "vendor": {
+              "countryCodes": [
+                "AR",
+                "MX"
+              ],
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 27,
+            "budget": {
+              "fixedBudget": 1000,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Web Development",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2021-08-14T00:00:00.000Z",
+              "countryCode": "MY",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": false,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 7,
+                "feedbackRate": 5,
+                "hireRate": 100,
+                "totalHires": 9,
+                "totalSpent": 11212.93
+              },
+              "timezone": "Europe/London"
+            },
+            "createdAt": "2026-05-29T17:20:06.403Z",
+            "customJobScore": 3.8,
+            "description": "We are looking for an experienced Full-Stack Developer to continue development of our existing platform, which includes a web-based admin panel built with Next.js and JavaScript and an Android mobile application. The system is already live and deployed on Vercel, and we are now moving into the next phase of development.\n\nProject Scope\n\nWe need a developer who can work on both the backend and frontend to implement the following features:\n\n1. Multi-Vendor System\nVendor registration and login\nVendor onboarding flow\nRole-based access control\nVendor profile management\n2. Vendor Order Management\nVendor-specific order dashboard\nOrder status tracking and updates\nOrder history and reporting\nVendor access restrictions to their own orders only\n3. Vendor Subscription Management\nSubscription plan creation and management\nSubscription purchase and renewal workflows\nSubscription status tracking\nAdmin controls for managing vendor subscriptions\n4. Stripe Payment Integration\nStripe subscription payments\nSecure payment processing\nWebhook implementation\nPayment history and transaction tracking\nSubscription billing management\n5. Android App Updates\nUpdate existing Android application to support new vendor functionality\nImplement required API integrations\nMaintain consistency between web and mobile experiences\nTesting and deployment support\n\n\nPreferred Qualifications\nExperience building multi-tenant or marketplace platforms\nStrong understanding of authentication and authorization systems\nExperience with subscription-based products\nAbility to work with an existing codebase and extend functionality efficiently\n\nPlease share:\n\nRelevant marketplace or multi-vendor projects\nStripe integration experience\nAndroid app projects you've worked on\nEstimated availability and timeline",
+            "externalLink": "https://www.upwork.com/jobs/~022060410867474359998",
+            "isFeatured": false,
+            "publishedAt": "2026-05-29T17:21:49.550Z",
+            "questions": null,
+            "skills": [
+              "Payment Gateway Integration",
+              "Node.js",
+              "AI Development",
+              "Full-Stack Development",
+              "HTML5",
+              "JavaScript",
+              "MySQL",
+              "Web Development",
+              "Back-End Development",
+              "MERN Stack"
+            ],
+            "title": "Expert Full Stack developer needed urgently",
+            "uid": "2060410867474359998",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "EXPERT",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 7,
+            "budget": {
+              "fixedBudget": 100,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Market Research & Product Reviews",
+            "client": {
+              "companySize": 0,
+              "connectedAt": null,
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": false,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "America/Chicago"
+            },
+            "createdAt": "2026-05-28T15:45:45.318Z",
+            "customJobScore": 3,
+            "description": "PROJECT TITLE:\nHouston Commercial Property & Recurring Maintenance Prospect Database\n\nPROJECT DESCRIPTION:\n\nI own and operate HomeSmiles Pearland, an exterior maintenance company in the Houston, Texas area. I am looking for a lead generation/data research specialist to build a highly organized commercial prospect database focused on recurring maintenance opportunities.\n\nThis is NOT a generic business lead list project.\n\nI need a curated database of property-focused businesses and properties that are likely to outsource recurring exterior maintenance services to local owner-operated vendors.\n\nSERVICES WE PROVIDE:\n- Pressure washing\n- Soft washing\n- Breezeway cleaning\n- Dumpster pad cleaning\n- Sidewalk cleaning\n- Exterior window cleaning\n- Gutter cleaning\n- Dryer vent cleaning\n- Common area cleaning\n- Exterior preventative maintenance\n\nTARGET MARKET AREAS:\nHouston metro area including:\n- Pearland\n- Friendswood\n- League City\n- Webster\n- Clear Lake\n- Pasadena\n- Missouri City\n- Sugar Land\n- South Houston\n- Nearby surrounding areas\n\nTARGET CATEGORIES:\n\n1. APARTMENTS / MULTIFAMILY\nFocus on:\n- Garden-style apartments\n- Class B/C properties preferred\n- Approximately 80–300 units preferred\n- Small-to-mid-sized operators\n- Regional management companies\n\nAvoid:\n- Luxury downtown high-rises\n- Student housing\n- Senior living\n- Hotels\n\n2. COMMERCIAL PROPERTY MANAGEMENT\nFocus on:\n- Retail centers\n- Office parks\n- Mixed-use properties\n- Small-to-mid local commercial property managers\n\nAvoid:\n- Huge national corporations if possible\n\n3. FACILITY MANAGEMENT / FACILITY SERVICE COMPANIES\nFocus on:\n- Local/regional facility maintenance firms\n- Janitorial companies\n- Exterior maintenance vendors\n- Building service contractors\n- Companies likely to subcontract recurring work\n\n4. HOA / COMMUNITY ASSOCIATION MANAGEMENT\nFocus on:\n- HOA management companies\n- Community associations\n- Townhome associations\n- MUD/community maintenance organizations\n\n5. LIGHT INDUSTRIAL / WAREHOUSE\nFocus on:\n- Light industrial\n- Flex industrial\n- Distribution centers\n- Owner-managed warehouse properties\n- Small-to-mid industrial parks\n\nAvoid:\n- Massive enterprise/national facilities\n\nDATABASE REQUIREMENTS:\n\nPlease provide an organized spreadsheet with separate tabs/categories if possible.\n\nREQUIRED COLUMNS:\n- Company / Property Name\n- Category\n- Address\n- City\n- ZIP\n- Website\n- Phone Number\n- Management Company\n- Decision Maker Name\n- Job Title\n- Email Address\n- LinkedIn Profile\n- Estimated Property Size or Unit Count (if available)\n- Notes\n- Priority/Quality Notes\n\nIMPORTANT FILTERING REQUIREMENTS:\n\nPlease prioritize:\n- Small-to-mid-sized companies\n- Local or regional operators\n- Businesses likely to work with local vendors\n- Companies/properties with recurring maintenance potential\n- Older properties with likely exterior cleaning needs\n- Companies managing under approximately 50 properties if possible\n\nPlease avoid:\n- Generic homeowner leads\n- Residential consumers\n- National enterprise corporations requiring massive vendor onboarding\n- Duplicate entries\n- Low-quality or incomplete records\n\nDATA SOURCING:\n\nYou may use:\n- Google Maps\n- LinkedIn\n- Apollo.io\n- Company websites\n- Commercial real estate directories\n- Public business/property records\n- Other legal/professional sourcing methods\n\nDELIVERABLE:\nClean, organized spreadsheet with high-quality Houston-area commercial maintenance prospects suitable for long-term business development and recurring service outreach.\n\nFor this project, I prioritize high-quality, well-targeted commercial/property management prospects over large quantities of generic leads. Please include your estimated number of verified records and explain your sourcing and verification process.\n\nPlease include examples/sample rows before final delivery if possible.\n\nPlease also explain:\n- approximately how many records you expect to provide\n- how you source decision maker information\n- what tools/platforms you use\n- expected turnaround time",
+            "externalLink": "https://www.upwork.com/jobs/~022060024735310985987",
+            "isFeatured": false,
+            "publishedAt": "2026-05-28T15:49:03.269Z",
+            "questions": [
+              "Have you built B2B/commercial property lead lists before? Please describe one similar project.",
+              "What tools will you use to find and verify leads?",
+              "Can you provide 5 sample rows before completing the full list?",
+              "How will you avoid duplicates and low-quality records?",
+              "For $100, approximately how many high-quality records can you provide?"
+            ],
+            "skills": [
+              "Lead Generation",
+              "List Building",
+              "B2B Lead Generation",
+              "Data Scraping",
+              "Web Scraping",
+              "LinkedIn Lead Generation",
+              "Data Mining",
+              "Market Research",
+              "Internet Research",
+              "Prospect List"
+            ],
+            "title": "Houston Commercial Property & Recurring Maintenance Prospect Database",
+            "uid": "2060024735310985987",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 0,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Recruiting & Human Resources",
+            "client": {
+              "companySize": 2,
+              "connectedAt": null,
+              "countryCode": "IN",
+              "enterprise": false,
+              "industry": "Tech & IT",
+              "paymentMethodVerified": false,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "Asia/Calcutta"
+            },
+            "createdAt": "2026-05-27T15:16:44.858Z",
+            "customJobScore": 2.7,
+            "description": "We are looking for an experienced BPO / telesales agency to help onboard pharmacies for a hyperlocal medicine delivery and pharmacy ERP platform across India.\n\nInitial rollout will focus on Tier 1 cities.\n\nScope of Work\n\nYour team will:\n\nCall and pitch pharmacies\nExplain platform onboarding process\nCollect required onboarding documents\nFollow up until pharmacy activation\nCoordinate inventory/ERP onboarding support\nUpdate lead and conversion status regularly\n\nRequirement\nProven BPO/telesales experience\nTeam with outbound calling capability\nExperience in merchant/vendor onboarding preferred\nPharma/healthcare sales experience is a plus\nAbility to handle onboarding targets at scale\nCommercial Model\nPure commission / conversion-based payout\nPayment per successful pharmacy onboarding\nIncentives for higher monthly conversions\nLong-term partnership opportunity\n\nWhen Applying, Please Share\nCompany profile\nTeam size\nPrevious onboarding/sales projects\nCalling capacity per day\nCities/languages supported\nExpected payout per successful onboarding \n\n(NOTE: apply only via upwork)",
+            "externalLink": "https://www.upwork.com/jobs/~022059655047522282920",
+            "isFeatured": false,
+            "publishedAt": "2026-05-27T15:21:46.232Z",
+            "questions": null,
+            "skills": [
+              "Cold Calling",
+              "Telemarketing",
+              "Sales",
+              "Phone Communication",
+              "Customer Service",
+              "Lead Generation",
+              "B2B Marketing"
+            ],
+            "title": "Hiring BPO / Call Center Agency",
+            "uid": "2059655047522282920",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 11,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 20,
+                "min": 10
+              }
+            },
+            "category": "QA Testing",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2026-04-27T00:00:00.000Z",
+              "countryCode": "SG",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "Asia/Singapore"
+            },
+            "createdAt": "2026-05-27T05:08:32.399Z",
+            "customJobScore": 2.5,
+            "description": "ShipIndia Ecommerce App – Functional Testing Brief\n1. Project Background\nShipIndia is an ecommerce platform that allows Indian vendors to sell products to customers in Singapore and Malaysia.\n\nThe platform supports different users:\n\nCustomer\nEnd user who browses ShipIndia, adds products to cart, pays online, tracks orders, and receives items overseas.\n\nVendor\nIndian seller who lists products on ShipIndia and fulfils orders by sending items locally to the ShipIndia India warehouse.\n\nThere are two vendor types:\n\nShopify Owners\nVendors who already have their own Shopify store. They install the ShipIndia Shopify app, connect their store, and ShipIndia pulls their products/inventory into the ShipIndia marketplace. When a customer places an order on ShipIndia, the vendor receives the order in their Shopify/ShipIndia vendor panel and ships the item to ShipIndia’s India warehouse.\n\nNon-Shopify Owners\nVendors who do not have a Shopify store. They use the ShipIndia vendor portal to manually upload products, update inventory, receive orders, and manage dispatches.\n\nLogistics User\nInternal logistics team login used to manage received parcels, warehouse processing, dispatch, export, shipment updates, and delivery status.\n\nAdmin\nShipIndia internal admin login used to manage customers, vendors, products, orders, approvals, payouts, settings, logistics flow, and platform-level controls.\n2. Testing Objective\nTo complete comprehensive functional testing of the ShipIndia ecommerce platform within 3 days, covering customer, vendor, logistics, and admin flows.\n\nThe tester must identify:\n• Broken links\n• Functional errors\n• Button/page issues\n• Mobile alignment issues\n• Visual inconsistencies\n• Poor user flow\n• Missing validation\n• Email notification issues\n• Order flow issues\n• Vendor onboarding issues\n• Usability gaps\n• Recommended improvements\n\nThis is not security testing.\n3. Scope of Testing\nA. Customer Flow Testing\n• Sign up / login\n• OTP or email verification\n• Browse products\n• Search and filters\n• Product page details\n• Add to cart\n• Checkout flow\n• Payment process\n• Order confirmation\n• Email notifications\n• Tracking updates\n• Mobile responsiveness\n\nB. Vendor Flow Testing\n\nShopify Vendor Flow\n• Shopify app installation\n• Vendor registration\n• Company profile setup\n• Product sync from Shopify\n• Inventory sync\n• Order notification\n• Dispatch process\n• Tracking upload\n• Email notifications\n\nNon-Shopify Vendor Flow\n• Vendor registration\n• Product upload\n• Inventory update\n• Order management\n• Dispatch flow\n• Tracking upload\n• Email notifications\n\nC. Logistics Flow Testing\n• Logistics login\n• Warehouse receiving\n• Dispatch updates\n• Tracking updates\n• Dashboard usability\n\nD. Admin Flow Testing\n• Vendor approval\n• Product approval\n• Customer management\n• Order management\n• Dashboard usability\n• Platform controls\n4. Email Notification Testing\nTester must verify all email triggers including:\n• Registration emails\n• Order confirmation emails\n• Dispatch notifications\n• Warehouse received notifications\n• Delivery confirmations\n• Cancellation notifications\n\nTester must confirm:\n• Email receipt\n• Correct content\n• Working links\n• Branding consistency\n• Mobile responsiveness\n5. Mobile and Visual Testing\nTester must test:\n• Desktop view\n• Mobile browser view\n• Tablet view\n\nCheck for:\n• Alignment issues\n• Button spacing\n• Image scaling\n• Menu usability\n• Form responsiveness\n• UI consistency\n• Font consistency\n• Broken UI sections\n6. Required Deliverables\n1. Functional Testing Report\nTester must provide a complete issue report with:\n• Module\n• User type\n• Issue description\n• Severity level\n• Screenshot evidence\n• Recommendations\n\n2. Screenshot-Based Vendor Guide\n\nFor Shopify Vendors:\n• Install ShipIndia app\n• Connect Shopify store\n• Enter company details\n• Sync products\n• Receive orders\n• Dispatch orders\n• Upload tracking\n\nFor Non-Shopify Vendors:\n• Register vendor account\n• Upload products\n• Manage inventory\n• Receive orders\n• Dispatch orders\n• Upload tracking\n\n3. Usability Recommendation Report\nTester must suggest improvements for:\n• Customer flow\n• Vendor onboarding\n• Checkout process\n• Logistics flow\n• Admin dashboard\n• Mobile usability\n7. Timeline\nDay 1\n• Customer flow\n• Shopify vendor flow\n• Email testing\n\nDay 2\n• Non-Shopify vendor flow\n• Logistics flow\n• Admin flow\n\nDay 3\n• Retesting\n• Screenshot guide\n• Final reporting\n• Recommendations\n8. Final Expected Outcome\nBy the end of testing, ShipIndia should receive:\n• Complete bug and issue report\n• Screenshot evidence\n• Usability recommendations\n• Vendor training guide\n• Readiness assessment for launch",
+            "externalLink": "https://www.upwork.com/jobs/~022059501986862740393",
+            "isFeatured": false,
+            "publishedAt": "2026-05-27T05:09:39.537Z",
+            "questions": null,
+            "skills": [
+              "API Testing",
+              "Desktop Application Testing",
+              "Annotated Screenshot",
+              "Bug Tracking & Reports",
+              "Bug Reports",
+              "Web Testing",
+              "Software QA",
+              "Functional Testing",
+              "Usability Testing",
+              "Test Case Design"
+            ],
+            "title": "Testing for ecommerce platform",
+            "uid": "2059501986862740393",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 11,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Other - Accounting & Consulting",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2026-03-02T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "America/Chicago"
+            },
+            "createdAt": "2026-05-26T16:20:47.847Z",
+            "customJobScore": 2.8,
+            "description": "Full-Time Bookkeeper / Accountant\nWe're a Kansas City–based holding company (Callidus Holdings) operating a portfolio of bars, restaurants, and two software ventures. We need a full-time bookkeeper/accountant to take ownership of day-to-day books across the group and partner closely with ownership and our CPA on month-end close, payroll reconciliation, and reporting.\nScope of work:\n• Full-cycle bookkeeping across ~8 operating entities + 2 holding companies in QuickBooks Online\n• Daily/weekly bank, credit card, and merchant processor reconciliations\n• AP management, bill pay scheduling, vendor onboarding (W-9s, 1099 tracking)\n• AR, intercompany transfers, and owner draw/distribution tracking across the holding structure\n• Payroll reconciliation\n• Monthly close, P&L by venue, balance sheet review, and cash flow reporting\n• Sales tax filings (Missouri + Texas) and coordination with our CPA on quarterly/annual filings\n• Document organization in Google Drive — keeping receipts, invoices, and statements tied to transactions\nMust-haves:\n• 3+ years bookkeeping\n• Strong QBO expertise — class/location tracking across multiple entities\n• Comfortable with tipped payroll and restaurant chart of accounts\n• Self-directed, deadline-driven, clean documentation habits\n• Fluent written English and responsive on Slack/email during US business hours (CST)\nCommitment: ~40 hrs/week, ongoing. Start ASAP.",
+            "externalLink": "https://www.upwork.com/jobs/~022059308778261841838",
+            "isFeatured": false,
+            "publishedAt": "2026-05-26T16:23:31.666Z",
+            "questions": null,
+            "skills": [
+              "Accounting Basics",
+              "Light Bookkeeping",
+              "Tax Accounting",
+              "Tax Preparation",
+              "QuickBooks Online",
+              "Bookkeeping",
+              "Accounting",
+              "Recruiting",
+              "Sourcing",
+              "Boolean Search",
+              "LinkedIn Recruiting",
+              "Resume Screening",
+              "Candidate Interviewing"
+            ],
+            "title": "Staff Accountant",
+            "uid": "2059308778261841838",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 10,
+            "budget": {
+              "fixedBudget": 1500,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Web Development",
+            "client": {
+              "companySize": 0,
+              "connectedAt": null,
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": false,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "America/Chicago"
+            },
+            "createdAt": "2026-05-23T21:45:42.003Z",
+            "customJobScore": 3,
+            "description": "DFW Emergency Response LLC is seeking a senior WordPress / Elementor developer or small development team to build a mobile-first emergency response operations platform.\n\nThis is not a basic contractor website.\n\nWe already have the business concept, service structure, visual direction, screenshots, content direction, and detailed platform requirements. The selected developer will not be starting from scratch creatively. We need someone who can take our direction and build the platform correctly on the technical side.\n\nThe platform must be elite, fast, mobile-first, and operationally functional.\n\nThe build must include:\n• WordPress / Elementor development\n• Mobile-first emergency response design\n• Customer request intake\n• Photo and video upload capability\n• Click-to-call functionality\n• Jobber workflow integration\n• Vendor onboarding/application workflow\n• Fast backend setup\n• SEO-ready structure\n• High-performance hosting recommendation\n• Security, backups, and ownership handoff\n• Future-ready architecture for portals, automation, CRM expansion, call tracking, reviews, and multi-city growth\n\nSpeed and performance are very important. The preferred mobile load speed target is 1.5 seconds or faster, with under 2 seconds as the maximum acceptable target.\n\nWe want a clean, scalable, future-proof build using widely supported technology. No proprietary lock-in. No bloated templates. No outdated plugins. No system that only one developer can maintain.\n\nAll accounts, website files, hosting, domain, uploaded data, customer data, vendor data, Google accounts, design assets, and administrative access must remain owned and controlled by DFW Emergency Response LLC.\n\nA detailed specification PDF is attached. Please review it before responding.\n\nIn your response, please include:\n• Relevant portfolio examples\n• WordPress / Elementor experience\n• Jobber or field-service integration experience\n• How you would architect this platform\n• Timeline estimate\n• Fixed-price estimate\n• Hosting recommendation\n• Maintenance/support options after launch\n• What would be included and excluded from your proposal\n\nWe are looking for someone who understands operational platforms, not just website design.",
+            "externalLink": "https://www.upwork.com/jobs/~022058303378928107373",
+            "isFeatured": false,
+            "publishedAt": "2026-05-23T21:48:26.959Z",
+            "questions": null,
+            "skills": [
+              "Responsive Design",
+              "Website Optimization",
+              "WordPress",
+              "WordPress Development",
+              "API Integration",
+              "Elementor",
+              "UI /UX Design",
+              "Technical SEO",
+              "CRM Automation",
+              "Zapier"
+            ],
+            "title": "Senior WordPress/Elementor Developer Needed for Emergency Response Operations Platform",
+            "uid": "2058303378928107373",
+            "vendor": {
+              "countryCodes": [
+                "AR",
+                "BR",
+                "CA",
+                "CO",
+                "HR",
+                "CZ",
+                "EE",
+                "HU",
+                "LV",
+                "LT",
+                "PL",
+                "RO",
+                "RS",
+                "SK",
+                "UA",
+                "US",
+                "AI",
+                "AG",
+                "AW",
+                "BS",
+                "BB",
+                "BZ",
+                "BM",
+                "BO",
+                "BQ",
+                "VG",
+                "KY",
+                "CL",
+                "CR",
+                "CW",
+                "DM",
+                "DO",
+                "EC",
+                "SV",
+                "FK",
+                "GF",
+                "GL",
+                "GD",
+                "GP",
+                "GT",
+                "GY",
+                "HT",
+                "HN",
+                "JM",
+                "MQ",
+                "MX",
+                "MS",
+                "NL",
+                "NI",
+                "PA",
+                "PY",
+                "PE",
+                "PR",
+                "BL",
+                "KN",
+                "LC",
+                "MF",
+                "PM",
+                "VC",
+                "SX",
+                "SR",
+                "TT",
+                "TC",
+                "UM",
+                "VI",
+                "UY",
+                "VE",
+                "AL",
+                "AD",
+                "AT",
+                "BY",
+                "BE",
+                "BA",
+                "BG",
+                "DK",
+                "FO",
+                "FI",
+                "FR",
+                "TF",
+                "DE",
+                "GI",
+                "GR",
+                "GG",
+                "VA",
+                "IS",
+                "IE",
+                "IM",
+                "IT",
+                "JE",
+                "LI",
+                "LU",
+                "MK",
+                "MT",
+                "MD",
+                "MC",
+                "ME",
+                "NL",
+                "NO",
+                "PT",
+                "RU",
+                "SM",
+                "SI",
+                "ES",
+                "SJ",
+                "SE",
+                "CH",
+                "GB"
+              ],
+              "englishLevel": "ANY",
+              "experienceLevel": "EXPERT",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 14,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 80,
+                "min": 10
+              }
+            },
+            "category": "Accounting & Bookkeeping",
+            "client": {
+              "companySize": 2,
+              "connectedAt": "2020-03-01T00:00:00.000Z",
+              "countryCode": "SG",
+              "enterprise": false,
+              "industry": "Tech & IT",
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": false,
+              "stats": {
+                "avgRate": 11.868834872792092,
+                "feedbackCount": 23,
+                "feedbackRate": 4.72,
+                "hireRate": 54,
+                "totalHires": 31,
+                "totalSpent": 41232.76
+              },
+              "timezone": "Australia/Perth"
+            },
+            "createdAt": "2026-05-22T16:56:06.205Z",
+            "customJobScore": 3.8,
+            "description": "Singapore-incorporated Pte Ltd needs a first-year statutory audit on a 5 business-day timeline. Engagement starts immediately.\n\nCompany: Software / cybersecurity sector. Singapore subsidiary of a US parent company. Incorporated mid-2025. First FYE 31 December 2025 (8-month stub period). Full company details shared with shortlisted candidates under NDA.\n\nWe qualify for the Singapore small-company audit exemption under section 205C of the Companies Act, but are commissioning a voluntary audit to satisfy an enterprise customer's vendor onboarding requirement.\n\nScope (genuinely small):\n\n    - 8-month first FY (calendar 2025)\n    - Singapore Financial Reporting Standards for Small Entities\n    - Singapore Standards on Auditing (SSAs)\n    - Approximately 60 bank transactions across 3 currencies\n    - Total assets under SGD 500; total revenue under SGD 10,000\n    - One customer-receivable invoice (documented with PO and contract)\n    - Small US-parent intercompany capital injections (already classified as equity, documented in Notes)\n\n\nDocuments ready for Day 1 delivery (audit pack):\n\n    - Reconciled Management Accounts (P&L + Balance Sheet) with line-by-line source notes\n    - Wise bank statements (SGD, USD, IDR) in Excel and stamped PDF\n    - Unaudited Annual Report draft (FYE 31 Dec 2025), SFRS for Small Entities basis\n    - ACRA Bizfile, Company Extract, Constitution\n    - All contractor W-9 / W-8BEN forms\n    - NRA / OFAC / Principal Address position memos\n\n\nTimeline (must commit in proposal):\n\n    - Day 1 Mon: engagement letter signed, documents delivered\n    - Day 5 Fri: signed audit opinion + audited FS PDF delivered\n\n\nRequired:\n    - ACRA-registered Public Accountant or working for an ACRA-registered audit firm. Include PA registration number and firm ACRA registration.\n    - ISCA member in good standing.\n    - Confirmed capacity to start this ASAP.\n\nIMPORTANT: Applicants without ACRA Public Accountant credentials will not be considered.",
+            "externalLink": "https://www.upwork.com/jobs/~022057868111786372123",
+            "isFeatured": false,
+            "publishedAt": "2026-05-22T20:29:51.874Z",
+            "questions": [
+              "Your or your firm's ACRA Public Accountant registration details (registration number and firm name).",
+              "Fastest realistic turnaround from start of fieldwork to signed opinion, given the scope above.",
+              "Have you audited a first-year Singapore Pte Ltd company in the last 12 months? If yes, brief description of the engagement (no client names needed)."
+            ],
+            "skills": [
+              "Accounting",
+              "Reputation Management",
+              "Search Engine Optimization",
+              "SEO Backlinking"
+            ],
+            "title": "Urgent: Singapore Statutory Audit (Pte Ltd, First FY) — Start ASAP",
+            "uid": "2057868111786372123",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 15,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Lead Generation & Telemarketing",
+            "client": {
+              "companySize": 1,
+              "connectedAt": "2023-05-27T00:00:00.000Z",
+              "countryCode": "IN",
+              "enterprise": false,
+              "industry": "Media & Entertainment",
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": false,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 1,
+                "feedbackRate": 5,
+                "hireRate": 17,
+                "totalHires": 1,
+                "totalSpent": 10
+              },
+              "timezone": "Asia/Calcutta"
+            },
+            "createdAt": "2026-05-20T16:41:36.507Z",
+            "customJobScore": 3.6,
+            "description": "# Lead Generation & Vendor Onboarding Specialist – Food/FMCG Ecosystem\n\n## About Us\n\nWe are an AI-enabled B2B growth ecosystem platform focused on Food, FMCG, and MSMEs. The platform connects startups, vendors, distributors, and business enablers through advisory, ecosystem building, vendor discovery, and business matchmaking.\n\nWe are looking for a proactive Lead Generation & Vendor Onboarding Specialist to support ecosystem expansion and business growth.\n\n---\n\n## Role Overview\n\nThis role focuses on:\n\n* generating and managing qualified leads,\n* setting up lead capture systems,\n* researching and onboarding vendors,\n* supporting sales outreach,\n* and helping build the Food India Story vendor ecosystem.\n\nThe role requires a combination of:\n\n* lead generation,\n* CRM management,\n* vendor outreach,\n* and ecosystem coordination.\n\n---\n\n## Key Responsibilities\n\n### 1. Lead Generation & Lead Management\n\n* Generate business leads through:\n\n  * LinkedIn\n  * Website inquiries\n  * Social media\n  * Industry directories\n  * Online research\n  * Ecosystem networking\n  * Startup and university/faculty ecosystem\n * Maintain structured lead databases\n* Track follow-ups and sales pipeline\n* Support appointment scheduling and lead nurturing\n\n### 2. Lead Capture System Setup\n\n  * Help create and manage:\n  * Website lead forms\n  * Google Forms\n  * CRM systems\n  * WhatsApp lead collection workflows\n  * Lead tracking sheets\n  * AI-assisted automation workflows\n  * Support integration of:\n  * Zapier\n  * Google Sheets\n  * Email notifications\n  * Social media lead workflows\n\n### 3. Vendor Research & Onboarding\n\nResearch and onboard vendors related to:\n\n* Food processing machinery\n* Packaging materials\n* Logistics providers\n* Warehousing companies\n* Ingredient suppliers\n* Retail support vendors\n* MSME ecosystem partners\n* Statutory/FSSAI compliance service providers\n---\n\n### 4. Vendor Outreach & Relationship Building\n\n  * Contact vendors through:\n  * LinkedIn\n  * Email\n  * WhatsApp\n  * Phone calls\n\n* Explain platform benefits\n* Coordinate onboarding process\n* Maintain vendor records and follow-up   schedules\n\n### 5. Sales Support & Target Achievement\n\n * Work on planned monthly targets for:\n  * Leads generated\n  * Vendor onboarding\n  * Calls scheduled\n  * Sales conversion support\n  * Assist the founder in ecosystem expansion initiatives\n## Preferred Skills\n\n* Lead generation experience\n* CRM and pipeline management\n* LinkedIn outreach knowledge\n* Strong communication skills\n* Research-oriented mindset\n* Familiarity with automation tools preferred\n* FMCG/Food ecosystem understanding preferred\n\n## Preferred Tools\n\n* LinkedIn\n* Google Sheets\n* Zapier\n* Canva (basic)\n* Notion / Trello / CRM tools\n* WhatsApp Business\n\n## Performance Metrics\n\n* Number of leads generated\n* Quality of leads\n* Vendor onboarding numbers\n* Follow-up consistency\n* Sales support effectiveness\n* CRM accuracy preferred but not mandatory\n\n## Engagement Type\n\n* Freelance / Part-time\n* Remote\n* Initial 1-month engagement (extendable)\n\n## To Apply\n\nPlease share:\n\n1. Relevant experience\n2. Lead generation tools/platforms used\n3. Experience in vendor onboarding or outreach\n4. Sample achievements/results\n5. Availability per week",
+            "externalLink": "https://www.upwork.com/jobs/~022057139687526977223",
+            "isFeatured": false,
+            "publishedAt": "2026-05-20T16:44:09.965Z",
+            "questions": [
+              "Are you confident to handle this challenge of a startup ?",
+              "Describe your recent experience with similar projects"
+            ],
+            "skills": [
+              "Lead Generation",
+              "List Building",
+              "Prospect List",
+              "vender onboarding",
+              "Communication Strategy",
+              "lead capture system",
+              ". Vendor Research & Onboarding",
+              "Vendor Outreach & Relationship Building",
+              "Sales Support & Target Achievement",
+              "Market Research"
+            ],
+            "title": "Lead Generation & Vendor Onboarding Specialist – Food/FMCG Ecosystem",
+            "uid": "2057139687526977223",
+            "vendor": {
+              "countryCodes": [
+                "IN",
+                "PK",
+                "BD",
+                "LK"
+              ],
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "INDEPENDENT",
+              "languages": null
+            }
+          }
+        ],
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-headers": [
+            "User-Agent, Content-Type, Authorization, X-Apify-Request-Origin, X-Apify-Github-Actions-Run-Url, openai-conversation-id, openai-ephemeral-user-id, x-apify-integration-platform, x-apify-integration-app-id, x-apify-integration-ai-tool"
+          ],
+          "access-control-allow-methods": [
+            "GET, POST"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "X-Apify-Pagination-Total, X-Apify-Pagination-Offset, X-Apify-Pagination-Desc, X-Apify-Pagination-Count, X-Apify-Pagination-Limit"
+          ],
+          "cache-control": [
+            "no-cache, no-store, must-revalidate"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Wed, 03 Jun 2026 14:56:26 GMT"
+          ],
+          "expires": [
+            "0"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-apify-pagination-count": [
+            "13"
+          ],
+          "x-apify-pagination-desc": [
+            "false"
+          ],
+          "x-apify-pagination-limit": [
+            "999999999999"
+          ],
+          "x-apify-pagination-offset": [
+            "0"
+          ],
+          "x-apify-pagination-total": [
+            "13"
+          ],
+          "x-ratelimit-limit": [
+            "400"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 201
+      }
+    },
+    {
+      "recorded_at": "2026-06-03T14:56:31.560344Z",
+      "request": {
+        "body_json": {
+          "includeKeywords.keywords": [
+            "supplier consolidation"
+          ],
+          "includeKeywords.matchDescription": true,
+          "includeKeywords.matchSkills": false,
+          "includeKeywords.matchTitle": true,
+          "limit": 50
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.apify.com/v2/acts/upwork-vibe~upwork-job-scraper/run-sync-get-dataset-items"
+      },
+      "response": {
+        "body_json": [],
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-headers": [
+            "User-Agent, Content-Type, Authorization, X-Apify-Request-Origin, X-Apify-Github-Actions-Run-Url, openai-conversation-id, openai-ephemeral-user-id, x-apify-integration-platform, x-apify-integration-app-id, x-apify-integration-ai-tool"
+          ],
+          "access-control-allow-methods": [
+            "GET, POST"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "X-Apify-Pagination-Total, X-Apify-Pagination-Offset, X-Apify-Pagination-Desc, X-Apify-Pagination-Count, X-Apify-Pagination-Limit"
+          ],
+          "cache-control": [
+            "no-cache, no-store, must-revalidate"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Wed, 03 Jun 2026 14:56:31 GMT"
+          ],
+          "expires": [
+            "0"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-apify-pagination-count": [
+            "0"
+          ],
+          "x-apify-pagination-desc": [
+            "false"
+          ],
+          "x-apify-pagination-limit": [
+            "999999999999"
+          ],
+          "x-apify-pagination-offset": [
+            "0"
+          ],
+          "x-apify-pagination-total": [
+            "0"
+          ],
+          "x-ratelimit-limit": [
+            "400"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 201
+      }
+    },
+    {
+      "recorded_at": "2026-06-03T14:56:38.523942Z",
+      "request": {
+        "body_json": {
+          "includeKeywords.keywords": [
+            "intake automation"
+          ],
+          "includeKeywords.matchDescription": true,
+          "includeKeywords.matchSkills": false,
+          "includeKeywords.matchTitle": true,
+          "limit": 50
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.apify.com/v2/acts/upwork-vibe~upwork-job-scraper/run-sync-get-dataset-items"
+      },
+      "response": {
+        "body_json": [
+          {
+            "applicationCost": 10,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 35,
+                "min": 20
+              }
+            },
+            "category": "Web Development",
+            "client": {
+              "companySize": 0,
+              "connectedAt": null,
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": false,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 0,
+                "totalHires": 0,
+                "totalSpent": 0
+              },
+              "timezone": "America/Chicago"
+            },
+            "createdAt": "2026-05-29T03:34:58.074Z",
+            "customJobScore": 3,
+            "description": "ABOUT US\n\nWe're an AI transformation consulting firm helping professional services businesses become AI-native. We design and implement end-to-end AI systems that automate operations, improve client experience, and drive growth.\n\nWe're looking for a talented workflow builder to join our team on an ongoing, part-time basis (10-20 hrs/week to start, growing with demand).\n\n---\n\nWHAT YOU'LL BUILD\n\nYou'll work from our architecture designs and build the actual workflows and integrations. Examples of what we're building right now:\n\n- Intake automation: client contacts the firm via phone, email, or web form. AI processes the inquiry, classifies it, routes it to the right person, drafts an engagement letter, and creates a record in the practice management system. All automated.\n\n- Follow-up sequences: automated reminders for unsigned documents, unpaid invoices, and client re-engagement campaigns. Timed, tracked, never forgotten.\n\n- Document generation: AI drafts standard documents from templates, auto-fills client-specific details, sends for e-signature, and logs everything.\n\n- System integrations: connecting Claude API to practice management systems (Clio, Dentrix), e-signature tools (DocuSign, PandaDoc), email/SMS (Outlook, Twilio), and accounting tools.\n\n- Deduplication and matching logic: detecting when the same client contacts through multiple channels and merging records intelligently.\n\n- Dashboards: tracking response times, data completeness, conversion rates, and AI accuracy over time.\n\n---\n\nWHAT WE NEED\n\nRequired:\n- Proven experience building workflows in n8n (cloud or self-hosted). Share examples.\n- Experience integrating with Claude (Anthropic) or OpenAI APIs.\n- Experience with REST API integrations (connecting to CRMs, billing systems, email, SMS).\n- Comfortable with OAuth, API keys, webhooks, and JSON data handling.\n- Strong English communication. You'll work from written specs but need to ask good questions when something is unclear.\n- Reliable internet and availability during US Central Time hours (at least 3-4 hours of overlap).\n\nNice to have:\n- Experience with Clio, Dentrix, or other practice management APIs.\n- Experience with Twilio (voice and SMS).\n- Experience with Whisper or other speech-to-text APIs.\n- Experience building approval workflows (email-based approve/reject routing).\n- Familiarity with MCP (Model Context Protocol) for Claude tool connections.\n\n---\n\nHOW WE WORK\n\nYou'll receive detailed architecture documents and workflow specifications for each build. We design the system. You build it. We review, test, and deploy together.\n\nCommunication via Slack or WhatsApp. Weekly check-in calls. Async updates daily.\n\nThis is not a one-time project. We have multiple clients across different industries and a growing pipeline. If the first project goes well, this becomes a long-term partnership.\n\n---\n\nTO APPLY\n\nPlease share:\n1. 2-3 examples of n8n workflows you've built (screenshots or Loom videos preferred)\n2. Any experience with Claude/OpenAI API integrations\n3. Your availability and timezone\n4. A brief note on why this role interests you\n\nWe'll start with a small paid test project ($100-150) to see how we work together before committing to ongoing work.",
+            "externalLink": "https://www.upwork.com/jobs/~022060203214529803230",
+            "isFeatured": false,
+            "publishedAt": "2026-05-29T03:35:55.094Z",
+            "questions": null,
+            "skills": [
+              "AI Agent Development",
+              "AI Model Integration",
+              "API Integration",
+              "Automated Workflow",
+              "Claude"
+            ],
+            "title": "n8n + AI Workflow Builder (Claude API, Clio, API Integrations) — Ongoing, Part-Time",
+            "uid": "2060203214529803230",
+            "vendor": {
+              "countryCodes": [
+                "AM",
+                "AZ",
+                "BH",
+                "BD",
+                "BT",
+                "IO",
+                "BN",
+                "KH",
+                "CN",
+                "CY",
+                "GE",
+                "HK",
+                "IN",
+                "ID",
+                "IL",
+                "JP",
+                "JO",
+                "KZ",
+                "KW",
+                "KG",
+                "LA",
+                "LB",
+                "MO",
+                "MY",
+                "MV",
+                "MN",
+                "MM",
+                "NP",
+                "OM",
+                "PK",
+                "PS",
+                "PH",
+                "QA",
+                "SA",
+                "SG",
+                "KR",
+                "LK",
+                "TW",
+                "TJ",
+                "TH",
+                "TL",
+                "TR",
+                "TM",
+                "AE",
+                "UZ",
+                "VN",
+                "YE",
+                "AI",
+                "AG",
+                "AR",
+                "AW",
+                "BS",
+                "BB",
+                "BZ",
+                "BM",
+                "BO",
+                "BQ",
+                "BR",
+                "VG",
+                "CA",
+                "KY",
+                "CL",
+                "CO",
+                "CR",
+                "CW",
+                "DM",
+                "DO",
+                "EC",
+                "SV",
+                "FK",
+                "GF",
+                "GL",
+                "GD",
+                "GP",
+                "GT",
+                "GY",
+                "HT",
+                "HN",
+                "JM",
+                "MQ",
+                "MX",
+                "MS",
+                "NL",
+                "NI",
+                "PA",
+                "PY",
+                "PE",
+                "PR",
+                "BL",
+                "KN",
+                "LC",
+                "MF",
+                "PM",
+                "VC",
+                "SX",
+                "SR",
+                "TT",
+                "TC",
+                "US",
+                "UM",
+                "VI",
+                "UY",
+                "VE",
+                "AL",
+                "AD",
+                "AT",
+                "BY",
+                "BE",
+                "BA",
+                "BG",
+                "HR",
+                "CZ",
+                "DK",
+                "EE",
+                "FO",
+                "FI",
+                "FR",
+                "TF",
+                "DE",
+                "GI",
+                "GR",
+                "GG",
+                "VA",
+                "HU",
+                "IS",
+                "IE",
+                "IM",
+                "IT",
+                "JE",
+                "LV",
+                "LI",
+                "LT",
+                "LU",
+                "MK",
+                "MT",
+                "MD",
+                "MC",
+                "ME",
+                "NL",
+                "NO",
+                "PL",
+                "PT",
+                "RO",
+                "RU",
+                "SM",
+                "RS",
+                "SK",
+                "SI",
+                "ES",
+                "SJ",
+                "SE",
+                "CH",
+                "UA",
+                "GB",
+                "DZ",
+                "AO",
+                "BJ",
+                "BW",
+                "BF",
+                "BI",
+                "CM",
+                "CV",
+                "CF",
+                "TD",
+                "KM",
+                "CG",
+                "CD",
+                "CI",
+                "DJ",
+                "EG",
+                "GQ",
+                "ER",
+                "ET",
+                "GA",
+                "GM",
+                "GH",
+                "GN",
+                "GW",
+                "KE",
+                "LS",
+                "MG",
+                "MW",
+                "ML",
+                "MR",
+                "MU",
+                "YT",
+                "MA",
+                "MZ",
+                "NA",
+                "NE",
+                "NG",
+                "RE",
+                "RW",
+                "SH",
+                "ST",
+                "SN",
+                "SC",
+                "SL",
+                "SO",
+                "ZA",
+                "SZ",
+                "TZ",
+                "TG",
+                "TN",
+                "UG",
+                "EH",
+                "ZM",
+                "ZW"
+              ],
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 20,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 50,
+                "min": 20
+              }
+            },
+            "category": "Scripts & Utilities",
+            "client": {
+              "companySize": 2,
+              "connectedAt": "2023-05-06T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": "Legal",
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 100.01329037454693,
+                "feedbackCount": 0,
+                "feedbackRate": 0,
+                "hireRate": 38,
+                "totalHires": 3,
+                "totalSpent": 2669.48
+              },
+              "timezone": "America/New_York"
+            },
+            "createdAt": "2026-05-29T03:16:02.665Z",
+            "customJobScore": 3.6,
+            "description": "Upwork Job Posting: Clio Grow & Clio Manage Automation Specialist\n\nAbout Us\n\nJM Law is a growing estate planning law firm serving clients in Virginia, Maryland, DC, Florida, and California. We work closely with a leading wealth management firm and are focused on building scalable systems that deliver an exceptional client experience.\n\nWe are looking for a Clio expert who can help us optimize, automate, and improve our intake, sales, case management, and client communication workflows.\n\nThis is not a basic administrative role. We need someone who understands business processes, automation, CRM logic, and legal operations.\n\nPrimary Responsibilities\n\nClio Grow\n\n* Build and optimize intake workflows\n* Create automated email and text message sequences\n* Create intake forms and questionnaires\n* Design lead routing and qualification processes\n* Configure pipeline stages and opportunity management\n* Improve lead follow-up systems\n* Build reporting dashboards and KPI tracking\n\nClio Manage\n\n* Create matter workflows and task automation\n* Configure matter templates\n* Automate document requests and client communication\n* Improve attorney and staff task management\n* Build custom fields and workflow triggers\n* Develop reporting and operational dashboards\n* Reduce manual administrative work\n\nAutomation Projects\n\n* Workflow design and optimization\n* CRM process mapping\n* Email automation\n* Task automation\n* Calendar and scheduling integrations\n* Microsoft 365 integrations\n* Clio Grow ↔ Clio Manage automation\n* Zapier, Make, Power Automate, or similar integrations\n\nDesired Experience\n\nRequired:\n\n* 2+ years working with Clio Grow and/or Clio Manage\n* Experience building automations\n* Experience documenting workflows and SOPs\n* Strong understanding of CRM systems\n* Excellent written communication\n\nPreferred:\n\n* Law firm operations experience\n* Estate planning experience\n* Zapier experience\n* Make.com experience\n* Microsoft 365 experience\n* Calendly experience\n* AI workflow experience (ChatGPT, Claude, Microsoft Copilot)\n\nInitial Projects\n\nThe first projects will include:\n\n1. Estate Planning Lead Intake Automation\n2. Vision Meeting Follow-Up Automation\n3. Estate Administration Intake Workflow\n4. Five-Year Review Campaign Automation\n5. Matter Creation and Task Automation\n6. Client Status Dashboard Development\n7. Attorney Productivity Reporting\n\nWhat Success Looks Like\n\nWithin the first 90 days:\n\n* Reduced manual follow-up work\n* Faster lead response times\n* Increased appointment booking rates\n* Improved CRM data quality\n* Automated client communication workflows\n* Clear operational dashboards and reporting\n\nTo Apply\n\nPlease include:\n\n1. Your Clio certifications (if applicable)\n2. Number of law firms you have worked with\n3. Specific Clio Grow automations you have built\n4. Specific Clio Manage workflows you have built\n5. Examples of Zapier/Make automations\n6. A Loom video walking through a workflow you designed\n7. Your hourly rate\n8. Your weekly availability\n\nPlease begin your application with the phrase:\n\n“Automation First”",
+            "externalLink": "https://www.upwork.com/jobs/~022060198452602881668",
+            "isFeatured": false,
+            "publishedAt": "2026-05-29T03:17:48.504Z",
+            "questions": null,
+            "skills": [
+              "API Integration",
+              "Dashboard",
+              "Automation",
+              "Customer Relationship Management"
+            ],
+            "title": "Clio Grow & Clio Manage CRM Automation Specialist",
+            "uid": "2060198452602881668",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "EXPERT",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 0,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 30,
+                "min": 10
+              }
+            },
+            "category": "Scripts & Utilities",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2015-06-28T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": false,
+              "stats": {
+                "avgRate": 12.73435970529496,
+                "feedbackCount": 173,
+                "feedbackRate": 4.78,
+                "hireRate": 66,
+                "totalHires": 232,
+                "totalSpent": 279325.99
+              },
+              "timezone": "America/Sao_Paulo"
+            },
+            "createdAt": "2026-05-28T04:44:03.394Z",
+            "customJobScore": 4.5,
+            "description": "# AI Automation Engineer Needed for Partner Lead Intake, CRM Entry, and Close.io Workflow\n\nWe are looking for an experienced AI automation engineer to build an automated partner lead intake system for a business funding company.\n\nWe receive lead/deal submissions from referral partners by email. These emails usually include all the information we need, either in the email body or in attached documents. The submissions are not always formatted the same way, so we need AI to read the email and documents, extract the right data points, and enter the lead into our systems automatically.\n\nThis is not a client-facing form project. The lead does not need to fill anything out. The automation should use the partner email and attachments as the source of truth.\n\n## Desired Workflow\n\n1. Partner email comes in with lead/deal details and attached documents.\n2. Automation captures the email body, sender, attachments, and relevant context.\n3. Claude or a similar AI model reads the email and documents.\n4. AI extracts structured lead/deal data.\n5. Automation creates or updates the lead in GoHighLevel or Zoho.\n6. GoHighLevel/Zoho then automatically creates a lead in Close.io.\n7. Automation finds the matching lead in Close.io.\n8. Automation updates the Close.io lead with the correct fields.\n9. Automation renames the Close.io lead using our preferred naming format.\n10. Automation inserts a standardized internal description/template into the Close lead.\n11. Automation uploads all partner-attached documents to the correct Close lead.\n12. Automation starts the appropriate workflow/sequence to get the lead booked for a call.\n13. Automation pings our Slack channel when the process is complete.\n14. If anything is missing, unclear, duplicated, or low-confidence, the automation flags it for human review.\n\n## Data Points to Extract\n\nThe automation should be able to extract fields such as:\n\n* Business legal name\n* DBA\n* Owner name\n* Email\n* Phone number\n* Business address\n* State\n* Industry\n* Entity type\n* Time in business\n* Monthly revenue\n* Annual revenue\n* Average monthly deposits\n* Current funding need\n* Requested funding amount\n* Existing debt or MCA positions\n* Use of funds\n* Documents attached\n* Missing documents\n* Conflicting or unclear information\n\n## Systems Involved\n\nThe likely stack includes:\n\n* Gmail or Outlook for email intake\n* Claude API or similar AI model for data extraction\n* GoHighLevel and/or Zoho for initial lead creation\n* Close.io for sales CRM management\n* Slack for completion notifications\n* Google Drive, Dropbox, or internal file storage if needed\n* n8n, Make.com, or custom code for automation orchestration\n\nWe strongly prefer using APIs wherever possible. Browser automation, mouse control, or robotic process automation can be considered only if an API cannot perform a required action.\n\n## Required Skills\n\nYou should have strong experience with:\n\n* AI workflow automation\n* Claude API and/or OpenAI API\n* Email parsing\n* PDF/document data extraction\n* CRM automation\n* Close.io API\n* GoHighLevel API and/or Zoho API\n* Webhooks\n* REST APIs\n* JSON schemas\n* Field mapping\n* File upload automation\n* Slack notifications\n* Error handling\n* Duplicate detection\n* Human review workflows\n\n## Important Notes\n\nThe key challenge is that partner submissions are not always uniform. One partner may send a clean summary in the email body. Another may send PDFs, bank statements, screenshots, or partial details across multiple attachments.\n\nThe system needs to intelligently extract the right data, map it into the correct CRM fields, upload the documents to the correct Close lead, and flag anything uncertain instead of blindly entering bad data.\n\n## Ideal Candidate\n\nYou are a strong fit if you have built automations involving:\n\n* AI-powered document reading\n* CRM data entry\n* email-to-CRM workflows\n* Close.io integrations\n* GoHighLevel or Zoho integrations\n* messy/unstructured lead submissions\n* financial services, lending, underwriting, or broker workflows\n\n## Deliverables\n\nWe need someone who can:\n\n1. Recommend the best technical architecture.\n2. Build the email intake automation.\n3. Connect Claude or another AI model for extraction.\n4. Create a structured extraction schema.\n5. Create/update leads in GoHighLevel or Zoho.\n6. Find and update the matching lead in Close.io.\n7. Fill the correct Close.io fields.\n8. Rename the Close.io lead based on our format.\n9. Insert a standardized internal description/template.\n10. Upload documents to the correct Close.io lead.\n11. Trigger the appropriate workflow/sequence.\n12. Send a Slack notification when complete.\n13. Create error handling and human review steps.\n14. Document the workflow so our team can maintain it.\n\n## To Apply\n\nPlease include:\n\n* Examples of similar automations you have built\n* Your recommended stack for this project\n* Whether you would use n8n, Make.com, Zapier, or custom code\n* Your experience with Claude/OpenAI APIs\n* Your experience with Close.io\n* Your experience with GoHighLevel and/or Zoho\n* How you would handle inconsistent email/document formats\n* Estimated timeline for an MVP\n* Any questions you would need answered before starting",
+            "externalLink": "https://www.upwork.com/jobs/~022059858213392404990",
+            "isFeatured": false,
+            "publishedAt": "2026-05-28T04:45:44.919Z",
+            "questions": [
+              "Ideally, we do this on a project basis. What is your best quote for the project completed to standard?",
+              "Why are you confident you are the best candidate and can do this quickly without any issues?",
+              "How fast can you get this done to standard?"
+            ],
+            "skills": [
+              "n8n",
+              "Automation",
+              "Claude",
+              "Robotic Process Automation",
+              "Lead Generation",
+              "Marketing Automation"
+            ],
+            "title": "AI Automation Engineer for Partner Lead Intake + Close.io CRM Automation",
+            "uid": "2059858213392404990",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "EXPERT",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 14,
+            "budget": {
+              "fixedBudget": 500,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Web & Mobile Design",
+            "client": {
+              "companySize": 1,
+              "connectedAt": "2019-05-05T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": false,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 5,
+                "feedbackRate": 4.78,
+                "hireRate": 50,
+                "totalHires": 6,
+                "totalSpent": 1255
+              },
+              "timezone": "America/Sao_Paulo"
+            },
+            "createdAt": "2026-05-27T20:46:24.028Z",
+            "customJobScore": 4.1,
+            "description": "Boutique Law Firm Website Designer/Developer with AI & Chatbot Integration needed\n\nOverview:\nWe are a growing law firm seeking an experienced website designer/developer to build a boutique, modern, and sophisticated website for our practice, including AI-powered features and intelligent chatbot integration.\n\nOur firm focuses on:\n* Estate Planning\n* Asset Protection\n* Family Law\n* Immigration\n* Cross-Border & International Wealth Planning\n\nWe are NOT looking for a generic “law firm template” website.\n\nWe want a website that feels:\n* Sophisticated\n* International\n* Modern\n* Trustworthy\n\nThe visual direction should feel closer to:\n* Boutique international law firms\n* Family office advisory brands\n* Private wealth advisory firms\n\nWe are looking for someone who can assist with:\n* Website design\n* Website development\n* Mobile responsiveness\n* SEO-friendly structure\n* Speed optimization\n* Consultation booking integration\n* Intake/contact forms\n* Blog/insights section\n* AI chatbot integration\n* AI-assisted lead capture systems\n* Intelligent client intake automation\n\nPotential pages include:\n* Home\n* About\n* Practice Areas\n* Estate Planning\n* Asset Protection\n* Family Law\n* Immigration\n* Cross-Border Planning\n* Blog/Insights\n* Contact\n\nPlease note - AI & CHATBOT REQUIREMENTS\n\nWe are specifically interested in integrating AI and automation features such as:\n* AI-powered chatbot for website visitors\n* Smart client intake assistant\n* FAQ automation\n* Consultation qualification workflows\n* Lead capture and follow-up automation\n* CRM integration\n* Appointment scheduling automation\n* AI-assisted multilingual support (preferred)\n\nThe chatbot should:\n* Sound professional and sophisticated\n* Guide potential clients appropriately\n* Encourage consultations\n* Avoid giving legal advice\n* Escalate qualified leads to scheduling\n\nExperience integrating tools such as:\n* OpenAI/ChatGPT APIs\n* Intercom\n* Tidio\n* Drift\n* HubSpot\n* Zapier\n* Lawmatics\n* Clio Grow\n  or similar systems is strongly preferred.\n\nDESIGN DIRECTION\n\nWe prefer:\n\n* Minimalist premium design\n* Strong typography\n* Elegant layouts\n* International/corporate aesthetic\n* Luxury private-client feel\n* High-quality imagery\n* Fast and intuitive user experience\n\nWe want to avoid:\n* Generic law firm clichés\n* Outdated legal imagery\n* Aggressive “billboard-style” marketing\n* Cluttered design\n\nOUR IDEAL CANDIDATE should have \n* Experience building premium professional-service websites\n* Strong portfolio\n* Experience with AI/chatbot integrations\n* Understanding of conversion-focused design\n* Strategic thinker, not just developer\n* Strong communication skills\n\n\nTO APPLY\n\nPlease include the following: \n1. Portfolio examples\n2. Examples of AI/chatbot integrations you have implemented\n3. Recommended platform (WordPress, Webflow, etc.)\n4. Your recommended AI/chatbot stack\n5. Estimated timeline\n6. Your development process",
+            "externalLink": "https://www.upwork.com/jobs/~022059738007288898944",
+            "isFeatured": false,
+            "publishedAt": "2026-05-27T20:50:50.743Z",
+            "questions": [
+              "Have you setup a website for a law office in the last 3 years"
+            ],
+            "skills": [
+              "Custom Web Design",
+              "Web Development",
+              "Web Design",
+              "Website",
+              "Website Builder",
+              "Website Builders & CMS Consultation",
+              "WordPress"
+            ],
+            "title": "Website for Law Office",
+            "uid": "2059738007288898944",
+            "vendor": {
+              "countryCodes": [
+                "AS",
+                "AU",
+                "CX",
+                "CC",
+                "CK",
+                "FJ",
+                "PF",
+                "GU",
+                "KI",
+                "MH",
+                "FM",
+                "NR",
+                "NC",
+                "NZ",
+                "NU",
+                "NF",
+                "MP",
+                "PW",
+                "PG",
+                "PN",
+                "WS",
+                "SB",
+                "TK",
+                "TO",
+                "TV",
+                "VU",
+                "WF",
+                "AI",
+                "AG",
+                "AR",
+                "AW",
+                "BS",
+                "BB",
+                "BZ",
+                "BM",
+                "BO",
+                "BQ",
+                "BR",
+                "VG",
+                "CA",
+                "KY",
+                "CL",
+                "CO",
+                "CR",
+                "CW",
+                "DM",
+                "DO",
+                "EC",
+                "SV",
+                "FK",
+                "GF",
+                "GL",
+                "GD",
+                "GP",
+                "GT",
+                "GY",
+                "HT",
+                "HN",
+                "JM",
+                "MQ",
+                "MX",
+                "MS",
+                "NL",
+                "NI",
+                "PA",
+                "PY",
+                "PE",
+                "PR",
+                "BL",
+                "KN",
+                "LC",
+                "MF",
+                "PM",
+                "VC",
+                "SX",
+                "SR",
+                "TT",
+                "TC",
+                "US",
+                "UM",
+                "VI",
+                "UY",
+                "VE",
+                "DZ",
+                "AO",
+                "BJ",
+                "BW",
+                "BF",
+                "BI",
+                "CM",
+                "CV",
+                "CF",
+                "TD",
+                "KM",
+                "CG",
+                "CD",
+                "CI",
+                "DJ",
+                "EG",
+                "GQ",
+                "ER",
+                "ET",
+                "GA",
+                "GM",
+                "GH",
+                "GN",
+                "GW",
+                "KE",
+                "LS",
+                "MG",
+                "MW",
+                "ML",
+                "MR",
+                "MU",
+                "YT",
+                "MA",
+                "MZ",
+                "NA",
+                "NE",
+                "NG",
+                "RE",
+                "RW",
+                "SH",
+                "ST",
+                "SN",
+                "SC",
+                "SL",
+                "SO",
+                "ZA",
+                "SZ",
+                "TZ",
+                "TG",
+                "TN",
+                "UG",
+                "EH",
+                "ZM",
+                "ZW",
+                "AL",
+                "AD",
+                "AT",
+                "BY",
+                "BE",
+                "BA",
+                "BG",
+                "HR",
+                "CZ",
+                "DK",
+                "EE",
+                "FO",
+                "FI",
+                "FR",
+                "TF",
+                "DE",
+                "GI",
+                "GR",
+                "GG",
+                "VA",
+                "HU",
+                "IS",
+                "IE",
+                "IM",
+                "IT",
+                "JE",
+                "LV",
+                "LI",
+                "LT",
+                "LU",
+                "MK",
+                "MT",
+                "MD",
+                "MC",
+                "ME",
+                "NL",
+                "NO",
+                "PL",
+                "PT",
+                "RO",
+                "RU",
+                "SM",
+                "RS",
+                "SK",
+                "SI",
+                "ES",
+                "SJ",
+                "SE",
+                "CH",
+                "UA",
+                "GB",
+                "AM",
+                "AZ",
+                "BH",
+                "BD",
+                "BT",
+                "IO",
+                "BN",
+                "KH",
+                "CN",
+                "CY",
+                "GE",
+                "HK",
+                "IN",
+                "ID",
+                "IL",
+                "JP",
+                "JO",
+                "KZ",
+                "KW",
+                "KG",
+                "LA",
+                "LB",
+                "MO",
+                "MY",
+                "MV",
+                "MN",
+                "MM",
+                "NP",
+                "OM",
+                "PK",
+                "PS",
+                "PH",
+                "QA",
+                "SA",
+                "SG",
+                "KR",
+                "LK",
+                "TW",
+                "TJ",
+                "TH",
+                "TL",
+                "TR",
+                "TM",
+                "AE",
+                "UZ",
+                "VN",
+                "YE"
+              ],
+              "englishLevel": "ANY",
+              "experienceLevel": "ENTRY_LEVEL",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 20,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": 25,
+                "min": 10
+              }
+            },
+            "category": "Scripts & Utilities",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2025-12-01T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 0,
+                "feedbackCount": 1,
+                "feedbackRate": 5,
+                "hireRate": 100,
+                "totalHires": 3,
+                "totalSpent": 1505
+              },
+              "timezone": "America/Chicago"
+            },
+            "createdAt": "2026-05-25T16:17:18.935Z",
+            "customJobScore": 4.2,
+            "description": "We are seeking a skilled freelancer to automate the intake of information using AI agents and organize it into a spreadsheet. The ideal candidate will have experience in AI and data entry, ensuring accuracy and efficiency in the process. This project requires intermediate proficiency and offers a part-time engagement over 2 weeks",
+            "externalLink": "https://www.upwork.com/jobs/~022058945514172986281",
+            "isFeatured": false,
+            "publishedAt": "2026-05-25T16:19:28.114Z",
+            "questions": null,
+            "skills": [
+              "Visual Basic for Applications",
+              "Graphic Design",
+              "Data Entry",
+              "Administrative Support",
+              "Data Scraping",
+              "Email Communication"
+            ],
+            "title": "AI Agent for Information Intake Automation",
+            "uid": "2058945514172986281",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "INTERMEDIATE",
+              "hireType": "ANY",
+              "languages": null
+            }
+          },
+          {
+            "applicationCost": 27,
+            "budget": {
+              "fixedBudget": 0,
+              "hourlyRate": {
+                "max": null,
+                "min": null
+              }
+            },
+            "category": "Web Development",
+            "client": {
+              "companySize": 0,
+              "connectedAt": "2025-02-10T00:00:00.000Z",
+              "countryCode": "US",
+              "enterprise": false,
+              "industry": null,
+              "paymentMethodVerified": true,
+              "phoneNumberVerified": true,
+              "stats": {
+                "avgRate": 21.612841328413285,
+                "feedbackCount": 16,
+                "feedbackRate": 5,
+                "hireRate": 100,
+                "totalHires": 23,
+                "totalSpent": 26728.31
+              },
+              "timezone": "America/New_York"
+            },
+            "createdAt": "2026-05-25T00:04:53.079Z",
+            "customJobScore": 4.6,
+            "description": "AI / Full-Stack Engineer for Healthcare Intake Automation Startup\n\nWe are building an AI-powered intake automation platform focused initially on ABA therapy / behavioral healthcare providers.\n\nThe goal is to automate and streamline workflows such as:\n\n* intake document collection\n* insurance verification\n* referral processing\n* scheduling coordination\n* AI document summarization\n* workflow automation between systems\n\nWe are looking for a strong senior engineer or small team who can help us rapidly prototype and build an MVP.\n\nWhat We Need\n\nWe are NOT looking for a generic developer.\n\nWe want someone who:\n\n* moves fast\n* has startup mentality\n* can architect practical solutions\n* understands AI workflow automation\n* can build clean scalable systems\n* preferably has healthcare SaaS or HIPAA experience\n\nTech Stack (Flexible)\n\nOpen to recommendations, but experience with the following is highly preferred:\n\n* Python\n* React / Next.js\n* OpenAI or Anthropic APIs\n* OCR / document extraction\n* API integrations\n* Automation tools (n8n, Zapier, Make)\n* Cloud infrastructure (AWS/GCP)\n* PostgreSQL\n\nInitial MVP Scope\n\nPhase 1 may include:\n\n* secure intake portal\n* document upload & extraction\n* AI-powered document summaries\n* automated missing-document follow-up\n* intake coordinator dashboard\n* insurance verification workflow integrations\n* CRM / EMR integrations (lightweight initially)\n\nNice to Have\n\n* HIPAA-compliant architecture experience\n* Healthcare workflow experience\n* EMR/EHR integration experience\n* Experience building AI agents or workflow automations\n* Experience with Twilio/email/SMS automations\n\nImportant\n\nWe care more about:\n\n* speed\n* practical execution\n* communication\n* product thinking",
+            "externalLink": "https://www.upwork.com/jobs/~022058700794001031021",
+            "isFeatured": false,
+            "publishedAt": "2026-05-25T00:07:01.583Z",
+            "questions": null,
+            "skills": [
+              "Python",
+              "API",
+              "Node.js",
+              "React"
+            ],
+            "title": "Senior AI / Full-Stack Engineer for Healthcare Intake Automation MVP",
+            "uid": "2058700794001031021",
+            "vendor": {
+              "countryCodes": null,
+              "englishLevel": "ANY",
+              "experienceLevel": "EXPERT",
+              "hireType": "ANY",
+              "languages": null
+            }
+          }
+        ],
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-headers": [
+            "User-Agent, Content-Type, Authorization, X-Apify-Request-Origin, X-Apify-Github-Actions-Run-Url, openai-conversation-id, openai-ephemeral-user-id, x-apify-integration-platform, x-apify-integration-app-id, x-apify-integration-ai-tool"
+          ],
+          "access-control-allow-methods": [
+            "GET, POST"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "X-Apify-Pagination-Total, X-Apify-Pagination-Offset, X-Apify-Pagination-Desc, X-Apify-Pagination-Count, X-Apify-Pagination-Limit"
+          ],
+          "cache-control": [
+            "no-cache, no-store, must-revalidate"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Wed, 03 Jun 2026 14:56:38 GMT"
+          ],
+          "expires": [
+            "0"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-apify-pagination-count": [
+            "0"
+          ],
+          "x-apify-pagination-desc": [
+            "false"
+          ],
+          "x-apify-pagination-limit": [
+            "999999999999"
+          ],
+          "x-apify-pagination-offset": [
+            "0"
+          ],
+          "x-apify-pagination-total": [
+            "0"
+          ],
+          "x-ratelimit-limit": [
+            "400"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 201
+      }
+    }
+  ],
+  "version": "2.0"
+}

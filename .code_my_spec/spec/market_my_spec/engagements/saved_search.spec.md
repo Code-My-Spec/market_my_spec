@@ -5,3 +5,9 @@ Account-scoped saved-search record. Fields: account_id (FK), name (string, uniqu
 ## Type
 
 schema
+
+## Dependencies
+
+- MarketMySpec.Accounts.Account
+- MarketMySpec.Engagements.SavedSearchVenue
+- MarketMySpec.Engagements.Venue

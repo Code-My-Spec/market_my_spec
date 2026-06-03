@@ -1,0 +1,1 @@
+{"scenario": "4 - cluster reruns do not re-gather", "jp_before_reruns": 119, "jp_after_reruns": 119, "cluster_runs": 2, "result": "PASS - JP count unchanged"}

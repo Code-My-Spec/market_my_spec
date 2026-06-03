@@ -5,3 +5,9 @@ User identity and authentication. Magic-link sign-in via email; user records, to
 ## Type
 
 context
+
+## Dependencies
+
+- MarketMySpec.Users.User
+- MarketMySpec.Users.UserNotifier
+- MarketMySpec.Users.UserToken

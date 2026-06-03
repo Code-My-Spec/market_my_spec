@@ -5,3 +5,9 @@ Server→agent HTTP request orchestrator. dispatch_http/2 (user, %{method, url, 
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Agents.AgentsRepository
+- MarketMySpec.Agents.HostAllowlist
+- MarketMySpec.Agents.Presence

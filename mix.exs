@@ -118,6 +118,13 @@ defmodule MarketMySpec.MixProject do
       {:mdex, "~> 0.5"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
       {:req_cassette, "~> 0.6.0", only: :test},
+
+      # ProblemDiscovery feature — pgvector storage, Scholar+EXLA for
+      # in-process KMeans clustering. See architecture/decisions/
+      # {pgvector,scholar}.md.
+      {:pgvector, "~> 0.3"},
+      {:scholar, "~> 0.4"},
+      {:exla, "~> 0.10"},
       {:code_my_spec_generators, path: "../code_my_spec_generators", only: :dev, runtime: false}
     ]
   end

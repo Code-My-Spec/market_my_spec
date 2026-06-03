@@ -1,0 +1,1 @@
+{"scenario": "3 - additive gather (new search only)", "second_gather_result": {"per_saved_search": [{"index": 0, "skipped": true, "gathered": 0, "failed": 0}, {"index": 1, "skipped": true, "gathered": 0, "failed": 0}, {"index": 2, "gathered": 24, "failed": 0}]}}

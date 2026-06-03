@@ -5,3 +5,7 @@ Sends invitation emails via Swoosh
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Mailer

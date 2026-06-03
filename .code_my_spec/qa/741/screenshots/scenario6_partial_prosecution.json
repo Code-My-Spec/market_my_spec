@@ -1,0 +1,18 @@
+{
+  "scenario": "Scenario 6 - Partial prosecution: 1 of 2 survivors red-teamed",
+  "frame_id": "4cbee700-4da5-4833-b734-967e32021ce5",
+  "survivors": [
+    {"id": "1f38b458-497a-4fb7-a717-e0e149e1ca96", "red_teamed": true},
+    {"id": "328861a0-dfaf-4ebe-ad3a-41f9b4fc8c4f", "red_teamed": false}
+  ],
+  "board_response": {
+    "candidates": [{"id": "1f38b458-497a-4fb7-a717-e0e149e1ca96", "verdict": "keep_productizable"}],
+    "awaiting_redteam": 1
+  },
+  "assertions": {
+    "awaiting_redteam_equals_unprosecuted_count": true,
+    "unprosecuted_candidate_excluded_from_board": true,
+    "board_shows_only_prosecuted_candidate": true
+  },
+  "result": "PASS"
+}

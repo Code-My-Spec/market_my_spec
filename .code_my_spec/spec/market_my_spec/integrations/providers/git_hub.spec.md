@@ -5,3 +5,7 @@ GitHub OAuth provider config + user normalization
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Integrations.Providers.Behaviour

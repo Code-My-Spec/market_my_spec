@@ -6,6 +6,11 @@ Saved post-back record. Account-scoped. Fields: account_id, thread_id (FK to Thr
 
 schema
 
+## Dependencies
+
+- MarketMySpec.Accounts.Account
+- MarketMySpec.Engagements.Thread
+
 ## Fields
 
 - account_id — foreign key to Account

@@ -5,3 +5,8 @@ Pairing protocol. Binary opens browser at MMS /agents/pair?state=...&port=...; a
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Agents
+- MarketMySpec.Agents.AgentsRepository

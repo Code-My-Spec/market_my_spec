@@ -1,0 +1,1 @@
+{"scenario": "5 and 11 - threshold change reclassifies, counts stable", "scores_loose": [8, 36, 23], "scores_tight": [6, 34, 19], "scores_looser": [12, 25, 41], "jp_count_stable": 119, "candidate_count_stable": 3, "pjs_count_stable": 119}

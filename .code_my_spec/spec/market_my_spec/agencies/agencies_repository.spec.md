@@ -5,3 +5,9 @@ Create client accounts (originator path), record invited access grants, query po
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Accounts.Account
+- MarketMySpec.Accounts.Member
+- MarketMySpec.Agencies.AgencyClientAccessGrant

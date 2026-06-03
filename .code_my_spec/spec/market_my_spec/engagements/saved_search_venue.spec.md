@@ -5,3 +5,9 @@ Join schema for the many-to-many between SavedSearch and Venue. Fields: saved_se
 ## Type
 
 schema
+
+## Dependencies
+
+- MarketMySpec.Accounts.Account
+- MarketMySpec.Engagements.SavedSearch
+- MarketMySpec.Engagements.Venue

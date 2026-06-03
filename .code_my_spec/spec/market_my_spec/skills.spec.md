@@ -5,3 +5,8 @@ Marketing-strategy skill content. Defines the orientation prompt and the eight s
 ## Type
 
 context
+
+## Dependencies
+
+- MarketMySpec.Skills.MarketingStrategy
+- MarketMySpec.Skills.Overview

@@ -5,3 +5,7 @@ Per-user-per-provider OAuth record with encrypted access/refresh tokens
 ## Type
 
 schema
+
+## Dependencies
+
+- MarketMySpec.Users.User

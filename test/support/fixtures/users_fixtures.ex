@@ -13,7 +13,13 @@ defmodule MarketMySpec.UsersFixtures do
   alias MarketMySpec.Users
   alias MarketMySpec.Users.Scope
 
-  def unique_user_email, do: "user#{System.unique_integer()}@example.com"
+  def unique_user_email do
+    # System.unique_integer is unique per BEAM, but `:unsafe_unique`
+    # validation queries the DB — and in shared-sandbox mode another
+    # parallel test's fixture row can still be visible mid-transaction.
+    # A UUID suffix removes that cross-test collision window entirely.
+    "user-#{Ecto.UUID.generate()}@example.com"
+  end
   def valid_user_password, do: "hello world!"
 
   def valid_user_attributes(attrs \\ %{}) do

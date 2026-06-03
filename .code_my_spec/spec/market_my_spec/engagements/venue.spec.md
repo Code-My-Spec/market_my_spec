@@ -6,6 +6,12 @@ Per-account venue record. Fields: account_id, source (enum: reddit | elixirforum
 
 schema
 
+## Dependencies
+
+- MarketMySpec.Accounts.Account
+- MarketMySpec.Engagements.Source.ElixirForum
+- MarketMySpec.Engagements.Source.Reddit
+
 ## Fields
 
 - account_id — foreign key to Account

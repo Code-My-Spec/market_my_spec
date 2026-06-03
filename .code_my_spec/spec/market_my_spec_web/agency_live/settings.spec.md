@@ -5,3 +5,11 @@ Agency settings form — owner sets/changes the agency's unique subdomain (story
 ## Type
 
 liveview
+
+## Dependencies
+
+- MarketMySpec.Accounts
+- MarketMySpec.Accounts.Account
+- MarketMySpec.Agencies
+- MarketMySpec.Agencies.HostResolver
+- MarketMySpec.Authorization

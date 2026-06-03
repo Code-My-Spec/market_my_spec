@@ -5,3 +5,9 @@ Per-account prose linting. Owns the Linter behaviour (lint/2, validate_config/1)
 ## Type
 
 context
+
+## Dependencies
+
+- MarketMySpec.Linter.Config
+- MarketMySpec.Linter.ConfigsRepository
+- MarketMySpec.Users.Scope

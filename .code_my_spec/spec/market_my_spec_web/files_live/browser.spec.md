@@ -5,3 +5,7 @@ List artifacts for the current account, in file hierarchy. Selecting displays fi
 ## Type
 
 liveview
+
+## Dependencies
+
+- MarketMySpec.Files

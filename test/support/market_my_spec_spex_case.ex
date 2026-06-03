@@ -11,6 +11,7 @@ defmodule MarketMySpecSpex.Case do
   using do
     quote do
       @endpoint MarketMySpecWeb.Endpoint
+      @moduletag timeout: 300_000
 
       use MarketMySpecWeb, :verified_routes
       use SexySpex

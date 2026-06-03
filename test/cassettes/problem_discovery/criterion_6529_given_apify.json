@@ -1,0 +1,302 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-06-03T14:54:55.615327Z",
+      "request": {
+        "body_json": {
+          "includeKeywords.keywords": [
+            "vendor onboarding migration"
+          ],
+          "includeKeywords.matchDescription": true,
+          "includeKeywords.matchSkills": false,
+          "includeKeywords.matchTitle": true,
+          "limit": 50
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.apify.com/v2/acts/upwork-vibe~upwork-job-scraper/run-sync-get-dataset-items"
+      },
+      "response": {
+        "body_json": [],
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-headers": [
+            "User-Agent, Content-Type, Authorization, X-Apify-Request-Origin, X-Apify-Github-Actions-Run-Url, openai-conversation-id, openai-ephemeral-user-id, x-apify-integration-platform, x-apify-integration-app-id, x-apify-integration-ai-tool"
+          ],
+          "access-control-allow-methods": [
+            "GET, POST"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "X-Apify-Pagination-Total, X-Apify-Pagination-Offset, X-Apify-Pagination-Desc, X-Apify-Pagination-Count, X-Apify-Pagination-Limit"
+          ],
+          "cache-control": [
+            "no-cache, no-store, must-revalidate"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Wed, 03 Jun 2026 14:54:55 GMT"
+          ],
+          "expires": [
+            "0"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-apify-pagination-count": [
+            "0"
+          ],
+          "x-apify-pagination-desc": [
+            "false"
+          ],
+          "x-apify-pagination-limit": [
+            "999999999999"
+          ],
+          "x-apify-pagination-offset": [
+            "0"
+          ],
+          "x-apify-pagination-total": [
+            "0"
+          ],
+          "x-ratelimit-limit": [
+            "400"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 201
+      }
+    },
+    {
+      "recorded_at": "2026-06-03T14:55:00.265449Z",
+      "request": {
+        "body_json": {
+          "includeKeywords.keywords": [
+            "supplier consolidation"
+          ],
+          "includeKeywords.matchDescription": true,
+          "includeKeywords.matchSkills": false,
+          "includeKeywords.matchTitle": true,
+          "limit": 50
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.apify.com/v2/acts/upwork-vibe~upwork-job-scraper/run-sync-get-dataset-items"
+      },
+      "response": {
+        "body_json": [],
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-headers": [
+            "User-Agent, Content-Type, Authorization, X-Apify-Request-Origin, X-Apify-Github-Actions-Run-Url, openai-conversation-id, openai-ephemeral-user-id, x-apify-integration-platform, x-apify-integration-app-id, x-apify-integration-ai-tool"
+          ],
+          "access-control-allow-methods": [
+            "GET, POST"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "X-Apify-Pagination-Total, X-Apify-Pagination-Offset, X-Apify-Pagination-Desc, X-Apify-Pagination-Count, X-Apify-Pagination-Limit"
+          ],
+          "cache-control": [
+            "no-cache, no-store, must-revalidate"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Wed, 03 Jun 2026 14:55:00 GMT"
+          ],
+          "expires": [
+            "0"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-apify-pagination-count": [
+            "0"
+          ],
+          "x-apify-pagination-desc": [
+            "false"
+          ],
+          "x-apify-pagination-limit": [
+            "999999999999"
+          ],
+          "x-apify-pagination-offset": [
+            "0"
+          ],
+          "x-apify-pagination-total": [
+            "0"
+          ],
+          "x-ratelimit-limit": [
+            "400"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 201
+      }
+    },
+    {
+      "recorded_at": "2026-06-03T14:55:04.994917Z",
+      "request": {
+        "body_json": {
+          "includeKeywords.keywords": [
+            "intake workflow rebuild"
+          ],
+          "includeKeywords.matchDescription": true,
+          "includeKeywords.matchSkills": false,
+          "includeKeywords.matchTitle": true,
+          "limit": 50
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.apify.com/v2/acts/upwork-vibe~upwork-job-scraper/run-sync-get-dataset-items"
+      },
+      "response": {
+        "body_json": [],
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-headers": [
+            "User-Agent, Content-Type, Authorization, X-Apify-Request-Origin, X-Apify-Github-Actions-Run-Url, openai-conversation-id, openai-ephemeral-user-id, x-apify-integration-platform, x-apify-integration-app-id, x-apify-integration-ai-tool"
+          ],
+          "access-control-allow-methods": [
+            "GET, POST"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "X-Apify-Pagination-Total, X-Apify-Pagination-Offset, X-Apify-Pagination-Desc, X-Apify-Pagination-Count, X-Apify-Pagination-Limit"
+          ],
+          "cache-control": [
+            "no-cache, no-store, must-revalidate"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "application/json; charset=utf-8"
+          ],
+          "date": [
+            "Wed, 03 Jun 2026 14:55:04 GMT"
+          ],
+          "expires": [
+            "0"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "referrer-policy": [
+            "no-referrer"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Accept-Encoding"
+          ],
+          "x-apify-pagination-count": [
+            "0"
+          ],
+          "x-apify-pagination-desc": [
+            "false"
+          ],
+          "x-apify-pagination-limit": [
+            "999999999999"
+          ],
+          "x-apify-pagination-offset": [
+            "0"
+          ],
+          "x-apify-pagination-total": [
+            "0"
+          ],
+          "x-ratelimit-limit": [
+            "400"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 201
+      }
+    }
+  ],
+  "version": "2.0"
+}

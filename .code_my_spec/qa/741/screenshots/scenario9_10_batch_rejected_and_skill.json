@@ -1,0 +1,16 @@
+{
+  "scenario": "Scenario 9 + 10 - Batch rejected and skill orientation verified",
+  "scenario9": {
+    "description": "Attempt to pass array as candidate_id to red_team_candidate",
+    "response": {"error": {"code": -32602, "data": {"message": "candidate_id: expected a nested schema but received schema: :string"}, "message": "Invalid params"}},
+    "assertion": "Array input rejected with Invalid params error",
+    "result": "PASS"
+  },
+  "scenario10": {
+    "description": "Fetch red-team step resource and verify past-tense pre-mortem grammar",
+    "uri": "problem-discovery://steps/05_redteam",
+    "key_quote": "Use past tense (Gary Klein's prospective hindsight): not 'what could go wrong?' but 'this bet has already failed 18 months from now...'",
+    "assertion": "Skill orientation explicitly directs past-tense pre-mortem grammar",
+    "result": "PASS"
+  }
+}

@@ -5,3 +5,8 @@ Account-scoped saved-search admin at /accounts/:id/searches. Lists saved searche
 ## Type
 
 liveview
+
+## Dependencies
+
+- MarketMySpec.Accounts
+- MarketMySpec.Engagements

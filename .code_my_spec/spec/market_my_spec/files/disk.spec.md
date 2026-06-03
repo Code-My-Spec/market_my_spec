@@ -5,3 +5,7 @@ Local-disk implementation of the Files behaviour; used in dev
 ## Type
 
 module
+
+## Dependencies
+
+- MarketMySpec.Files.Behaviour
