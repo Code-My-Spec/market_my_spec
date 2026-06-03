@@ -84,11 +84,18 @@ defmodule MarketMySpec.ProblemDiscovery.Pipeline do
     end
   end
 
-  # Only mark the saved_search as gathered when the adapter actually made
-  # the call (with or without rows). A pre-request failure (e.g.
-  # :missing_upwork_api_key, network error) must NOT mark it, or the next
-  # RunGather will skip with 0 rows forever.
+  # Only mark the saved_search as gathered when the adapter actually
+  # made the call AND it produced rows. Pre-request failures (e.g.
+  # :missing_upwork_api_key, network error) AND zero-result responses
+  # both leave the search unmarked so the next RunGather retries
+  # without `--force`. A locked zero-result query masks the difference
+  # between "this market genuinely has no demand" (a real MMS finding)
+  # and "this query was malformed" (a fixable problem) — both would
+  # appear as a 0-row corpus permanently. See per-saved-search return
+  # in `gather_one/4` for the `zero_results: true` marker the agent
+  # sees in the payload.
   defp mark_if_attempted(%{error: _}, _frame, _index), do: :noop
+  defp mark_if_attempted(%{zero_results: true}, _frame, _index), do: :noop
   defp mark_if_attempted(_result, frame, index), do: mark_saved_search_gathered(frame, index)
 
   defp already_gathered?(%{"gathered_at" => ts}) when is_binary(ts), do: true
@@ -127,7 +134,14 @@ defmodule MarketMySpec.ProblemDiscovery.Pipeline do
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 
       {inserted, failed} = insert_postings(with_embeddings, frame.id, index, now)
-      %{index: index, gathered: inserted, failed: failed}
+      base = %{index: index, gathered: inserted, failed: failed}
+
+      # Surface a zero_results signal so the agent can tell "0 because
+      # the query was malformed" from "0 because demand is genuinely
+      # absent" — the second is a real MMS finding. Pairs with the
+      # mark_if_attempted/3 rule that leaves zero-result searches
+      # unlocked for refine-and-retry.
+      if inserted == 0, do: Map.put(base, :zero_results, true), else: base
     else
       {:error, reason} -> %{index: index, gathered: 0, failed: 1, error: inspect(reason)}
     end

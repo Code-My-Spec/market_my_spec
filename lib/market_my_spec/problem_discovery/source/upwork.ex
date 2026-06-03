@@ -66,10 +66,22 @@ defmodule MarketMySpec.ProblemDiscovery.Source.Upwork do
 
   # Input shape matches the upwork-vibe~upwork-job-scraper actor — see
   # broken_oaths/discovery/sweep.py for the validated production input.
+  #
+  # The actor's `keywords` field is a list it OR-matches over individual
+  # tokens. Passing the whole query as `[query]` makes Upwork search for
+  # an exact phrase appearance, which matches almost nothing for the
+  # multi-word concept queries the skill recommends (e.g. "GoHighLevel
+  # agency sub-account migration"). Split on whitespace so the actor
+  # gets one keyword per token.
   defp actor_input(query, limit) do
+    keywords =
+      query
+      |> String.split(~r/\s+/, trim: true)
+      |> Enum.uniq()
+
     %{
       "limit" => limit,
-      "includeKeywords.keywords" => [query],
+      "includeKeywords.keywords" => keywords,
       "includeKeywords.matchTitle" => true,
       "includeKeywords.matchDescription" => true,
       "includeKeywords.matchSkills" => false
