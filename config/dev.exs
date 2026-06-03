@@ -1,5 +1,13 @@
 import Config
 
+# Request the sensitive Analytics admin scope in dev only, so the
+# AnalyticsAdminServer MCP tools work locally without verifying the app with
+# Google. Deployed envs fall back to the non-sensitive `email profile` default
+# (see MarketMySpec.Integrations.Providers.Google) to avoid the unverified-app
+# consent warning.
+config :market_my_spec, :google_oauth_scope,
+  "email profile https://www.googleapis.com/auth/analytics.edit"
+
 # Use the local-disk Files backend in dev — keeps MCP file tools usable
 # without S3 / MinIO. Files land under `tmp/files/`. Production points to
 # the S3 backend; tests use the in-memory backend.

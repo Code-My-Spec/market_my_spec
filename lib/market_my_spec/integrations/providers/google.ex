@@ -5,12 +5,18 @@ defmodule MarketMySpec.Integrations.Providers.Google do
   Configures OAuth with `email` and `profile` scopes, requesting offline
   access with a forced consent prompt to ensure a refresh token is issued.
 
-  Note: the Google Analytics admin scope
-  (`https://www.googleapis.com/auth/analytics.edit`) was removed because it
-  is a Google "sensitive" scope that triggers the unverified-app consent
-  warning. Re-adding it requires passing Google OAuth verification. Until
-  that scope is restored, the `MarketMySpec.McpServers.AnalyticsAdminServer`
-  MCP tools cannot obtain an Analytics connection.
+  The requested scopes are configurable via `:google_oauth_scope`, defaulting
+  to the non-sensitive `email profile` set so deployed environments stay clear
+  of Google's unverified-app consent warning:
+
+      config :market_my_spec, :google_oauth_scope,
+        "email profile https://www.googleapis.com/auth/analytics.edit"
+
+  Dev (`config/dev.exs`) opts into the sensitive
+  `https://www.googleapis.com/auth/analytics.edit` scope so the
+  `MarketMySpec.McpServers.AnalyticsAdminServer` MCP tools can obtain an
+  Analytics connection locally. Adding that scope to a deployed environment
+  requires passing Google OAuth verification first.
 
   Configure the client credentials in your runtime config:
 
@@ -43,12 +49,21 @@ defmodule MarketMySpec.Integrations.Providers.Google do
       token_url: "https://oauth2.googleapis.com/token",
       auth_method: :client_secret_post,
       authorization_params: [
-        scope: "email profile",
+        scope: scope(),
         access_type: "offline",
         prompt: "consent"
       ]
     ]
   end
+
+  # OAuth scopes requested at sign-in. Defaults to the non-sensitive
+  # `email profile` set so production stays clear of Google's unverified-app
+  # consent warning. Dev config opts into the sensitive analytics.edit scope
+  # (see config/dev.exs) so the AnalyticsAdminServer MCP tools are usable
+  # locally without verifying the app.
+  @default_scope "email profile"
+
+  defp scope, do: Application.get_env(:market_my_spec, :google_oauth_scope, @default_scope)
 
   @impl true
   def strategy, do: Assent.Strategy.Google
