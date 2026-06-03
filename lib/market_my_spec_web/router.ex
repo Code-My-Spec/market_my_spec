@@ -70,10 +70,13 @@ defmodule MarketMySpecWeb.Router do
   scope "/", MarketMySpecWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    # Account creation route — requires authentication but NOT an existing account membership.
-    # Users land here immediately after first sign-up.
+    # Account creation + onboarding routes — require authentication but NOT
+    # an existing account membership. Users without an account land on /app,
+    # which forces account creation inline; /accounts/new is the bare CRUD
+    # form kept for the "create another workspace" flow.
     live_session :require_authenticated_user_no_account_check,
       on_mount: [{MarketMySpecWeb.UserAuth, :require_authenticated}] do
+      live "/app", AppLive.Overview, :index
       live "/accounts/new", AccountLive.Form, :new
     end
 

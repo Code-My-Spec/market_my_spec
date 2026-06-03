@@ -250,10 +250,14 @@ defmodule MarketMySpecWeb.UserAuth do
     user = socket.assigns.current_scope && socket.assigns.current_scope.user
 
     if user && !Accounts.user_has_any_account?(user) do
+      # Redirect to /app rather than /accounts/new — /app is a friendly
+      # onboarding page that shows an inline create-workspace form with
+      # context (welcome + what the workspace is for), instead of
+      # dumping the new user on a bare CRUD form.
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:info, "Please create an account to get started.")
-        |> Phoenix.LiveView.push_navigate(to: ~p"/accounts/new")
+        |> Phoenix.LiveView.put_flash(:info, "Create a workspace to get started.")
+        |> Phoenix.LiveView.push_navigate(to: ~p"/app")
 
       {:halt, socket}
     else
@@ -316,9 +320,12 @@ defmodule MarketMySpecWeb.UserAuth do
   end
 
   @doc "Returns the path to redirect to after log in."
-  # the user was already logged in, redirect to settings
+  # Land signed-in users on /app — handles both first-time (no accounts →
+  # inline create form) and returning (accounts → quick links). Previous
+  # default was /users/settings, which made the first thing a new user
+  # saw a settings page.
   def signed_in_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: %Users.User{}}}}) do
-    ~p"/users/settings"
+    ~p"/app"
   end
 
   def signed_in_path(_), do: ~p"/"
