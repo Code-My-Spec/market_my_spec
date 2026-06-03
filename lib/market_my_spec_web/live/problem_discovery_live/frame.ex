@@ -111,17 +111,20 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
           ← All Frames
         </.link>
 
-        <header class="mt-4 flex items-start justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold">{@frame.description}</h1>
-            <p class="text-sm text-base-content/60 mt-1">
+        <header class="mt-4 flex items-start justify-between gap-6">
+          <div class="flex-1 min-w-0">
+            <h1 class="text-2xl font-semibold truncate">{@frame.title || @frame.description}</h1>
+            <p :if={@frame.title && @frame.description} class="text-sm text-base-content/80 mt-2">
+              {@frame.description}
+            </p>
+            <p class="text-xs text-base-content/60 mt-2">
               {length(@frame.saved_searches)} saved searches •
               total_spent_min: ${money_gate_field(@frame.money_gate, :total_spent_min)} •
               hire_rate_min: {money_gate_field(@frame.money_gate, :hire_rate_min)}%
             </p>
           </div>
 
-          <div class="flex gap-2">
+          <div class="flex gap-2 shrink-0">
             <button class="btn btn-sm" phx-click="run_gather">Run Gather</button>
             <button class="btn btn-sm" phx-click="run_cluster">Run Cluster</button>
             <button class="btn btn-sm" phx-click="run_score">Run Score</button>
@@ -165,7 +168,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
           <section class="mt-8">
             <h2 class="text-lg font-medium mb-2">Board</h2>
 
-            <%= if @board.candidates == [] do %>
+            <%= if @board.candidates == [] and (Map.get(@board, :pending_candidates) || []) == [] do %>
               <div class="rounded border border-base-300 p-6 text-base-content/70 text-sm">
                 No surviving Candidates yet. Run the pipeline (Gather → Cluster → Score → Red-team)
                 to populate the Board.
@@ -173,34 +176,61 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
             <% else %>
               <ul class="space-y-3" data-test="board-list">
                 <li
-                  :for={c <- @board.candidates}
+                  :for={c <- order_candidates(@board.candidates)}
                   data-test="board-row"
                   data-verdict={verdict_attr(c.red_team_verdict)}
-                  class="rounded border border-base-300 p-4"
+                  class="rounded border border-base-300 p-4 flex items-start justify-between gap-4"
                 >
-                  <div class="flex items-start justify-between gap-4">
-                    <div class="flex-1">
-                      <p class="font-medium">{c.label || "(unlabeled)"}</p>
-                      <p class="text-sm text-base-content/60">
-                        score: {c.score} •
-                        verdict: <span class="font-mono">{verdict_attr(c.red_team_verdict) || "(none)"}</span>
-                      </p>
-                      <p
-                        :if={c.red_team_verdict && c.red_team_verdict.kill_argument}
-                        class="text-sm text-base-content/70 mt-2"
-                      >
-                        <strong>kill_argument:</strong> {c.red_team_verdict.kill_argument}
-                      </p>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class={["badge badge-sm", verdict_badge_class(c.red_team_verdict)]}>
+                        {verdict_label(c.red_team_verdict)}
+                      </span>
+                      <span class="font-medium">{c.label || "(unlabeled)"}</span>
+                      <span class="text-xs text-base-content/60">score {c.score}</span>
                     </div>
-                    <button
-                      class="btn btn-sm btn-error"
-                      phx-click="kill"
-                      phx-value-candidate-id={c.id}
-                      data-test="kill-button"
+                    <p
+                      :if={c.red_team_verdict && c.red_team_verdict.kill_argument}
+                      class="text-sm text-base-content/70 mt-2"
                     >
-                      KILL
-                    </button>
+                      <strong>kill_argument:</strong> {c.red_team_verdict.kill_argument}
+                    </p>
                   </div>
+                  <button
+                    class="btn btn-sm btn-error shrink-0"
+                    phx-click="kill"
+                    phx-value-candidate-id={c.id}
+                    data-test="kill-button"
+                  >
+                    KILL
+                  </button>
+                </li>
+
+                <li
+                  :for={c <- Map.get(@board, :pending_candidates) || []}
+                  data-test="board-row"
+                  data-verdict="pending"
+                  class="rounded border border-base-300 border-dashed p-4 flex items-start justify-between gap-4 opacity-80"
+                >
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="badge badge-sm badge-ghost">PENDING RED-TEAM</span>
+                      <span class="font-medium">{c.label || "(unlabeled)"}</span>
+                      <span class="text-xs text-base-content/60">score {c.score}</span>
+                    </div>
+                    <p class="text-xs text-base-content/60 mt-2">
+                      Money-gated by Score, awaiting prosecution. Use RedTeamCandidate (MCP) or KILL
+                      below.
+                    </p>
+                  </div>
+                  <button
+                    class="btn btn-sm btn-error btn-outline shrink-0"
+                    phx-click="kill"
+                    phx-value-candidate-id={c.id}
+                    data-test="kill-button"
+                  >
+                    KILL
+                  </button>
                 </li>
               </ul>
             <% end %>
@@ -221,4 +251,43 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
   defp verdict_attr(%Ecto.Association.NotLoaded{}), do: nil
   defp verdict_attr(%{verdict: v}) when is_atom(v), do: Atom.to_string(v)
   defp verdict_attr(%{verdict: v}) when is_binary(v), do: v
+
+  # Verdict-priority ordering for the Board: best-news-first, so the
+  # founder sees what's worth shipping before what's worth killing.
+  # Within a verdict tier, higher score wins.
+  @verdict_rank %{
+    "keep_productizable" => 0,
+    "keep_service_only" => 1,
+    "watch" => 2,
+    "kill" => 3
+  }
+
+  defp order_candidates(candidates) do
+    Enum.sort_by(candidates, fn c ->
+      v = verdict_attr(c.red_team_verdict)
+      rank = Map.get(@verdict_rank, v, 99)
+      # negate score so higher score sorts earlier within a rank
+      {rank, -(c.score || 0)}
+    end)
+  end
+
+  defp verdict_label(verdict_struct) do
+    case verdict_attr(verdict_struct) do
+      "keep_productizable" -> "KEEP — PRODUCTIZABLE"
+      "keep_service_only" -> "KEEP — SERVICE ONLY"
+      "watch" -> "WATCH"
+      "kill" -> "KILL"
+      _ -> "—"
+    end
+  end
+
+  defp verdict_badge_class(verdict_struct) do
+    case verdict_attr(verdict_struct) do
+      "keep_productizable" -> "badge-success"
+      "keep_service_only" -> "badge-warning"
+      "watch" -> "badge-info"
+      "kill" -> "badge-error"
+      _ -> "badge-ghost"
+    end
+  end
 end

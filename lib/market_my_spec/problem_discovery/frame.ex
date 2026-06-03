@@ -2,7 +2,8 @@ defmodule MarketMySpec.ProblemDiscovery.Frame do
   @moduledoc """
   Founder-authored Frame artifact — the root of a per-Frame artifact graph.
 
-  Carries the description of the hypothesis, the list of saved searches
+  Carries a short title (what shows in the frames index + page header),
+  a longer description of the hypothesis, the list of saved searches
   (source + query) that Gather will execute, the typed `money_gate`
   threshold that Score applies, and the structured `kill_condition` the
   founder commits to before running the pipeline (story 742).
@@ -26,6 +27,7 @@ defmodule MarketMySpec.ProblemDiscovery.Frame do
   @type t :: %__MODULE__{
           id: Ecto.UUID.t() | nil,
           account_id: Ecto.UUID.t() | nil,
+          title: String.t() | nil,
           description: String.t() | nil,
           saved_searches: [saved_search()] | nil,
           money_gate: money_gate() | nil,
@@ -36,6 +38,7 @@ defmodule MarketMySpec.ProblemDiscovery.Frame do
         }
 
   schema "problem_discovery_frames" do
+    field :title, :string
     field :description, :string
     field :saved_searches, {:array, :map}, default: []
     field :money_gate, :map
@@ -46,7 +49,14 @@ defmodule MarketMySpec.ProblemDiscovery.Frame do
     timestamps(type: :utc_datetime)
   end
 
-  @required_fields [:account_id, :description, :saved_searches, :money_gate, :kill_condition]
+  @required_fields [
+    :account_id,
+    :title,
+    :description,
+    :saved_searches,
+    :money_gate,
+    :kill_condition
+  ]
 
   @doc """
   Changeset for creating or updating a Frame.
@@ -62,6 +72,8 @@ defmodule MarketMySpec.ProblemDiscovery.Frame do
     frame
     |> cast(attrs, @required_fields)
     |> validate_required(@required_fields)
+    |> validate_length(:title, min: 1, max: 256)
+    |> validate_length(:description, min: 1, max: 4096)
     |> validate_saved_searches()
     |> validate_money_gate()
     |> validate_kill_condition()

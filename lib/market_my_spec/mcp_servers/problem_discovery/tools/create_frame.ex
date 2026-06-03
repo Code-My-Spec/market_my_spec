@@ -10,12 +10,19 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.CreateFrame do
   alias MarketMySpec.ProblemDiscovery
 
   schema do
+    field :title, :string,
+      required: true,
+      max_length: 256,
+      doc:
+        "Short label for the frame (≤80 chars works best) — shown in the frames index and the detail page header."
+
     # Explicit max_length so MCP clients don't impose a default short cap
     # client-side (~256) and silently reject natural-length hypothesis prose.
     field :description, :string,
       required: true,
       max_length: 4096,
-      doc: "Hypothesis statement (1-3 sentences). Up to 4096 chars."
+      doc:
+        "Full hypothesis statement (1-3 sentences). Up to 4096 chars. The long-form pair of :title."
 
     field :saved_searches, {:list, :string},
       required: true,
@@ -41,6 +48,7 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.CreateFrame do
     scope = frame.assigns.current_scope
 
     attrs = %{
+      title: Map.fetch!(params, :title),
       description: Map.fetch!(params, :description),
       saved_searches: parse_saved_searches(Map.fetch!(params, :saved_searches)),
       money_gate: %{

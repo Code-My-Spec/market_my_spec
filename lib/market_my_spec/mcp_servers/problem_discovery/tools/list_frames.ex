@@ -23,6 +23,7 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.ListFrames do
   defp encode(f) do
     %{
       id: f.id,
+      title: f.title,
       description: f.description,
       saved_search_count: length(f.saved_searches),
       money_gate: f.money_gate,

@@ -52,6 +52,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
 
   defp build_form(params \\ %{}) do
     defaults = %{
+      "title" => "",
       "description" => "",
       "saved_searches_text" => "",
       "total_spent_min" => "5000",
@@ -64,6 +65,7 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
 
   defp parse_attrs(params) do
     %{
+      title: Map.get(params, "title", "") |> String.trim(),
       description: Map.get(params, "description", "") |> String.trim(),
       saved_searches: parse_saved_searches(Map.get(params, "saved_searches_text", "")),
       money_gate: %{
@@ -120,12 +122,23 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
           <.form for={@form} phx-change="validate" phx-submit="save" data-test="frame-form">
             <div class="space-y-4">
               <div>
-                <label class="label">Description (your hypothesis)</label>
+                <label class="label">Title (short label, ≤80 chars)</label>
+                <input
+                  type="text"
+                  name="frame[title]"
+                  value={@form[:title].value}
+                  maxlength="256"
+                  class="input input-bordered w-full"
+                  placeholder="Vendor onboarding pain"
+                />
+              </div>
+              <div>
+                <label class="label">Description (full hypothesis, 1-3 sentences)</label>
                 <textarea
                   name="frame[description]"
                   rows="3"
                   class="textarea textarea-bordered w-full"
-                  placeholder="Vendor onboarding pain — agencies migrating sub-accounts after acquisition"
+                  placeholder="Agencies migrating sub-accounts after acquisition. The handoff is repetitive enough that someone is already paying freelancers to do it manually — the question is whether that's a service play or a productizable wedge."
                 ><%= @form[:description].value %></textarea>
               </div>
 
@@ -202,8 +215,11 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frames do
                 navigate={~p"/problem-discovery/frames/#{frame.id}"}
                 class="block"
               >
-                <p class="font-medium">{frame.description}</p>
-                <p class="text-sm text-base-content/60 mt-1">
+                <p class="font-medium truncate">{frame.title || frame.description}</p>
+                <p :if={frame.title} class="text-sm text-base-content/70 mt-1 line-clamp-2">
+                  {frame.description}
+                </p>
+                <p class="text-xs text-base-content/60 mt-1">
                   {length(frame.saved_searches)} saved searches
                 </p>
               </.link>

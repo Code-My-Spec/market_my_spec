@@ -43,6 +43,7 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.GetFrame do
 
     %{
       id: f.id,
+      title: f.title,
       description: f.description,
       saved_searches: f.saved_searches,
       money_gate: f.money_gate,

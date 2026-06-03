@@ -32,6 +32,7 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.GetBoard do
     %{
       frame: %{
         id: view.frame.id,
+        title: view.frame.title,
         description: view.frame.description,
         money_gate: view.frame.money_gate,
         kill_condition: view.frame.kill_condition

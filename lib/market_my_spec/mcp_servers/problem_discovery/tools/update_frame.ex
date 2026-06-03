@@ -13,6 +13,11 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.UpdateFrame do
   schema do
     field :frame_id, :string, required: true
 
+    field :title, :string,
+      required: false,
+      max_length: 256,
+      doc: "Short label shown in the frames index + page header."
+
     # Explicit max_length so MCP clients don't impose a default short cap
     # client-side (~256) and silently reject natural-length prose.
     field :description, :string, required: false, max_length: 4096
@@ -43,6 +48,7 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.UpdateFrame do
 
     attrs =
       %{}
+      |> maybe_put(:title, Map.get(params, :title))
       |> maybe_put(:description, Map.get(params, :description))
       |> maybe_put_saved_searches(Map.get(params, :saved_searches))
       |> maybe_put_money_gate(
