@@ -38,12 +38,20 @@ defmodule MarketMySpec.ProblemDiscovery.Board do
     @type t :: %__MODULE__{
             frame: MarketMySpec.ProblemDiscovery.Frame.t(),
             candidates: [MarketMySpec.ProblemDiscovery.Candidate.t()],
+            pending_candidates: [MarketMySpec.ProblemDiscovery.Candidate.t()],
             awaiting_redteam: non_neg_integer(),
             corpus_health: corpus_health(),
             kill_condition_status: :met | :not_met
           }
 
-    defstruct [:frame, :candidates, :awaiting_redteam, :corpus_health, :kill_condition_status]
+    defstruct [
+      :frame,
+      :candidates,
+      :pending_candidates,
+      :awaiting_redteam,
+      :corpus_health,
+      :kill_condition_status
+    ]
   end
 
   @doc """
@@ -62,7 +70,7 @@ defmodule MarketMySpec.ProblemDiscovery.Board do
   defp build_view(%Frame{} = frame) do
     # Score-survivors only (score > 0) — sub-score Candidates can't be
     # red-teamed and don't belong on the Board. Then split survivors into
-    # rendered (have a RedTeamVerdict) vs awaiting (don't), filtering both
+    # rendered (have a RedTeamVerdict) vs pending (don't), filtering both
     # buckets by openable evidence per criterion 6527.
     survivors =
       frame.id
@@ -71,14 +79,21 @@ defmodule MarketMySpec.ProblemDiscovery.Board do
       |> Repo.preload([:red_team_verdict, :job_postings, paid_job_signals: :job_posting])
       |> Enum.filter(&(score_survivor?(&1) and has_openable_evidence?(&1)))
 
-    {with_verdict, awaiting} = Enum.split_with(survivors, &has_verdict?/1)
+    {with_verdict, pending} = Enum.split_with(survivors, &has_verdict?/1)
 
+    # kill_condition is a Score-stage decision: "did the money gate
+    # produce enough survivors to be worth prosecuting?" — evaluating
+    # against `with_verdict` only meant the Board reported "not_met"
+    # pre-red-team even when Score had cleared 4+ candidates, reading
+    # as a false NO. Evaluate against ALL money-gated survivors (the
+    # full pool Red-team will work through).
     %View{
       frame: frame,
       candidates: with_verdict,
-      awaiting_redteam: length(awaiting),
+      pending_candidates: pending,
+      awaiting_redteam: length(pending),
       corpus_health: corpus_health(frame.id),
-      kill_condition_status: kill_condition_status(frame, with_verdict)
+      kill_condition_status: kill_condition_status(frame, survivors)
     }
   end
 

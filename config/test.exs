@@ -75,6 +75,12 @@ config :market_my_spec, :files_backend, MarketMySpec.Files.Memory
 # out to the real Vale binary (which may not be installed in CI).
 config :market_my_spec, :linter_impl, MarketMySpec.Linter.TestStub
 
+# Run RunGather inline in tests so spex can assert on the gather results
+# immediately. In dev/prod the tool fires the gather under
+# `ProblemDiscovery.GatherSupervisor` and returns "started" — tests
+# bypass that to keep cassette replay synchronous.
+config :market_my_spec, :gather_mode, :sync
+
 # OAuth client credentials for tests. ReqCassette intercepts the actual
 # Google/GitHub HTTP calls (see test/support/oauth_spex_helpers.ex), but
 # the provider modules still call `Application.fetch_env!/2` for these

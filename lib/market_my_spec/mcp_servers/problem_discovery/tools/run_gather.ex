@@ -2,11 +2,17 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.RunGather do
   @moduledoc """
   MCP tool: run Gather for a Frame.
 
-  - Default mode: additive per-saved-search Gather over the committed
-    Frame. Returns per-saved-search gathered/failed counts.
+  - Default mode (async): spawns the additive per-saved-search Gather
+    on `ProblemDiscovery.GatherSupervisor` and returns immediately with
+    the saved-search count and a "started" status. The agent polls
+    `GetFrame` for `artifacts.JobPosting` to track progress. Per-search
+    `gathered_at` marks give free crash resume — if the BEAM dies
+    mid-gather, the agent re-runs RunGather and completed searches skip.
   - Probe mode: small-sample Gather against an uncommitted draft Frame
-    (passed in `frame` param) for Frame composition validation
-    (criterion 6580). Returns a sample without persisting.
+    (criterion 6580). Returns the sample synchronously without persisting.
+  - Test mode: `config :market_my_spec, :gather_mode, :sync` forces the
+    default path to run inline so spex can assert on results immediately
+    (config/test.exs).
   """
 
   use Anubis.Server.Component, type: :tool
@@ -62,12 +68,53 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.RunGather do
     frame_id = Map.fetch!(params, :frame_id)
     opts = if Map.get(params, :force), do: [force: true], else: []
 
+    case gather_mode() do
+      :sync -> run_sync(scope, frame_id, opts, frame)
+      :async -> run_async(scope, frame_id, opts, frame)
+    end
+  end
+
+  defp gather_mode, do: Application.get_env(:market_my_spec, :gather_mode, :async)
+
+  defp run_sync(scope, frame_id, opts, frame) do
     case ProblemDiscovery.run_gather(scope, frame_id, opts) do
       {:ok, payload} ->
         {:reply, Response.tool() |> Response.text(Jason.encode!(payload)), frame}
 
       {:error, reason} ->
         {:reply, Response.tool() |> Response.error(inspect(reason)), frame}
+    end
+  end
+
+  # Fire-and-forget: confirm the Frame exists + is in scope (so the agent
+  # gets a useful error synchronously), then spawn the gather under a
+  # supervised Task and return immediately. Crash semantics: completed
+  # saved_searches are marked durable in DB; an in-flight search is lost
+  # but re-runs cleanly on the agent's next RunGather call.
+  defp run_async(scope, frame_id, opts, frame) do
+    case ProblemDiscovery.get_frame(scope, frame_id) do
+      {:error, :not_found} ->
+        {:reply, Response.tool() |> Response.error("Frame not found"), frame}
+
+      {:ok, frame_record} ->
+        # Capture the scope into the Task closure since the Task runs
+        # outside the MCP request process.
+        Task.Supervisor.start_child(
+          MarketMySpec.ProblemDiscovery.GatherSupervisor,
+          fn -> ProblemDiscovery.run_gather(scope, frame_id, opts) end
+        )
+
+        payload = %{
+          status: "started",
+          frame_id: frame_id,
+          saved_search_count: length(frame_record.saved_searches),
+          message:
+            "Gather running in background. Poll GetFrame for artifacts.JobPosting count to track progress. " <>
+              "No durability guarantee — if the BEAM restarts mid-gather, completed saved_searches are " <>
+              "marked and skip on a retry; in-flight ones re-run on the next RunGather call (idempotent)."
+        }
+
+        {:reply, Response.tool() |> Response.text(Jason.encode!(payload)), frame}
     end
   end
 

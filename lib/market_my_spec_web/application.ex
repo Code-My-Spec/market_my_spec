@@ -19,6 +19,13 @@ defmodule MarketMySpecWeb.Application do
         # so the LiveView never blocks, plus the ETS-backed in-flight registry.
         {Task.Supervisor, name: MarketMySpec.Chat.TaskSupervisor},
         MarketMySpec.Chat.ActiveTasks,
+        # ProblemDiscovery Gather — long-running live scrapes against Apify +
+        # OpenAI embedding batches blow the MCP gateway timeout when run
+        # synchronously. RunGather spawns a Task here and returns immediately;
+        # the agent polls GetFrame for artifact counts to track progress.
+        # Per-saved-search `gathered_at` marks give crash resume — completed
+        # searches skip on the agent's retry.
+        {Task.Supervisor, name: MarketMySpec.ProblemDiscovery.GatherSupervisor},
         # MCP servers — mounted via Anubis StreamableHTTP plug in the router.
         # Each server owns its own per-session state (persistent_term) and
         # must be supervised independently, even though they share transport.

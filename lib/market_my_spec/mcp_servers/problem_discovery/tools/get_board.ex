@@ -39,7 +39,12 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.GetBoard do
       corpus_health: view.corpus_health,
       awaiting_redteam: view.awaiting_redteam,
       kill_condition_status: view.kill_condition_status,
-      candidates: Enum.map(view.candidates, &encode_candidate/1)
+      candidates: Enum.map(view.candidates, &encode_candidate/1),
+      # Score-survivors that haven't been red-teamed yet. The agent
+      # should call RedTeamCandidate on each (one at a time per the skill)
+      # to move them from `pending_candidates` into `candidates`. Same
+      # shape as the rendered ones minus verdict/kill_argument/cheapest_kill_test.
+      pending_candidates: Enum.map(view.pending_candidates, &encode_candidate/1)
     }
   end
 
