@@ -14,9 +14,9 @@ defmodule MarketMySpec.Chat do
 
   import Ecto.Query
 
+  alias MarketMySpec.Chat.{Conversation, Message, Runner}
   alias MarketMySpec.Repo
   alias MarketMySpec.Users.Scope
-  alias MarketMySpec.Chat.{Conversation, Message, Runner}
 
   @default_provider :anthropic
 

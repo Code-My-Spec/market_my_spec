@@ -33,8 +33,8 @@ defmodule MarketMySpec.Chat.Runner do
 
   require Logger
 
-  alias MarketMySpec.Repo
   alias MarketMySpec.Chat.{ActiveTasks, Conversation, Message, NullToolRegistry}
+  alias MarketMySpec.Repo
 
   @pubsub MarketMySpec.PubSub
   @task_supervisor MarketMySpec.Chat.TaskSupervisor
