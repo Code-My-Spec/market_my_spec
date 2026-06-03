@@ -1,60 +1,75 @@
 defmodule MarketMySpecSpex.Story733.Criterion6499Spex do
   @moduledoc """
-  Story 733 — 6499. When the user has no online agent, a Reddit
-  operation surfaces a user-facing error message that links to
-  /agents.
+  Story 733 — 6499. Server-first RSS: a Reddit search no longer requires
+  an online agent. When none is paired, the search runs directly against
+  Reddit's public RSS feed and still returns candidates. (The agent
+  transport now only acts as a fallback for direct-call failures, and is
+  slated for removal — see the search orchestrator.)
   """
   use MarketMySpecSpex.Case
 
+  alias Anubis.Server.Response
   alias MarketMySpec.McpServers.Engagements.Tools.SearchEngagements
   alias MarketMySpecSpex.Fixtures
   alias MarketMySpecSpex.RedditHelpers
 
-  spex "no online agent surfaces user-facing error with link to /agents" do
-    scenario "search invoked while the user has no paired+online agent" do
-      given_ "an authenticated user with a reddit venue and NO agent paired", context do
+  defp decode_payload(%Response{content: parts}) when is_list(parts) do
+    parts
+    |> Enum.map_join("\n", fn
+      %{"text" => t} -> t
+      %{text: t} -> t
+      other -> inspect(other)
+    end)
+    |> Jason.decode!()
+  end
+
+  spex "no online agent: Reddit search runs directly against the public RSS feed" do
+    scenario "search with no paired agent returns candidates from the direct RSS path" do
+      given_ "an authenticated user with a reddit venue, NO agent paired, and a direct-RSS cassette",
+             context do
         scope = Fixtures.account_scoped_user_fixture()
         Fixtures.venue_fixture(scope, %{source: :reddit, identifier: "elixir", enabled: true})
-        frame = %{assigns: %{current_scope: scope}, context: %{session_id: "spec"}}
 
-        RedditHelpers.build_search_cassette!("crit_6499_no_agent",
+        RedditHelpers.build_search_cassette!("crit_6499_direct",
           subreddit: "elixir",
           query: "elixir",
           children: [
             %{
-              title: "Elixir tip",
-              score: 5,
-              num_comments: 1,
-              id: "c1",
-              permalink: "/r/elixir/comments/c1/elixir_tip/"
+              title: "Direct RSS works without an agent",
+              id: "noagent1",
+              permalink: "/r/elixir/comments/noagent1/_/",
+              selftext: "No paired agent — the server hit Reddit's RSS feed directly."
             }
           ]
         )
 
+        frame = %{assigns: %{current_scope: scope}, context: %{session_id: "spec"}}
         {:ok, Map.put(context, :frame, frame)}
       end
 
       when_ "search_engagements is invoked", context do
-        {:reply, response, _frame} =
-          RedditHelpers.with_reddit_cassette("crit_6499_no_agent", fn ->
-            SearchEngagements.execute(%{query: "elixir"}, context.frame)
+        payload =
+          RedditHelpers.with_reddit_cassette("crit_6499_direct", fn ->
+            {:reply, response, _frame} =
+              SearchEngagements.execute(%{query: "elixir"}, context.frame)
+
+            decode_payload(response)
           end)
 
-        {:ok, Map.put(context, :response, response)}
+        {:ok, Map.put(context, :payload, payload)}
       end
 
-      then_ "the response text references /agents", context do
-        text =
-          context.response.content
-          |> List.wrap()
-          |> Enum.map_join("\n", fn
-            %{"text" => t} -> t
-            %{text: t} -> t
-            other -> inspect(other)
-          end)
+      then_ "candidates come back from the direct path with no failures and no agent error",
+            context do
+        assert context.payload["candidates"] != [],
+               "expected direct-RSS candidates with no agent, got none"
 
-        assert text =~ "/agents",
-               "expected the no-online-agent error to reference /agents; got: #{text}"
+        assert context.payload["failures"] == [],
+               "expected no failures from the direct path, got: #{inspect(context.payload["failures"])}"
+
+        [c | _] = context.payload["candidates"]
+        assert c["source"] == "reddit"
+        assert is_binary(c["title"])
 
         {:ok, context}
       end

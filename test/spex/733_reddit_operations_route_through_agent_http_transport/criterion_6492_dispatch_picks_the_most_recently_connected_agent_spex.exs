@@ -1,19 +1,29 @@
 defmodule MarketMySpecSpex.Story733.Criterion6492Spex do
   @moduledoc """
-  Story 733 — 6492. When a user has two online agents, Dispatcher
-  must target the most-recently-connected one.
+  Story 733 — 6492. When the direct RSS call fails and a user has two
+  online agents, the fallback transport must target the most-recently
+  connected one. Exercised via the search fallback path (direct 403 →
+  agent dispatch).
   """
   use MarketMySpecSpex.Case
 
   alias MarketMySpec.McpServers.Engagements.Tools.SearchEngagements
   alias MarketMySpecSpex.Fixtures
+  alias MarketMySpecSpex.RedditHelpers
 
-  spex "dispatch picks the most recently connected agent" do
-    scenario "two agents online; the newer one receives the http_request envelope" do
-      given_ "a user with two paired+joined agents (agent_b joined last)", context do
+  spex "fallback dispatch picks the most recently connected agent" do
+    scenario "direct 403; two agents online; the newer one receives the http_request envelope" do
+      given_ "a user with two paired+joined agents (agent_b joined last) and a 403 direct cassette",
+             context do
         scope = Fixtures.account_scoped_user_fixture()
         user = scope.user
         Fixtures.venue_fixture(scope, %{source: :reddit, identifier: "elixir", enabled: true})
+
+        RedditHelpers.build_search_cassette!("crit_6492_fallback",
+          subreddit: "elixir",
+          query: "elixir",
+          status: 403
+        )
 
         {tok, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, ~p"/users/log-in", %{"user" => %{"token" => tok}})
@@ -31,15 +41,19 @@ defmodule MarketMySpecSpex.Story733.Criterion6492Spex do
         {:ok, Map.merge(context, %{agent_b: agent_b, frame: frame})}
       end
 
-      when_ "search_engagements is invoked", context do
-        spawn_link(fn -> SearchEngagements.execute(%{query: "elixir"}, context.frame) end)
-        {:ok, context}
+      when_ "search_engagements is invoked (direct 403 → agent fallback)", context do
+        envelope =
+          RedditHelpers.with_reddit_cassette("crit_6492_fallback", fn ->
+            spawn_link(fn -> SearchEngagements.execute(%{query: "elixir"}, context.frame) end)
+            Fixtures.expect_http_request_envelope(3_000)
+          end)
+
+        {:ok, Map.put(context, :envelope, envelope)}
       end
 
-      then_ "the http_request envelope targets agent_b (most recently connected)", context do
-        envelope = Fixtures.expect_http_request_envelope(3_000)
-        assert envelope["agent_id"] == context.agent_b.id
-        {:ok, Map.put(context, :envelope, envelope)}
+      then_ "the fallback http_request envelope targets agent_b (most recently connected)", context do
+        assert context.envelope["agent_id"] == context.agent_b.id
+        {:ok, context}
       end
     end
   end

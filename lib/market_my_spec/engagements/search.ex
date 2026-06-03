@@ -105,18 +105,6 @@ defmodule MarketMySpec.Engagements.Search do
         venue_entry = {venue, raw_candidates}
         {acc_venue_lists ++ [venue_entry], acc_failures, acc_notices, acc_cursor || nc}
 
-      {:ok, {venue, {:ok_no_agent, %{candidates: raw_candidates, next_cursor: nc}}}},
-      {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
-        venue_entry = {venue, raw_candidates}
-
-        notice =
-          "No online MMS Agent for #{venue.identifier}. " <>
-            "Reddit blocks datacenter IPs — pair or start an agent at /agents " <>
-            "so searches route through your residential IP."
-
-        {acc_venue_lists ++ [venue_entry], acc_failures, acc_notices ++ [notice],
-         acc_cursor || nc}
-
       {:ok, {venue, {:error, reason}}}, {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
         failure = %{
           source: venue.source,
@@ -137,12 +125,11 @@ defmodule MarketMySpec.Engagements.Search do
     end)
   end
 
-  # Reddit dispatches through the user's paired agent when one is online
-  # (datacenter IPs are blocked by Reddit; residential is the whole point).
-  # When no agent is paired+online, the orchestrator hits Reddit directly —
-  # that's a 403 in prod but the test suite stubs Req via cassettes for
-  # this code path. The 403 surfaces as a per-venue failure in the
-  # response envelope.
+  # Reddit's RSS feeds are served anonymously and are reachable from
+  # datacenter IPs, so search hits Reddit directly from the server. The
+  # paired+online agent is now only a fallback for when the direct call
+  # fails (e.g. a host that lands on Reddit's block list); it is slated
+  # for removal once direct RSS is proven out in prod.
   defp search_venue(venue, query, cursor, scope) do
     adapter = adapter_for(venue.source)
     opts = [cursor: cursor]
@@ -155,19 +142,19 @@ defmodule MarketMySpec.Engagements.Search do
     error -> {:error, error}
   end
 
-  # Wraps the Reddit adapter call so the orchestrator can attach a
-  # `:no_agent` tag to direct-path results. The tag becomes a top-level
-  # notice in the response envelope so the LiveView (and the agent
-  # surface) can tell the user "pair an agent to avoid 403s" without
-  # turning a successful cassette-backed test into a failure.
+  # Direct server-side RSS first; fall back to the residential-IP agent
+  # transport only if the direct call errors AND an agent is online.
   defp search_reddit_venue(venue, query, opts, scope) do
-    if Presence.most_recently_connected(scope.user.id) do
-      Reddit.search(venue, query, [{:scope, scope} | opts])
-    else
-      case Reddit.search(venue, query, opts) do
-        {:ok, result} -> {:ok_no_agent, result}
-        error -> error
-      end
+    case Reddit.search(venue, query, opts) do
+      {:ok, result} ->
+        {:ok, result}
+
+      {:error, _reason} = error ->
+        if Presence.most_recently_connected(scope.user.id) do
+          Reddit.search(venue, query, [{:scope, scope} | opts])
+        else
+          error
+        end
     end
   end
 
