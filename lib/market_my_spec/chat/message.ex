@@ -33,6 +33,9 @@ defmodule MarketMySpec.Chat.Message do
           finish_reason: String.t() | nil,
           response_id: String.t() | nil,
           error_reason: String.t() | nil,
+          tool_name: String.t() | nil,
+          tool_call_id: String.t() | nil,
+          tool_calls: [map()] | nil,
           conversation: Conversation.t() | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
@@ -40,7 +43,7 @@ defmodule MarketMySpec.Chat.Message do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "chat_messages" do
-    field :role, Ecto.Enum, values: [:user, :assistant]
+    field :role, Ecto.Enum, values: [:user, :assistant, :tool]
     field :content, :string, default: ""
     field :status, Ecto.Enum, values: [:streaming, :complete, :error], default: :complete
 
@@ -53,6 +56,13 @@ defmodule MarketMySpec.Chat.Message do
     field :finish_reason, :string
     field :response_id, :string
     field :error_reason, :string
+
+    # Tool calling (story 745). `tool_calls` records the calls an assistant
+    # message made; a `:tool` message carries one call's result, keyed by
+    # `tool_call_id`, with `tool_name` for display.
+    field :tool_name, :string
+    field :tool_call_id, :string
+    field :tool_calls, {:array, :map}
 
     belongs_to :conversation, Conversation, type: :binary_id
 
@@ -67,7 +77,10 @@ defmodule MarketMySpec.Chat.Message do
     :cost,
     :finish_reason,
     :response_id,
-    :error_reason
+    :error_reason,
+    :tool_name,
+    :tool_call_id,
+    :tool_calls
   ]
   @cast_fields [:conversation_id, :role, :content, :status | @metadata_fields]
 

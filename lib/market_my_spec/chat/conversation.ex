@@ -17,12 +17,14 @@ defmodule MarketMySpec.Chat.Conversation do
   alias MarketMySpec.Chat.Message
 
   @type provider :: :anthropic | :openai
+  @type chat_type :: :problem_discovery | :marketing_strategy
 
   @type t :: %__MODULE__{
           id: Ecto.UUID.t() | nil,
           account_id: Ecto.UUID.t() | nil,
           provider: provider(),
           model: String.t() | nil,
+          type: chat_type() | nil,
           title: String.t() | nil,
           account: Account.t() | Ecto.Association.NotLoaded.t(),
           messages: [Message.t()] | Ecto.Association.NotLoaded.t(),
@@ -34,6 +36,7 @@ defmodule MarketMySpec.Chat.Conversation do
   schema "chat_conversations" do
     field :provider, Ecto.Enum, values: [:anthropic, :openai], default: :anthropic
     field :model, :string
+    field :type, Ecto.Enum, values: [:problem_discovery, :marketing_strategy]
     field :title, :string
 
     belongs_to :account, Account, type: :binary_id
@@ -43,7 +46,7 @@ defmodule MarketMySpec.Chat.Conversation do
   end
 
   @required_fields [:account_id, :provider, :model]
-  @optional_fields [:title]
+  @optional_fields [:type, :title]
 
   @doc """
   Changeset for creating or updating a Conversation.
