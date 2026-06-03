@@ -20,7 +20,11 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
   def mount(%{"id" => frame_id}, _session, socket) do
     case ProblemDiscovery.get_frame(socket.assigns.current_scope, frame_id) do
       {:ok, frame} ->
-        {:ok, load_board(assign(socket, :frame, frame))}
+        {:ok,
+         socket
+         |> assign(:frame, frame)
+         |> assign(:expanded_candidates, MapSet.new())
+         |> load_board()}
 
       {:error, :not_found} ->
         {:ok,
@@ -52,6 +56,18 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
      run_and_reload(socket, fn ->
        ProblemDiscovery.run_score(socket.assigns.current_scope, socket.assigns.frame.id)
      end)}
+  end
+
+  @impl true
+  def handle_event("toggle_postings", %{"candidate-id" => candidate_id}, socket) do
+    expanded =
+      if MapSet.member?(socket.assigns.expanded_candidates, candidate_id) do
+        MapSet.delete(socket.assigns.expanded_candidates, candidate_id)
+      else
+        MapSet.put(socket.assigns.expanded_candidates, candidate_id)
+      end
+
+    {:noreply, assign(socket, :expanded_candidates, expanded)}
   end
 
   @impl true
@@ -179,58 +195,92 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
                   :for={c <- order_candidates(@board.candidates)}
                   data-test="board-row"
                   data-verdict={verdict_attr(c.red_team_verdict)}
-                  class="rounded border border-base-300 p-4 flex items-start justify-between gap-4"
+                  class="rounded border border-base-300"
                 >
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class={["badge badge-sm", verdict_badge_class(c.red_team_verdict)]}>
-                        {verdict_label(c.red_team_verdict)}
-                      </span>
-                      <span class="font-medium">{c.label || "(unlabeled)"}</span>
-                      <span class="text-xs text-base-content/60">score {c.score}</span>
+                  <div class="p-4 flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class={["badge badge-sm", verdict_badge_class(c.red_team_verdict)]}>
+                          {verdict_label(c.red_team_verdict)}
+                        </span>
+                        <span class="font-medium">{c.label || "(unlabeled)"}</span>
+                        <span class="text-xs text-base-content/60">score {c.score}</span>
+                      </div>
+                      <p
+                        :if={c.red_team_verdict && c.red_team_verdict.kill_argument}
+                        class="text-sm text-base-content/70 mt-2"
+                      >
+                        <strong>kill_argument:</strong> {c.red_team_verdict.kill_argument}
+                      </p>
+                      <button
+                        type="button"
+                        class="text-xs link link-hover mt-2"
+                        phx-click="toggle_postings"
+                        phx-value-candidate-id={c.id}
+                        data-test="toggle-postings"
+                      >
+                        {if MapSet.member?(@expanded_candidates, c.id),
+                          do: "▾ Hide postings",
+                          else: "▸ Show #{posting_count(c)} postings"}
+                      </button>
                     </div>
-                    <p
-                      :if={c.red_team_verdict && c.red_team_verdict.kill_argument}
-                      class="text-sm text-base-content/70 mt-2"
+                    <button
+                      class="btn btn-sm btn-error shrink-0"
+                      phx-click="kill"
+                      phx-value-candidate-id={c.id}
+                      data-test="kill-button"
                     >
-                      <strong>kill_argument:</strong> {c.red_team_verdict.kill_argument}
-                    </p>
+                      KILL
+                    </button>
                   </div>
-                  <button
-                    class="btn btn-sm btn-error shrink-0"
-                    phx-click="kill"
-                    phx-value-candidate-id={c.id}
-                    data-test="kill-button"
-                  >
-                    KILL
-                  </button>
+                  <.postings_list
+                    :if={MapSet.member?(@expanded_candidates, c.id)}
+                    candidate={c}
+                  />
                 </li>
 
                 <li
                   :for={c <- Map.get(@board, :pending_candidates) || []}
                   data-test="board-row"
                   data-verdict="pending"
-                  class="rounded border border-base-300 border-dashed p-4 flex items-start justify-between gap-4 opacity-80"
+                  class="rounded border border-base-300 border-dashed opacity-80"
                 >
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="badge badge-sm badge-ghost">PENDING RED-TEAM</span>
-                      <span class="font-medium">{c.label || "(unlabeled)"}</span>
-                      <span class="text-xs text-base-content/60">score {c.score}</span>
+                  <div class="p-4 flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="badge badge-sm badge-ghost">PENDING RED-TEAM</span>
+                        <span class="font-medium">{c.label || "(unlabeled)"}</span>
+                        <span class="text-xs text-base-content/60">score {c.score}</span>
+                      </div>
+                      <p class="text-xs text-base-content/60 mt-2">
+                        Money-gated by Score, awaiting prosecution. Use RedTeamCandidate (MCP) or KILL
+                        below.
+                      </p>
+                      <button
+                        type="button"
+                        class="text-xs link link-hover mt-2"
+                        phx-click="toggle_postings"
+                        phx-value-candidate-id={c.id}
+                        data-test="toggle-postings"
+                      >
+                        {if MapSet.member?(@expanded_candidates, c.id),
+                          do: "▾ Hide postings",
+                          else: "▸ Show #{posting_count(c)} postings"}
+                      </button>
                     </div>
-                    <p class="text-xs text-base-content/60 mt-2">
-                      Money-gated by Score, awaiting prosecution. Use RedTeamCandidate (MCP) or KILL
-                      below.
-                    </p>
+                    <button
+                      class="btn btn-sm btn-error btn-outline shrink-0"
+                      phx-click="kill"
+                      phx-value-candidate-id={c.id}
+                      data-test="kill-button"
+                    >
+                      KILL
+                    </button>
                   </div>
-                  <button
-                    class="btn btn-sm btn-error btn-outline shrink-0"
-                    phx-click="kill"
-                    phx-value-candidate-id={c.id}
-                    data-test="kill-button"
-                  >
-                    KILL
-                  </button>
+                  <.postings_list
+                    :if={MapSet.member?(@expanded_candidates, c.id)}
+                    candidate={c}
+                  />
                 </li>
               </ul>
             <% end %>
@@ -239,6 +289,65 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
       </div>
     </Layouts.app>
     """
+  end
+
+  attr :candidate, :map, required: true
+
+  defp postings_list(assigns) do
+    ~H"""
+    <div class="border-t border-base-300 bg-base-200/40 px-4 py-3" data-test="postings-list">
+      <ul class="divide-y divide-base-300">
+        <li :for={p <- @candidate.job_postings} class="py-3" data-test="posting-row">
+          <div class="flex items-baseline justify-between gap-3">
+            <%= if p.url do %>
+              <a
+                href={p.url}
+                target="_blank"
+                rel="noopener"
+                class="font-medium link link-hover truncate"
+              >
+                {p.title || "(untitled)"}
+              </a>
+            <% else %>
+              <span class="font-medium truncate">{p.title || "(untitled)"}</span>
+            <% end %>
+            <span class="text-xs text-base-content/60 whitespace-nowrap shrink-0">
+              {money_summary(p)}
+            </span>
+          </div>
+          <p
+            :if={p.pain_descriptor}
+            class="text-xs text-base-content/70 mt-1 italic"
+          >
+            pain: {p.pain_descriptor}
+          </p>
+          <p
+            :if={p.description}
+            class="text-sm text-base-content/70 mt-1 line-clamp-3"
+          >
+            {p.description}
+          </p>
+        </li>
+      </ul>
+    </div>
+    """
+  end
+
+  defp posting_count(%{job_postings: postings}) when is_list(postings), do: length(postings)
+  defp posting_count(_), do: 0
+
+  defp money_summary(p) do
+    parts =
+      [
+        p.total_spent_cents && "$#{div(p.total_spent_cents, 100)} spent",
+        p.hire_rate && "#{p.hire_rate}% hire rate"
+      ]
+      |> Enum.reject(&is_nil/1)
+
+    case parts do
+      [] -> ""
+      _ -> Enum.join(parts, " • ")
+    end
   end
 
   defp money_gate_field(%{"total_spent_min" => v}, :total_spent_min), do: v
