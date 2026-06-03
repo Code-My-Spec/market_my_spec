@@ -12,17 +12,23 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.CreateFrame do
   schema do
     field :description, :string, required: true, doc: "Hypothesis statement (1-3 sentences)"
 
-    field :saved_searches, {:list, :map},
+    field :saved_searches, {:list, :string},
       required: true,
-      doc: "[{\"source\": \"upwork\", \"query\": \"...\"}, ...]"
+      doc:
+        "List of pipe-separated `\"source|query\"` strings, e.g. [\"upwork|vendor onboarding\", \"upwork|supplier portal\"]"
 
-    field :money_gate, :map,
+    field :total_spent_min, :integer,
       required: true,
-      doc: "%{\"total_spent_min\": int, \"hire_rate_min\": int}"
+      doc: "Money-gate threshold: minimum client total_spent (USD) for a JobPosting to gate in"
 
-    field :kill_condition, :map,
+    field :hire_rate_min, :integer,
       required: true,
-      doc: "%{\"min_money_gated_candidates\": int}"
+      doc: "Money-gate threshold: minimum client hire_rate (0-100) for a JobPosting to gate in"
+
+    field :min_money_gated_candidates, :integer,
+      required: true,
+      doc:
+        "Kill condition: minimum count of money-gated Candidates the pipeline must produce to be considered a survivable Frame"
   end
 
   @impl true
@@ -31,9 +37,14 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.CreateFrame do
 
     attrs = %{
       description: Map.fetch!(params, :description),
-      saved_searches: normalize_saved_searches(Map.fetch!(params, :saved_searches)),
-      money_gate: normalize_keys(Map.fetch!(params, :money_gate)),
-      kill_condition: normalize_keys(Map.fetch!(params, :kill_condition))
+      saved_searches: parse_saved_searches(Map.fetch!(params, :saved_searches)),
+      money_gate: %{
+        total_spent_min: Map.fetch!(params, :total_spent_min),
+        hire_rate_min: Map.fetch!(params, :hire_rate_min)
+      },
+      kill_condition: %{
+        min_money_gated_candidates: Map.fetch!(params, :min_money_gated_candidates)
+      }
     }
 
     case ProblemDiscovery.create_frame(scope, attrs) do
@@ -47,14 +58,12 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.CreateFrame do
     end
   end
 
-  defp normalize_saved_searches(list) when is_list(list) do
-    Enum.map(list, fn entry -> normalize_keys(entry) end)
-  end
-
-  defp normalize_keys(map) when is_map(map) do
-    Map.new(map, fn
-      {k, v} when is_binary(k) -> {String.to_atom(k), v}
-      {k, v} -> {k, v}
+  defp parse_saved_searches(list) when is_list(list) do
+    Enum.map(list, fn entry ->
+      case String.split(entry, "|", parts: 2) do
+        [source, query] -> %{source: String.trim(source), query: String.trim(query)}
+        [single] -> %{source: "upwork", query: String.trim(single)}
+      end
     end)
   end
 

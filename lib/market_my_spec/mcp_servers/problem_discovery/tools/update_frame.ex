@@ -13,9 +13,24 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.UpdateFrame do
   schema do
     field :frame_id, :string, required: true
     field :description, :string, required: false
-    field :saved_searches, {:list, :map}, required: false
-    field :money_gate, :map, required: false
-    field :kill_condition, :map, required: false
+
+    field :saved_searches, {:list, :string},
+      required: false,
+      doc:
+        "List of pipe-separated `\"source|query\"` strings. Pass to replace the full set; omit to leave saved_searches untouched."
+
+    field :total_spent_min, :integer,
+      required: false,
+      doc:
+        "Money-gate threshold update — pair with :hire_rate_min. Both must be supplied together to change the gate."
+
+    field :hire_rate_min, :integer,
+      required: false,
+      doc: "Money-gate threshold update — pair with :total_spent_min."
+
+    field :min_money_gated_candidates, :integer,
+      required: false,
+      doc: "Kill-condition update."
   end
 
   @impl true
@@ -24,14 +39,14 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.UpdateFrame do
     frame_id = Map.fetch!(params, :frame_id)
 
     attrs =
-      params
-      |> Map.drop([:frame_id])
-      |> Enum.into(%{}, fn
-        {:saved_searches, list} -> {:saved_searches, normalize_list(list)}
-        {:money_gate, map} -> {:money_gate, normalize_keys(map)}
-        {:kill_condition, map} -> {:kill_condition, normalize_keys(map)}
-        kv -> kv
-      end)
+      %{}
+      |> maybe_put(:description, Map.get(params, :description))
+      |> maybe_put_saved_searches(Map.get(params, :saved_searches))
+      |> maybe_put_money_gate(
+        Map.get(params, :total_spent_min),
+        Map.get(params, :hire_rate_min)
+      )
+      |> maybe_put_kill_condition(Map.get(params, :min_money_gated_candidates))
 
     case ProblemDiscovery.update_frame(scope, frame_id, attrs) do
       {:ok, updated} ->
@@ -47,15 +62,40 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.UpdateFrame do
     end
   end
 
-  defp normalize_list(list) when is_list(list),
-    do: Enum.map(list, &normalize_keys/1)
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
 
-  defp normalize_keys(map) when is_map(map) do
-    Map.new(map, fn
-      {k, v} when is_binary(k) -> {String.to_atom(k), v}
-      {k, v} -> {k, v}
-    end)
+  defp maybe_put_saved_searches(map, nil), do: map
+
+  defp maybe_put_saved_searches(map, list) when is_list(list) do
+    parsed =
+      Enum.map(list, fn entry ->
+        case String.split(entry, "|", parts: 2) do
+          [source, query] -> %{source: String.trim(source), query: String.trim(query)}
+          [single] -> %{source: "upwork", query: String.trim(single)}
+        end
+      end)
+
+    Map.put(map, :saved_searches, parsed)
   end
+
+  defp maybe_put_money_gate(map, nil, nil), do: map
+
+  defp maybe_put_money_gate(map, total_spent_min, hire_rate_min)
+       when is_integer(total_spent_min) and is_integer(hire_rate_min) do
+    Map.put(map, :money_gate, %{
+      total_spent_min: total_spent_min,
+      hire_rate_min: hire_rate_min
+    })
+  end
+
+  defp maybe_put_money_gate(_map, _t, _h),
+    do: raise(ArgumentError, "money_gate update requires both :total_spent_min and :hire_rate_min")
+
+  defp maybe_put_kill_condition(map, nil), do: map
+
+  defp maybe_put_kill_condition(map, n) when is_integer(n),
+    do: Map.put(map, :kill_condition, %{min_money_gated_candidates: n})
 
   defp format(%Ecto.Changeset{errors: errors}) do
     Enum.map_join(errors, "; ", fn {f, {msg, _}} -> "#{f}: #{msg}" end)
