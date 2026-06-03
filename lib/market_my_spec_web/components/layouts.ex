@@ -227,6 +227,15 @@ defmodule MarketMySpecWeb.Layouts do
       </div>
     </main>
 
+    <footer class="border-t border-base-300 mt-10">
+      <div class="max-w-6xl mx-auto px-6 py-6 flex flex-wrap items-center justify-between gap-4 text-sm text-base-content/60">
+        <span>© 2026 MarketMySpec</span>
+        <nav class="flex items-center gap-4">
+          <.link navigate={~p"/privacy"} class="hover:text-base-content">Privacy</.link>
+        </nav>
+      </div>
+    </footer>
+
     <.flash_group flash={@flash} />
     """
   end

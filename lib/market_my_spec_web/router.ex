@@ -159,6 +159,7 @@ defmodule MarketMySpecWeb.Router do
         {MarketMySpecWeb.UserAuth, :fetch_current_agency}
       ] do
       live "/", HomeLive, :index
+      live "/privacy", PrivacyLive, :index
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new

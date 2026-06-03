@@ -2,12 +2,15 @@ defmodule MarketMySpec.Integrations.Providers.Google do
   @moduledoc """
   Google OAuth provider implementation using Assent.Strategy.Google.
 
-  Configures OAuth with `email`, `profile`, and Google Analytics admin
-  scopes, requesting offline access with a forced consent prompt to ensure
-  a refresh token is issued. The Analytics scope is what the
-  `MarketMySpec.McpServers.AnalyticsAdminServer` MCP tools use to read and
-  modify GA4 custom dimensions, custom metrics, and key events on behalf
-  of the user.
+  Configures OAuth with `email` and `profile` scopes, requesting offline
+  access with a forced consent prompt to ensure a refresh token is issued.
+
+  Note: the Google Analytics admin scope
+  (`https://www.googleapis.com/auth/analytics.edit`) was removed because it
+  is a Google "sensitive" scope that triggers the unverified-app consent
+  warning. Re-adding it requires passing Google OAuth verification. Until
+  that scope is restored, the `MarketMySpec.McpServers.AnalyticsAdminServer`
+  MCP tools cannot obtain an Analytics connection.
 
   Configure the client credentials in your runtime config:
 
@@ -40,7 +43,7 @@ defmodule MarketMySpec.Integrations.Providers.Google do
       token_url: "https://oauth2.googleapis.com/token",
       auth_method: :client_secret_post,
       authorization_params: [
-        scope: "email profile https://www.googleapis.com/auth/analytics.edit",
+        scope: "email profile",
         access_type: "offline",
         prompt: "consent"
       ]
