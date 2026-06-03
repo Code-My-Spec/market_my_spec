@@ -56,7 +56,7 @@ defmodule MarketMySpecWeb.Layouts do
           </div>
         </header>
 
-        <main class="flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
+        <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
           {render_slot(@inner_block)}
         </main>
       </div>

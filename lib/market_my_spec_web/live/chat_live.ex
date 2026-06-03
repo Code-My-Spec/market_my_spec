@@ -40,7 +40,8 @@ defmodule MarketMySpecWeb.ChatLive do
       <div
         data-test="chat"
         data-chat-id={@conversation.id}
-        class="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col"
+        style="height: calc(100dvh - 7rem)"
+        class="mx-auto flex w-full max-w-3xl flex-col"
       >
         <header class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 pb-3">
           <h1 class="text-lg font-semibold">Chat</h1>
