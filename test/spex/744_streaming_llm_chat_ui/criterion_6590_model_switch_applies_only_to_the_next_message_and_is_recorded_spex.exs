@@ -47,7 +47,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6590Spex do
         |> render_submit()
 
         context.view
-        |> form("[data-test='model-form']", conversation: %{provider: "openai", model: "gpt-5-mini"})
+        |> form("[data-test='model-form']", conversation: %{provider: "openai"})
         |> render_change()
 
         Application.put_env(:market_my_spec, :chat_llm, %{

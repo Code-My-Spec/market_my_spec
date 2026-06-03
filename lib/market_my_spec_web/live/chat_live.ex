@@ -22,7 +22,6 @@ defmodule MarketMySpecWeb.ChatLive do
   alias MarketMySpec.Chat.{ActiveTasks, Message, Runner}
 
   @providers [:anthropic, :openai]
-  @models ["claude-sonnet-4-6", "claude-opus-4-8", "gpt-5-mini", "gpt-5"]
 
   @impl true
   def render(assigns) do
@@ -43,7 +42,7 @@ defmodule MarketMySpecWeb.ChatLive do
       <div
         data-test="chat"
         data-chat-id={@conversation.id}
-        class="mx-auto flex h-[calc(100vh-7rem)] max-w-3xl flex-col"
+        class="mx-auto flex h-[calc(100vh_-_7rem)] max-w-3xl flex-col"
       >
         <header class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 pb-3">
           <h1 class="text-lg font-semibold">Chat</h1>
@@ -59,11 +58,9 @@ defmodule MarketMySpecWeb.ChatLive do
                 {p}
               </option>
             </select>
-            <select name="conversation[model]" class="select select-bordered select-xs">
-              <option :for={m <- @models} value={m} selected={m == @conversation.model}>
-                {m}
-              </option>
-            </select>
+            <span data-test="current-model" class="badge badge-ghost badge-sm" title="Configured model for this provider">
+              {@conversation.model}
+            </span>
           </.form>
 
           <div class="flex shrink-0 items-center gap-2">
@@ -74,7 +71,7 @@ defmodule MarketMySpecWeb.ChatLive do
           </div>
         </header>
 
-        <div id="messages-scroll" phx-hook=".ChatScroll" class="flex-1 overflow-y-auto py-4">
+        <div id="messages-scroll" phx-hook=".ChatScroll" class="min-h-0 flex-1 overflow-y-auto py-4">
           <div id="messages" phx-update="stream" class="space-y-1">
             <div :for={{dom_id, message} <- @streams.messages} id={dom_id}>
               <.render_message message={message} />
@@ -177,7 +174,6 @@ defmodule MarketMySpecWeb.ChatLive do
       socket
       |> assign(:conversation, conversation)
       |> assign(:providers, @providers)
-      |> assign(:models, @models)
       |> assign(:model_form, model_form(conversation))
       |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
       |> assign(:streaming, restore_streaming(conversation, List.last(streaming_messages)))
@@ -202,9 +198,13 @@ defmodule MarketMySpecWeb.ChatLive do
     end
   end
 
-  def handle_event("change_model", %{"conversation" => %{"provider" => provider, "model" => model}}, socket) do
+  def handle_event("change_model", %{"conversation" => %{"provider" => provider}}, socket) do
+    # The provider is selectable; the model is configured per provider (not
+    # user-pickable). Switching provider applies the configured default model.
+    provider = String.to_existing_atom(provider)
+
     {:ok, conversation} =
-      Chat.update_model(socket.assigns.conversation, String.to_existing_atom(provider), model)
+      Chat.update_model(socket.assigns.conversation, provider, Chat.default_model(provider))
 
     {:noreply,
      socket

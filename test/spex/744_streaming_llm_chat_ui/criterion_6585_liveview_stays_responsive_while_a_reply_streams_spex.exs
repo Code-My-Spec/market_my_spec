@@ -40,9 +40,9 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 
-      when_ "the founder changes the model and sends another message mid-stream", context do
+      when_ "the founder changes the provider and sends another message mid-stream", context do
         context.view
-        |> form("[data-test='model-form']", conversation: %{provider: "openai", model: "gpt-5-mini"})
+        |> form("[data-test='model-form']", conversation: %{provider: "openai"})
         |> render_change()
 
         context.view
@@ -61,8 +61,10 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
         {:ok, context}
       end
 
-      then_ "the model selector reflects the founder's mid-stream change", context do
-        assert has_element?(context.view, "[data-test='model-form'] [value='gpt-5-mini']")
+      then_ "the configured model updates to the new provider's default", context do
+        # Provider is selectable; the model is configured per provider — switching
+        # to OpenAI applies its configured default (gpt-5-mini), shown read-only.
+        assert has_element?(context.view, "[data-test='current-model']", "gpt-5-mini")
         {:ok, context}
       end
     end
