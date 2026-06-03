@@ -28,8 +28,24 @@ defmodule MarketMySpecWeb.ChatLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div data-test="chat" data-chat-id={@conversation.id} class="mx-auto max-w-3xl">
-        <header class="flex items-center justify-between gap-4 border-b border-base-300 pb-3">
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".ChatScroll">
+        export default {
+          mounted() {
+            this.scroll();
+            this.observer = new MutationObserver(() => this.scroll());
+            this.observer.observe(this.el, { childList: true, subtree: true });
+          },
+          destroyed() { this.observer && this.observer.disconnect(); },
+          scroll() { this.el.scrollTop = this.el.scrollHeight; }
+        }
+      </script>
+
+      <div
+        data-test="chat"
+        data-chat-id={@conversation.id}
+        class="mx-auto flex h-[calc(100vh-7rem)] max-w-3xl flex-col"
+      >
+        <header class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 pb-3">
           <h1 class="text-lg font-semibold">Chat</h1>
 
           <.form
@@ -38,61 +54,69 @@ defmodule MarketMySpecWeb.ChatLive do
             data-test="model-form"
             class="flex items-center gap-2"
           >
-            <select name="conversation[provider]" class="select select-bordered select-sm">
+            <select name="conversation[provider]" class="select select-bordered select-xs">
               <option :for={p <- @providers} value={p} selected={to_string(p) == to_string(@conversation.provider)}>
                 {p}
               </option>
             </select>
-            <select name="conversation[model]" class="select select-bordered select-sm">
+            <select name="conversation[model]" class="select select-bordered select-xs">
               <option :for={m <- @models} value={m} selected={m == @conversation.model}>
                 {m}
               </option>
             </select>
           </.form>
 
-          <div class="flex items-center gap-2">
-            <span data-test="token-badge" class="badge badge-neutral">{@token_total} tokens</span>
-            <span :if={@cost_total} data-test="cost-badge" class="badge badge-ghost">
+          <div class="flex shrink-0 items-center gap-2">
+            <span data-test="token-badge" class="badge badge-neutral badge-sm">{@token_total} tokens</span>
+            <span :if={@cost_total} data-test="cost-badge" class="badge badge-ghost badge-sm">
               ${format_cost(@cost_total)}
             </span>
           </div>
         </header>
 
-        <div id="messages" phx-update="stream" class="flex flex-col gap-3 py-4">
-          <div :for={{dom_id, message} <- @streams.messages} id={dom_id}>
-            <.render_message message={message} />
-          </div>
-        </div>
-
-        <div :if={@streaming} class="py-2">
-          <div
-            data-test="assistant-message"
-            data-provider={@streaming.provider}
-            data-model={@streaming.model}
-            class="chat-bubble whitespace-pre-wrap"
-          >
-            {@streaming.content}
-            <span :if={@streaming.status == :streaming} data-test="streaming-indicator" class="loading loading-dots loading-xs" />
-            <div :if={@streaming.status == :error} data-test="message-error" class="alert alert-error mt-2">
-              {@streaming.error_reason}
+        <div id="messages-scroll" phx-hook=".ChatScroll" class="flex-1 overflow-y-auto py-4">
+          <div id="messages" phx-update="stream" class="space-y-1">
+            <div :for={{dom_id, message} <- @streams.messages} id={dom_id}>
+              <.render_message message={message} />
             </div>
-            <button :if={@streaming.status == :error} data-test="retry-button" phx-click="retry" class="btn btn-sm mt-2">
-              Retry
-            </button>
+          </div>
+
+          <div :if={@streaming} class="chat chat-start">
+            <div
+              data-test="assistant-message"
+              data-provider={@streaming.provider}
+              data-model={@streaming.model}
+              class="chat-bubble bg-base-200 text-base-content"
+            >
+              <div class="markdown">{Phoenix.HTML.raw(markdown(@streaming.content))}</div>
+              <span
+                :if={@streaming.status == :streaming}
+                data-test="streaming-indicator"
+                class="loading loading-dots loading-sm mt-1 opacity-70"
+              />
+              <div :if={@streaming.status == :error} data-test="message-error" class="alert alert-error mt-2">
+                {@streaming.error_reason}
+              </div>
+              <button :if={@streaming.status == :error} data-test="retry-button" phx-click="retry" class="btn btn-sm mt-2">
+                Retry
+              </button>
+            </div>
           </div>
         </div>
 
-        <.form for={@message_form} phx-submit="send" data-test="chat-form" class="mt-4 flex gap-2">
-          <input
-            type="text"
-            name="message[content]"
-            value=""
-            placeholder="Send a message"
-            autocomplete="off"
-            class="input input-bordered flex-1"
-          />
-          <.button type="submit">Send</.button>
-        </.form>
+        <div class="shrink-0 border-t border-base-300 pt-3">
+          <.form for={@message_form} phx-submit="send" data-test="chat-form" class="flex gap-2">
+            <input
+              type="text"
+              name="message[content]"
+              value=""
+              placeholder="Send a message"
+              autocomplete="off"
+              class="input input-bordered flex-1"
+            />
+            <.button type="submit">Send</.button>
+          </.form>
+        </div>
       </div>
     </Layouts.app>
     """
@@ -100,30 +124,41 @@ defmodule MarketMySpecWeb.ChatLive do
 
   defp render_message(%{message: %Message{role: :user}} = assigns) do
     ~H"""
-    <div data-test="user-message" class="chat-bubble chat-bubble-primary self-end whitespace-pre-wrap">
-      {@message.content}
+    <div class="chat chat-end">
+      <div data-test="user-message" class="chat-bubble chat-bubble-primary whitespace-pre-wrap">
+        {@message.content}
+      </div>
     </div>
     """
   end
 
   defp render_message(%{message: %Message{role: :assistant}} = assigns) do
     ~H"""
-    <div
-      data-test="assistant-message"
-      data-provider={@message.provider}
-      data-model={@message.model}
-      data-finish-reason={@message.finish_reason}
-      class="chat-bubble whitespace-pre-wrap"
-    >
-      {@message.content}
-      <div :if={@message.status == :error} data-test="message-error" class="alert alert-error mt-2">
-        {@message.error_reason}
+    <div class="chat chat-start">
+      <div
+        data-test="assistant-message"
+        data-provider={@message.provider}
+        data-model={@message.model}
+        data-finish-reason={@message.finish_reason}
+        class="chat-bubble bg-base-200 text-base-content"
+      >
+        <div class="markdown">{Phoenix.HTML.raw(markdown(@message.content))}</div>
+        <div :if={@message.status == :error} data-test="message-error" class="alert alert-error mt-2">
+          {@message.error_reason}
+        </div>
+        <button :if={@message.status == :error} data-test="retry-button" phx-click="retry" class="btn btn-sm mt-2">
+          Retry
+        </button>
       </div>
-      <button :if={@message.status == :error} data-test="retry-button" phx-click="retry" class="btn btn-sm mt-2">
-        Retry
-      </button>
     </div>
     """
+  end
+
+  defp markdown(content) do
+    MDEx.to_html!(content || "",
+      extension: [strikethrough: true, table: true, autolink: true, tasklist: true],
+      render: [unsafe: false]
+    )
   end
 
   @impl true
