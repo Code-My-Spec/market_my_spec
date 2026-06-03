@@ -71,6 +71,15 @@ if config_env() in [:dev, :test, :prod] do
     api_key: env!("APIFY_API_TOKEN", :string, nil)
 end
 
+# Chat (streaming LLM chat UI) — ReqLLM provider keys. Env-loaded in dev/test
+# (.env via Dotenvy), SSM-injected in prod. ReqLLM resolves keys from
+# `config :req_llm, <provider>_api_key`.
+if config_env() in [:dev, :test, :prod] do
+  config :req_llm,
+    anthropic_api_key: env!("ANTHROPIC_API_KEY", :string, nil),
+    openai_api_key: env!("OPENAI_API_KEY", :string, nil)
+end
+
 
 # Cloudflare named tunnel for dev — exposes the local Phoenix dev server
 # at https://dev.marketmyspec.com via `ClientUtils.CloudflareTunnel`. The
