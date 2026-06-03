@@ -65,19 +65,20 @@ defmodule MarketMySpecSpex.Story705.Criterion6351Spex do
             }
           end
 
+        # RSS has no server cursor: the adapter derives next_cursor from the
+        # last entry's fullname when a full page (== limit) comes back. Page 1
+        # has 25 entries, so next_cursor is "t3_" <> the last child's id (p1t25).
         RedditHelpers.build_multi_cassette!("crit_6351_pagecap", [
           [
             subreddit: "elixir",
             query: "elixir",
             after: nil,
-            after_cursor: "t3_p2cursor_6351",
             children: page1_children
           ],
           [
             subreddit: "elixir",
             query: "elixir",
-            after: "t3_p2cursor_6351",
-            after_cursor: nil,
+            after: "t3_p1t25",
             children: page2_children
           ]
         ])
@@ -105,7 +106,7 @@ defmodule MarketMySpecSpex.Story705.Criterion6351Spex do
 
       then_ "page 1 has 25 + cursor; page 2 has 5 + nil cursor", context do
         assert length(context.page1["candidates"]) == 25
-        assert context.page1["next_cursor"] == "t3_p2cursor_6351"
+        assert context.page1["next_cursor"] == "t3_p1t25"
 
         assert length(context.page2["candidates"]) == 5
         assert context.page2["next_cursor"] in [nil, ""]

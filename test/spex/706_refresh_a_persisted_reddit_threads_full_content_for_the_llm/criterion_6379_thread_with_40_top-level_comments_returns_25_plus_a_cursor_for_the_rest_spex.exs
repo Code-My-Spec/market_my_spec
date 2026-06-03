@@ -1,12 +1,12 @@
 defmodule MarketMySpecSpex.Story706.Criterion6379Spex do
   @moduledoc """
   Story 706 — Refresh a persisted Reddit Thread's full content for the LLM
-  Criterion 6379 — Thread with 40 top-level comments returns 25 plus a
-  cursor for the rest.
+  Criterion 6379 — Thread with more than 25 comments returns the first 25.
 
-  Sister to 6370; pinned via Three Amigos scenario. Cassette returns
-  40 top-level comments. Response carries 25 + non-nil comments_cursor.
-  Second call with the cursor returns the remaining 15 + nil cursor.
+  Sister to 6370; pinned via Three Amigos scenario. Reddit's Atom (RSS)
+  feed honors `?limit=` but exposes NO comment cursor, so a 40-comment
+  thread returns the first 25 with a nil comments_cursor — there is no
+  second page to fetch.
 
   Interaction surface: MCP tool execution (agent surface).
   """
@@ -43,74 +43,44 @@ defmodule MarketMySpecSpex.Story706.Criterion6379Spex do
     end
   end
 
-  spex "40-comment thread returns 25 + cursor; cursor fetches the remaining 15" do
-    scenario "Pagination across two pages: 25 then 15" do
-      given_ "a Thread cassette with 25 page-1 comments + cursor, and 15 page-2 comments + nil cursor",
-             context do
+  spex "thread with more than 25 comments returns the first 25, no comment cursor" do
+    scenario "A 40-comment thread returns the first 25 with a nil comments_cursor" do
+      given_ "a Thread cassette with 40 comments", context do
         scope = Fixtures.account_scoped_user_fixture()
         thread = Fixtures.thread_fixture(scope, %{source: :reddit, source_thread_id: "page40_001"})
 
-        page1 = for i <- 1..25, do: %{id: "p1c#{i}", body: "Comment #{i}", author: "u#{i}", score: 30 - i}
-        page2 = for i <- 26..40, do: %{id: "p2c#{i}", body: "Comment #{i}", author: "u#{i}", score: 30 - i}
+        comments =
+          for i <- 1..40, do: %{id: "c#{i}", body: "Comment #{i}", author: "u#{i}", score: 30 - i}
 
-        RedditHelpers.build_multi_comments_cassette!("crit_6379_pagination", [
-          [
-            source_thread_id: "page40_001",
-            after: nil,
-            post: %{"title" => "Long thread"},
-            comments: page1
-          ],
-          [
-            source_thread_id: "page40_001",
-            after: "t1_p1c25",
-            post: %{"title" => "Long thread"},
-            comments: page2
-          ]
-        ])
+        RedditHelpers.build_comments_cassette!("crit_6379_cap",
+          source_thread_id: "page40_001",
+          post: %{"title" => "Long thread"},
+          comments: comments
+        )
 
         {:ok, Map.merge(context, %{frame: build_frame(scope), thread: thread})}
       end
 
-      when_ "agent calls get_thread; then calls again with the cursor", context do
-        {p1, p2} =
-          RedditHelpers.with_reddit_cassette("crit_6379_pagination", fn ->
-            {:reply, r1, _f1} = GetThread.execute(%{thread_id: context.thread.id}, context.frame)
-            page1 = decode_payload(r1)
-
-            cursor = page1["comments_cursor"] || Map.get(page1["thread"] || %{}, "comments_cursor")
-
-            {:reply, r2, _f2} =
-              GetThread.execute(
-                %{thread_id: context.thread.id, comments_cursor: cursor},
-                context.frame
-              )
-
-            {page1, decode_payload(r2)}
+      when_ "agent calls get_thread", context do
+        {:reply, response, _frame} =
+          RedditHelpers.with_reddit_cassette("crit_6379_cap", fn ->
+            GetThread.execute(%{thread_id: context.thread.id}, context.frame)
           end)
 
-        {:ok, Map.merge(context, %{page1: p1, page2: p2})}
+        {:ok, Map.put(context, :payload, decode_payload(response))}
       end
 
-      then_ "page 1: 25 comments + non-nil cursor; page 2: 15 comments + nil cursor", context do
-        p1_thread = context.page1["thread"] || context.page1
-        p2_thread = context.page2["thread"] || context.page2
+      then_ "25 comments are returned and comments_cursor is nil (no second page)", context do
+        thread = context.payload["thread"] || context.payload
+        top = top_level(thread["comment_tree"])
 
-        p1_top = top_level(p1_thread["comment_tree"])
-        p2_top = top_level(p2_thread["comment_tree"])
+        assert length(top) == 25,
+               "expected 25 comments (capped at the limit), got #{length(top)}"
 
-        assert length(p1_top) == 25,
-               "expected 25 top-level comments on page 1, got #{length(p1_top)}"
-
-        p1_cursor = context.page1["comments_cursor"] || p1_thread["comments_cursor"]
-        assert p1_cursor != nil and p1_cursor != "",
-               "expected non-nil comments_cursor on page 1, got: #{inspect(p1_cursor)}"
-
-        assert length(p2_top) == 15,
-               "expected 15 top-level comments on page 2, got #{length(p2_top)}"
-
-        p2_cursor = context.page2["comments_cursor"] || p2_thread["comments_cursor"]
-        assert p2_cursor in [nil, ""],
-               "expected nil comments_cursor on page 2 (end of listing), got: #{inspect(p2_cursor)}"
+        # RSS exposes no comment cursor — there is no remaining page to fetch.
+        cursor = context.payload["comments_cursor"] || thread["comments_cursor"]
+        assert cursor in [nil, ""],
+               "expected nil comments_cursor (RSS has no comment pagination), got: #{inspect(cursor)}"
 
         {:ok, context}
       end

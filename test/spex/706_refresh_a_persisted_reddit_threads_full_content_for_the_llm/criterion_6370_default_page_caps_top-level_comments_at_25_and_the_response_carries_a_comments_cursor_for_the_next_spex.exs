@@ -64,7 +64,7 @@ defmodule MarketMySpecSpex.Story706.Criterion6370Spex do
         {:ok, Map.put(context, :payload, decode_payload(response))}
       end
 
-      then_ "exactly 25 top-level comments and a non-nil comments_cursor", context do
+      then_ "exactly 25 comments (capped at the limit); comments_cursor is nil", context do
         thread = context.payload["thread"] || context.payload
         comment_tree = thread["comment_tree"]
 
@@ -76,11 +76,13 @@ defmodule MarketMySpecSpex.Story706.Criterion6370Spex do
           end
 
         assert length(children) == 25,
-               "expected exactly 25 top-level comments, got #{length(children)}"
+               "expected exactly 25 comments (capped at the limit), got #{length(children)}"
 
+        # Reddit's Atom feed honors ?limit= but exposes no comment cursor, so
+        # there is no "next page" of comments — comments_cursor is always nil.
         cursor = context.payload["comments_cursor"] || thread["comments_cursor"]
-        assert cursor != nil and cursor != "",
-               "expected a non-nil comments_cursor, got: #{inspect(cursor)}"
+        assert cursor in [nil, ""],
+               "expected nil comments_cursor (RSS has no comment pagination), got: #{inspect(cursor)}"
 
         {:ok, context}
       end

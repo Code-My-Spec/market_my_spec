@@ -82,8 +82,10 @@ defmodule MarketMySpecSpex.Story705.Criterion6317Spex do
         [c] = candidates
 
         assert c["title"] == "A specific title"
-        assert c["score"] == 42
-        assert c["reply_count"] == 13
+        # Reddit's Atom (RSS) feed carries no vote score or comment count, so
+        # the adapter reports 0 for both regardless of the cassette values.
+        assert c["score"] == 0
+        assert c["reply_count"] == 0
         assert c["url"] == "https://www.reddit.com/r/elixir/comments/fld1/a_specific_title/"
 
         # Per Rule 8: recency is sourced from Thread.inserted_at (a DateTime),

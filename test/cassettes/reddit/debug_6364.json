@@ -12,94 +12,17 @@
         },
         "method": "GET",
         "query_string": "sort=confidence&limit=25",
-        "uri": "https://www.reddit.com/comments/ord001.json"
+        "uri": "https://www.reddit.com/comments/ord001.rss"
       },
       "response": {
-        "body_json": [
-          {
-            "data": {
-              "after": null,
-              "before": null,
-              "children": [
-                {
-                  "data": {
-                    "author": "anon",
-                    "created_utc": 1.7e9,
-                    "id": "ord001",
-                    "name": "t3_ord001",
-                    "num_comments": 0,
-                    "permalink": "/r/elixir/comments/ord001/_/",
-                    "score": 1,
-                    "selftext": "",
-                    "subreddit": "elixir",
-                    "title": "Thread ord001",
-                    "url": "https://www.reddit.com/r/elixir/comments/ord001/_/"
-                  },
-                  "kind": "t3"
-                }
-              ]
-            },
-            "kind": "Listing"
-          },
-          {
-            "data": {
-              "after": null,
-              "before": null,
-              "children": [
-                {
-                  "data": {
-                    "author": "u1",
-                    "body": "Top 1",
-                    "created_utc": 1.7e9,
-                    "depth": 0,
-                    "id": "C1",
-                    "name": "t1_C1",
-                    "parent_id": "t3_unknown",
-                    "replies": "",
-                    "score": 10
-                  },
-                  "kind": "t1"
-                },
-                {
-                  "data": {
-                    "author": "u2",
-                    "body": "Top 2",
-                    "created_utc": 1700000001.0,
-                    "depth": 0,
-                    "id": "C2",
-                    "name": "t1_C2",
-                    "parent_id": "t3_unknown",
-                    "replies": "",
-                    "score": 5
-                  },
-                  "kind": "t1"
-                },
-                {
-                  "data": {
-                    "author": "u5",
-                    "body": "Top 3",
-                    "created_utc": 1700000002.0,
-                    "depth": 0,
-                    "id": "C3",
-                    "name": "t1_C3",
-                    "parent_id": "t3_unknown",
-                    "replies": "",
-                    "score": 3
-                  },
-                  "kind": "t1"
-                }
-              ]
-            },
-            "kind": "Listing"
-          }
-        ],
-        "body_type": "json",
+        "body_type": "text",
         "headers": {
           "content-type": [
-            "application/json; charset=UTF-8"
+            "application/atom+xml; charset=UTF-8"
           ]
         },
-        "status": 200
+        "status": 200,
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><feed xmlns=\"http://www.w3.org/2005/Atom\"><title>Thread ord001</title><entry><id>t3_ord001</id><title>Thread ord001</title><link href=\"https://www.reddit.com/r/elixir/comments/ord001/_/\" /><author><name>/u/anon</name></author><published>2023-11-14T22:13:20Z</published><updated>2023-11-14T22:13:20Z</updated><content type=\"html\"></content></entry><entry><id>t1_C1</id><title>comment</title><link href=\"https://www.reddit.com/r/x/comments/x/_/C1/\" /><author><name>/u/u1</name></author><published>2023-11-14T22:13:20Z</published><updated>2023-11-14T22:13:20Z</updated><content type=\"html\">Top 1</content></entry><entry><id>t1_C2</id><title>comment</title><link href=\"https://www.reddit.com/r/x/comments/x/_/C2/\" /><author><name>/u/u2</name></author><published>2023-11-14T22:13:21Z</published><updated>2023-11-14T22:13:21Z</updated><content type=\"html\">Top 2</content></entry><entry><id>t1_C3</id><title>comment</title><link href=\"https://www.reddit.com/r/x/comments/x/_/C3/\" /><author><name>/u/u5</name></author><published>2023-11-14T22:13:22Z</published><updated>2023-11-14T22:13:22Z</updated><content type=\"html\">Top 3</content></entry></feed>"
       }
     }
   ],

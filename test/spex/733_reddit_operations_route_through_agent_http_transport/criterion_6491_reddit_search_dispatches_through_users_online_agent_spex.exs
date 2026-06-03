@@ -38,8 +38,9 @@ defmodule MarketMySpecSpex.Story733.Criterion6491Spex do
         Fixtures.respond_to_envelope(
           envelope,
           200,
-          %{"content-type" => ["application/json"]},
-          Jason.encode!(%{"kind" => "Listing", "data" => %{"children" => [], "after" => nil}})
+          %{"content-type" => ["application/atom+xml"]},
+          ~s(<?xml version="1.0" encoding="UTF-8"?>) <>
+            ~s(<feed xmlns="http://www.w3.org/2005/Atom"><title>elixir: search results</title></feed>)
         )
 
         result =

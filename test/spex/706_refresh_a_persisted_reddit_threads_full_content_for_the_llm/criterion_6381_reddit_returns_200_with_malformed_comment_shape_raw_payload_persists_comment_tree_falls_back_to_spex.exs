@@ -74,44 +74,13 @@ defmodule MarketMySpecSpex.Story706.Criterion6381Spex do
         path = "test/cassettes/reddit/crit_6381_malformed.json"
         File.mkdir_p!("test/cassettes/reddit")
 
-        body_json = [
-          %{
-            "kind" => "Listing",
-            "data" => %{
-              "children" => [
-                %{
-                  "kind" => "t3",
-                  "data" => %{
-                    "id" => "malform_6381",
-                    "name" => "t3_malform_6381",
-                    "title" => "Refreshed title",
-                    "selftext" => "Refreshed OP body",
-                    "author" => "op",
-                    "score" => 5,
-                    "num_comments" => 1,
-                    "created_utc" => 1_711_000_000.0,
-                    "permalink" => "/r/elixir/comments/malform_6381/_/",
-                    "url" => "https://www.reddit.com/r/elixir/comments/malform_6381/_/",
-                    "subreddit" => "elixir"
-                  }
-                }
-              ],
-              "after" => nil,
-              "before" => nil
-            }
-          },
-          %{
-            "kind" => "Listing",
-            "data" => %{
-              "children" => [
-                # Malformed: missing required fields (no body, no author)
-                %{"kind" => "t1", "data" => %{"score" => 1, "depth" => 0}}
-              ],
-              "after" => nil,
-              "before" => nil
-            }
-          }
-        ]
+        # HTTP 200 but a malformed Atom (RSS) feed body (mismatched tags). The
+        # adapter parser raises, is rescued, and surfaces normalization_error
+        # while preserving raw_payload.
+        malformed_body =
+          ~s(<?xml version="1.0" encoding="UTF-8"?>) <>
+            ~s(<feed xmlns="http://www.w3.org/2005/Atom"><title>Refreshed title</title>) <>
+            ~s(<entry><id>t3_malform_6381</id><title>Refreshed title</title><unclosed></feed>)
 
         cassette = %{
           "version" => "1.0",
@@ -120,7 +89,7 @@ defmodule MarketMySpecSpex.Story706.Criterion6381Spex do
               "recorded_at" => DateTime.utc_now() |> DateTime.to_iso8601(),
               "request" => %{
                 "method" => "GET",
-                "uri" => "https://www.reddit.com/comments/malform_6381.json",
+                "uri" => "https://www.reddit.com/comments/malform_6381.rss",
                 "query_string" => URI.encode_query(sort: "confidence", limit: 25),
                 "headers" => %{
                   "user-agent" => ["market_my_spec/0.1 by /u/johns10davenport"]
@@ -130,9 +99,9 @@ defmodule MarketMySpecSpex.Story706.Criterion6381Spex do
               },
               "response" => %{
                 "status" => 200,
-                "headers" => %{"content-type" => ["application/json; charset=UTF-8"]},
-                "body_type" => "json",
-                "body_json" => body_json
+                "headers" => %{"content-type" => ["application/atom+xml; charset=UTF-8"]},
+                "body_type" => "text",
+                "body" => malformed_body
               }
             }
           ]

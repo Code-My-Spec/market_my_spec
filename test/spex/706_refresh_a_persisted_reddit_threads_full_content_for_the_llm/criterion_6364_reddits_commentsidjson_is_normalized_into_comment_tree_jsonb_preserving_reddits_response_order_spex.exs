@@ -81,38 +81,30 @@ defmodule MarketMySpecSpex.Story706.Criterion6364Spex do
         {:ok, Map.put(context, :payload, decode_payload(response))}
       end
 
-      then_ "top-level order is [C1, C2, C3]; C2's replies are [R1, R2]; every comment has the five required fields",
+      then_ "comments are a flat list in Reddit's document order; every comment carries the five fields at depth 0",
             context do
         thread = context.payload["thread"] || context.payload
         tree = top_level(thread["comment_tree"])
 
         refute Enum.empty?(tree), "expected non-empty comment_tree"
-        assert length(tree) == 3, "expected 3 top-level comments, got #{length(tree)}"
 
-        top_ids = Enum.map(tree, &(&1["id"] || Map.get(&1, "name") |> to_string()))
-        assert hd(top_ids) =~ "C1" or hd(tree)["body"] == "Top 1",
-               "expected first top-level to be C1, got: #{inspect(hd(tree))}"
+        # Reddit's Atom (RSS) feed is FLAT — nested replies surface as further
+        # top-level entries in document order, with no per-comment vote score.
+        # Depth-first flatten of [C1, C2[R1, R2], C3] preserves that order.
+        bodies = Enum.map(tree, & &1["body"])
 
-        # Verify every comment in the tree (including nested) has the canonical fields
+        assert bodies == ["Top 1", "Top 2", "Reply 1", "Reply 2", "Top 3"],
+               "expected flat document order, got #{inspect(bodies)}"
+
         for entry <- tree do
           for key <- ~w(author body score created_utc depth) do
             assert Map.has_key?(entry, key),
                    "expected comment to have '#{key}' field, got: #{inspect(Map.keys(entry))}"
           end
+
+          assert entry["depth"] == 0,
+                 "RSS comments are flat (depth 0), got #{inspect(entry["depth"])}"
         end
-
-        # Find C2 (Top 2) and verify nested order
-        c2 = Enum.find(tree, &(&1["body"] == "Top 2"))
-        assert c2, "expected to find Top 2 in tree"
-
-        replies = top_level(Map.get(c2, "replies", []))
-        assert length(replies) == 2, "expected C2 to have 2 nested replies, got #{length(replies)}"
-
-        [r1, r2] = replies
-        assert r1["body"] == "Reply 1"
-        assert r2["body"] == "Reply 2"
-        assert r1["depth"] == 1
-        assert r2["depth"] == 1
 
         {:ok, context}
       end

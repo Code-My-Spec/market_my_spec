@@ -15,7 +15,7 @@
         },
         "method": "GET",
         "query_string": "limit=25&q=phoenix&restrict_sr=1&sort=new",
-        "uri": "https://www.reddit.com/r/elixir/search.json"
+        "uri": "https://www.reddit.com/r/elixir/search.rss"
       },
       "response": {
         "status": 500,

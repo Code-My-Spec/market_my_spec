@@ -140,7 +140,7 @@ defmodule MarketMySpecSpex.RedditHelpers do
     request =
       interaction
       |> Map.get("request", %{})
-      |> Map.put("uri", "https://www.reddit.com/r/#{subreddit}/search.json")
+      |> Map.put("uri", "https://www.reddit.com/r/#{subreddit}/search.rss")
       |> Map.put("query_string", build_query(query, sort, limit, after_param))
       |> Map.put("method", "GET")
       |> Map.put("body", "")
@@ -149,13 +149,7 @@ defmodule MarketMySpecSpex.RedditHelpers do
     response =
       case status do
         200 ->
-          body = build_search_body(children, after_cursor)
-
-          interaction
-          |> Map.get("response", %{})
-          |> Map.put("status", 200)
-          |> Map.put("body_type", "json")
-          |> Map.put("body_json", body)
+          rss_response_200(build_search_body(children, after_cursor))
 
         429 ->
           %{
@@ -229,7 +223,7 @@ defmodule MarketMySpecSpex.RedditHelpers do
     request =
       shape_interaction
       |> Map.get("request", %{})
-      |> Map.put("uri", "https://www.reddit.com/r/#{subreddit}/search.json")
+      |> Map.put("uri", "https://www.reddit.com/r/#{subreddit}/search.rss")
       |> Map.put("query_string", build_query(query, sort, limit, after_param))
       |> Map.put("method", "GET")
       |> Map.put("body", "")
@@ -238,13 +232,7 @@ defmodule MarketMySpecSpex.RedditHelpers do
     response =
       case status do
         200 ->
-          body = build_search_body(children, after_cursor)
-
-          shape_interaction
-          |> Map.get("response", %{})
-          |> Map.put("status", 200)
-          |> Map.put("body_type", "json")
-          |> Map.put("body_json", body)
+          rss_response_200(build_search_body(children, after_cursor))
 
         429 ->
           %{
@@ -281,40 +269,31 @@ defmodule MarketMySpecSpex.RedditHelpers do
     URI.encode_query(q: query, restrict_sr: 1, sort: sort, limit: limit, after: after_param)
   end
 
-  defp build_search_body(children, after_cursor) do
-    %{
-      "kind" => "Listing",
-      "data" => %{
-        "after" => after_cursor,
-        "before" => nil,
-        "dist" => length(children),
-        "modhash" => "",
-        "geo_filter" => "",
-        "facets" => %{},
-        "children" => Enum.map(children, &wrap_child/1)
-      }
-    }
+  # Reddit's `search.rss` is an Atom feed. `after_cursor` is ignored: RSS
+  # exposes no server cursor, so the adapter derives `next_cursor` from the
+  # last entry's fullname when a full page (== limit) comes back. Pagination
+  # spex therefore supply a full page whose last child id IS the cursor.
+  defp build_search_body(children, _after_cursor) do
+    children
+    |> Enum.map(&search_entry/1)
+    |> rss_feed("elixir: search results")
   end
 
-  defp wrap_child(child_overrides) do
-    base = %{
-      "title" => "Thread #{System.unique_integer([:positive])}",
-      "subreddit" => "elixir",
-      "permalink" => "/r/elixir/comments/abc123/some_thread/",
-      "url" => "https://www.reddit.com/r/elixir/comments/abc123/some_thread/",
-      "score" => 0,
-      "ups" => 0,
-      "num_comments" => 0,
-      "created_utc" => 1_700_000_000.0,
-      "selftext" => "",
-      "name" => "t3_abc123",
-      "id" => "abc123",
-      "author" => "anon"
-    }
+  defp search_entry(child_overrides) do
+    m = stringify_keys(child_overrides)
+    id = Map.get(m, "id", "abc123")
+    permalink = Map.get(m, "permalink", "/r/elixir/comments/#{id}/some_thread/")
+    url = Map.get(m, "url") || "https://www.reddit.com" <> permalink
+    created = Map.get(m, "created_utc", 1_700_000_000.0)
 
-    merged = Map.merge(base, stringify_keys(child_overrides))
-
-    %{"kind" => "t3", "data" => merged}
+    rss_entry(%{
+      fullname: "t3_#{id}",
+      title: Map.get(m, "title", "Thread #{id}"),
+      link: url,
+      author: "/u/" <> Map.get(m, "author", "anon"),
+      content_html: xml_escape(Map.get(m, "selftext", "")),
+      published: unix_to_iso(created)
+    })
   end
 
   defp stringify_keys(map) when is_map(map) do
@@ -406,7 +385,7 @@ defmodule MarketMySpecSpex.RedditHelpers do
 
     request = %{
       "method" => "GET",
-      "uri" => "https://www.reddit.com/comments/#{source_thread_id}.json",
+      "uri" => "https://www.reddit.com/comments/#{source_thread_id}.rss",
       "query_string" => build_comments_query(sort, limit, after_param),
       "headers" => %{
         "user-agent" => ["market_my_spec/0.1 by /u/johns10davenport"]
@@ -463,7 +442,7 @@ defmodule MarketMySpecSpex.RedditHelpers do
 
         request = %{
           "method" => "GET",
-          "uri" => "https://www.reddit.com/comments/#{source_thread_id}.json",
+          "uri" => "https://www.reddit.com/comments/#{source_thread_id}.rss",
           "query_string" => build_comments_query(sort, limit, after_param),
           "headers" => %{
             "user-agent" => ["market_my_spec/0.1 by /u/johns10davenport"]
@@ -502,32 +481,22 @@ defmodule MarketMySpecSpex.RedditHelpers do
     URI.encode_query(sort: sort, limit: limit, after: after_param)
   end
 
-  # Builds a comments response with optional pagination cursor.
-  # When `after_cursor` is nil, auto-derives one if comments exceed `limit`.
-  defp build_comments_response_200(source_thread_id, post_overrides, comments, limit, after_cursor) do
-    post_listing = build_post_listing(source_thread_id, post_overrides)
+  # Reddit's `/comments/<id>.rss` is a FLAT Atom feed: the post entry (t3_)
+  # followed by comment entries (t1_) with no nesting and no vote score.
+  # Nested `:replies` in the comment specs are flattened depth-first; the
+  # `limit`/`after_cursor` args are ignored (RSS has no comment cursor).
+  defp build_comments_response_200(source_thread_id, post_overrides, comments, limit, _after_cursor) do
+    post_entry = post_entry(source_thread_id, post_overrides)
 
-    # Simulate Reddit's server-side limit: if comments exceed limit, truncate
-    # and auto-derive an `after` cursor from the last included comment's id.
-    {page_comments, auto_cursor} =
-      if length(comments) > limit do
-        page = Enum.take(comments, limit)
-        last_spec = List.last(page)
-        last_id = last_spec |> stringify_keys() |> Map.get("id", "c#{limit - 1}")
-        {page, "t1_#{last_id}"}
-      else
-        {comments, nil}
-      end
+    comment_entries =
+      comments
+      |> flatten_comment_specs()
+      |> Enum.take(limit)
+      |> Enum.with_index()
+      |> Enum.map(&comment_entry/1)
 
-    final_cursor = after_cursor || auto_cursor
-    comments_listing = build_comments_listing(page_comments, final_cursor)
-
-    %{
-      "status" => 200,
-      "headers" => %{"content-type" => ["application/json; charset=UTF-8"]},
-      "body_type" => "json",
-      "body_json" => [post_listing, comments_listing]
-    }
+    feed_title = comments_feed_title(source_thread_id, post_overrides)
+    rss_response_200(rss_feed([post_entry | comment_entries], feed_title))
   end
 
   defp build_comments_response(200, source_thread_id, post_overrides, comments) do
@@ -556,87 +525,95 @@ defmodule MarketMySpecSpex.RedditHelpers do
     }
   end
 
-  defp build_post_listing(source_thread_id, post_overrides) do
-    post_data = build_post_data(source_thread_id, post_overrides)
+  defp post_entry(source_thread_id, overrides) do
+    m = stringify_keys(overrides)
+    permalink = Map.get(m, "permalink", "/r/elixir/comments/#{source_thread_id}/_/")
+    url = Map.get(m, "url") || "https://www.reddit.com" <> permalink
 
+    rss_entry(%{
+      fullname: "t3_#{source_thread_id}",
+      title: Map.get(m, "title", "Thread #{source_thread_id}"),
+      link: url,
+      author: "/u/" <> Map.get(m, "author", "anon"),
+      content_html: xml_escape(Map.get(m, "selftext", "")),
+      published: unix_to_iso(Map.get(m, "created_utc", 1_700_000_000.0))
+    })
+  end
+
+  # Atom comment feeds are flat — flatten nested :replies depth-first so the
+  # post-then-comments order is preserved in document order.
+  defp flatten_comment_specs(specs) do
+    Enum.flat_map(specs, fn spec ->
+      m = stringify_keys(spec)
+      replies = Map.get(m, "replies", [])
+      [Map.delete(m, "replies") | flatten_comment_specs(replies)]
+    end)
+  end
+
+  defp comment_entry({spec, idx}) do
+    m = stringify_keys(spec)
+    id = Map.get(m, "id", "c#{idx}")
+    author = Map.get(m, "author", "anon_#{idx}")
+
+    rss_entry(%{
+      fullname: "t1_#{id}",
+      title: "/u/#{author} on a thread",
+      link: "https://www.reddit.com/r/elixir/comments/x/_/#{id}/",
+      author: "/u/#{author}",
+      content_html: xml_escape(Map.get(m, "body", "Comment body #{id}")),
+      published: unix_to_iso(Map.get(m, "created_utc", 1_700_000_000.0 + idx))
+    })
+  end
+
+  defp comments_feed_title(source_thread_id, overrides) do
+    overrides |> stringify_keys() |> Map.get("title", "Thread #{source_thread_id}")
+  end
+
+  # ── Atom feed assembly ──────────────────────────────────────────────
+
+  defp rss_response_200(xml) do
     %{
-      "kind" => "Listing",
-      "data" => %{
-        "after" => nil,
-        "before" => nil,
-        "children" => [%{"kind" => "t3", "data" => post_data}]
-      }
+      "status" => 200,
+      "headers" => %{"content-type" => ["application/atom+xml; charset=UTF-8"]},
+      "body_type" => "text",
+      "body" => xml
     }
   end
 
-  defp build_post_data(source_thread_id, overrides) do
-    base = %{
-      "id" => source_thread_id,
-      "name" => "t3_" <> source_thread_id,
-      "title" => "Thread #{source_thread_id}",
-      "selftext" => "",
-      "author" => "anon",
-      "score" => 1,
-      "num_comments" => 0,
-      "created_utc" => 1_700_000_000.0,
-      "subreddit" => "elixir",
-      "permalink" => "/r/elixir/comments/#{source_thread_id}/_/",
-      "url" => "https://www.reddit.com/r/elixir/comments/#{source_thread_id}/_/"
-    }
-
-    Map.merge(base, stringify_keys(overrides))
+  defp rss_feed(entries, title) do
+    ~s(<?xml version="1.0" encoding="UTF-8"?>) <>
+      ~s(<feed xmlns="http://www.w3.org/2005/Atom">) <>
+      "<title>" <> xml_escape(title) <> "</title>" <>
+      Enum.join(entries, "") <>
+      "</feed>"
   end
 
-  defp build_comments_listing(comments, after_cursor) do
-    children =
-      comments
-      |> Enum.with_index()
-      |> Enum.map(fn {spec, idx} -> wrap_comment(spec, idx, 0) end)
-
-    %{
-      "kind" => "Listing",
-      "data" => %{
-        "after" => after_cursor,
-        "before" => nil,
-        "children" => children
-      }
-    }
+  defp rss_entry(f) do
+    "<entry>" <>
+      "<id>" <> xml_escape(f.fullname) <> "</id>" <>
+      "<title>" <> xml_escape(f.title) <> "</title>" <>
+      ~s(<link href=") <> xml_escape(f.link) <> ~s(" />) <>
+      "<author><name>" <> xml_escape(f.author) <> "</name></author>" <>
+      "<published>" <> f.published <> "</published>" <>
+      "<updated>" <> f.published <> "</updated>" <>
+      ~s(<content type="html">) <> f.content_html <> "</content>" <>
+      "</entry>"
   end
 
-  defp wrap_comment(spec, idx, depth) do
-    spec_map = stringify_keys(spec)
-    replies = Map.get(spec_map, "replies", [])
-    id = Map.get(spec_map, "id", "c#{depth}_#{idx}")
+  defp unix_to_iso(v) when is_number(v),
+    do: v |> trunc() |> DateTime.from_unix!() |> DateTime.to_iso8601()
 
-    reply_children =
-      replies
-      |> Enum.with_index()
-      |> Enum.map(fn {child_spec, child_idx} -> wrap_comment(child_spec, child_idx, depth + 1) end)
+  defp unix_to_iso(v) when is_binary(v), do: v
+  defp unix_to_iso(_), do: unix_to_iso(1_700_000_000)
 
-    replies_listing =
-      case reply_children do
-        [] ->
-          ""
+  defp xml_escape(nil), do: ""
 
-        children ->
-          %{
-            "kind" => "Listing",
-            "data" => %{"after" => nil, "before" => nil, "children" => children}
-          }
-      end
-
-    data = %{
-      "id" => id,
-      "name" => "t1_" <> id,
-      "body" => Map.get(spec_map, "body", "Comment body #{id}"),
-      "author" => Map.get(spec_map, "author", "anon_#{idx}"),
-      "score" => Map.get(spec_map, "score", 1),
-      "created_utc" => Map.get(spec_map, "created_utc", 1_700_000_000.0 + idx),
-      "depth" => depth,
-      "parent_id" => Map.get(spec_map, "parent_id", "t3_unknown"),
-      "replies" => replies_listing
-    }
-
-    %{"kind" => "t1", "data" => data}
+  defp xml_escape(value) do
+    value
+    |> to_string()
+    |> String.replace("&", "&amp;")
+    |> String.replace("<", "&lt;")
+    |> String.replace(">", "&gt;")
+    |> String.replace("\"", "&quot;")
   end
 end

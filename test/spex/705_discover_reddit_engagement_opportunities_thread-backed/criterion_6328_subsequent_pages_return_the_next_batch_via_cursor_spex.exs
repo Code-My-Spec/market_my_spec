@@ -41,29 +41,28 @@ defmodule MarketMySpecSpex.Story705.Criterion6328Spex do
 
         Fixtures.venue_fixture(scope, %{source: :reddit, identifier: "elixir", enabled: true})
 
+        # RSS exposes no server cursor — the adapter derives next_cursor from
+        # the last entry's fullname only when a FULL page (== limit, 25) comes
+        # back. So page 1 must be a full page; its cursor is "t3_" <> last id.
+        page1_children =
+          for i <- 1..25 do
+            %{title: "Page 1 — #{i}", id: "p1_#{i}", permalink: "/r/elixir/comments/p1_#{i}/"}
+          end
+
         RedditHelpers.build_multi_cassette!("crit_6328_cursor", [
           [
             subreddit: "elixir",
             query: "elixir",
             after: nil,
-            after_cursor: "t3_p2cursor",
-            children: [
-              %{title: "Page 1 — A", score: 1, num_comments: 0, id: "p1a",
-                permalink: "/r/elixir/comments/p1a/"},
-              %{title: "Page 1 — B", score: 1, num_comments: 0, id: "p1b",
-                permalink: "/r/elixir/comments/p1b/"}
-            ]
+            children: page1_children
           ],
           [
             subreddit: "elixir",
             query: "elixir",
-            after: "t3_p2cursor",
-            after_cursor: nil,
+            after: "t3_p1_25",
             children: [
-              %{title: "Page 2 — A", score: 1, num_comments: 0, id: "p2a",
-                permalink: "/r/elixir/comments/p2a/"},
-              %{title: "Page 2 — B", score: 1, num_comments: 0, id: "p2b",
-                permalink: "/r/elixir/comments/p2b/"}
+              %{title: "Page 2 — A", id: "p2a", permalink: "/r/elixir/comments/p2a/"},
+              %{title: "Page 2 — B", id: "p2b", permalink: "/r/elixir/comments/p2b/"}
             ]
           ]
         ])
@@ -90,8 +89,8 @@ defmodule MarketMySpecSpex.Story705.Criterion6328Spex do
       end
 
       then_ "page 1 carries cursor; page 2 carries different titles + nil cursor", context do
-        assert context.page1["next_cursor"] == "t3_p2cursor",
-               "expected page1.next_cursor='t3_p2cursor', got: #{inspect(context.page1["next_cursor"])}"
+        assert context.page1["next_cursor"] == "t3_p1_25",
+               "expected page1.next_cursor='t3_p1_25', got: #{inspect(context.page1["next_cursor"])}"
 
         page1_titles = Enum.map(context.page1["candidates"], & &1["title"])
         page2_titles = Enum.map(context.page2["candidates"], & &1["title"])

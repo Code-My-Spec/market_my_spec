@@ -81,37 +81,26 @@ defmodule MarketMySpecSpex.Story706.Criterion6376Spex do
         {:ok, Map.put(context, :payload, decode_payload(response))}
       end
 
-      then_ "top-level order matches Reddit; depths 0, 1, 2 assigned correctly", context do
+      then_ "the depth-2 reply chain flattens to document order; all comments at depth 0", context do
         thread = context.payload["thread"] || context.payload
         tree = top_level(thread["comment_tree"])
 
-        assert length(tree) == 3, "expected 3 top-level comments, got #{length(tree)}"
+        # Atom (RSS) comment feeds carry no nesting. A depth-2 reply chain
+        # collapses to a flat list in document order: T1, T2, R1, R2, T3.
+        bodies = Enum.map(tree, &Map.get(&1, "body"))
 
-        bodies_top = Enum.map(tree, &Map.get(&1, "body"))
-        assert bodies_top == ["Top 1", "Top 2", "Top 3"],
-               "expected top-level order [Top 1, Top 2, Top 3], got #{inspect(bodies_top)}"
+        assert bodies == ["Top 1", "Top 2", "Depth 1 reply", "Depth 2 reply", "Top 3"],
+               "expected flat document order, got #{inspect(bodies)}"
 
         for entry <- tree do
-          assert entry["depth"] == 0, "expected top-level depth=0, got: #{inspect(entry)}"
+          assert entry["depth"] == 0,
+                 "RSS comments are flat (depth 0), got #{inspect(entry["depth"])}"
 
           for key <- ~w(author body score created_utc depth) do
             assert Map.has_key?(entry, key),
                    "expected '#{key}' on every comment, got: #{inspect(Map.keys(entry))}"
           end
         end
-
-        t2 = Enum.at(tree, 1)
-        r1_list = top_level(Map.get(t2, "replies", []))
-        assert length(r1_list) == 1
-        r1 = hd(r1_list)
-        assert r1["body"] == "Depth 1 reply"
-        assert r1["depth"] == 1
-
-        r2_list = top_level(Map.get(r1, "replies", []))
-        assert length(r2_list) == 1
-        r2 = hd(r2_list)
-        assert r2["body"] == "Depth 2 reply"
-        assert r2["depth"] == 2
 
         {:ok, context}
       end

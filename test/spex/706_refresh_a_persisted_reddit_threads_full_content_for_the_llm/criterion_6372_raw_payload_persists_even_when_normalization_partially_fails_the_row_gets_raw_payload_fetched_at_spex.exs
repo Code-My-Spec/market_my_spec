@@ -61,51 +61,18 @@ defmodule MarketMySpecSpex.Story706.Criterion6372Spex do
             comment_tree: prior_tree
           })
 
-        # Hand-craft a cassette where the comments listing body is structurally
-        # valid JSON but missing required per-comment fields (e.g., no `author`,
-        # no `body` for one entry — adapter normalization should reject it).
+        # Hand-craft a cassette where Reddit returns HTTP 200 but the Atom
+        # (RSS) feed body is malformed XML (mismatched/unclosed tags). The
+        # adapter's parser raises, gets rescued, and surfaces a
+        # normalization_error while still preserving raw_payload.
         cassette_dir = "test/cassettes/reddit"
         File.mkdir_p!(cassette_dir)
         path = Path.join(cassette_dir, "crit_6372_malformed.json")
 
-        body_json = [
-          %{
-            "kind" => "Listing",
-            "data" => %{
-              "children" => [
-                %{
-                  "kind" => "t3",
-                  "data" => %{
-                    "id" => "malform001",
-                    "name" => "t3_malform001",
-                    "title" => "Refreshed title",
-                    "selftext" => "Refreshed OP body",
-                    "author" => "op",
-                    "score" => 5,
-                    "num_comments" => 1,
-                    "created_utc" => 1_711_000_000.0,
-                    "permalink" => "/r/elixir/comments/malform001/_/",
-                    "url" => "https://www.reddit.com/r/elixir/comments/malform001/_/",
-                    "subreddit" => "elixir"
-                  }
-                }
-              ],
-              "after" => nil,
-              "before" => nil
-            }
-          },
-          %{
-            "kind" => "Listing",
-            "data" => %{
-              "children" => [
-                # Malformed: missing required fields (no body, no author)
-                %{"kind" => "t1", "data" => %{"score" => 1, "depth" => 0}}
-              ],
-              "after" => nil,
-              "before" => nil
-            }
-          }
-        ]
+        malformed_body =
+          ~s(<?xml version="1.0" encoding="UTF-8"?>) <>
+            ~s(<feed xmlns="http://www.w3.org/2005/Atom"><title>Refreshed title</title>) <>
+            ~s(<entry><id>t3_malform001</id><title>Refreshed title</title><unclosed></feed>)
 
         cassette = %{
           "version" => "1.0",
@@ -114,7 +81,7 @@ defmodule MarketMySpecSpex.Story706.Criterion6372Spex do
               "recorded_at" => DateTime.utc_now() |> DateTime.to_iso8601(),
               "request" => %{
                 "method" => "GET",
-                "uri" => "https://www.reddit.com/comments/malform001.json",
+                "uri" => "https://www.reddit.com/comments/malform001.rss",
                 "query_string" => URI.encode_query(sort: "confidence", limit: 25),
                 "headers" => %{
                   "user-agent" => ["market_my_spec/0.1 by /u/johns10davenport"]
@@ -124,9 +91,9 @@ defmodule MarketMySpecSpex.Story706.Criterion6372Spex do
               },
               "response" => %{
                 "status" => 200,
-                "headers" => %{"content-type" => ["application/json; charset=UTF-8"]},
-                "body_type" => "json",
-                "body_json" => body_json
+                "headers" => %{"content-type" => ["application/atom+xml; charset=UTF-8"]},
+                "body_type" => "text",
+                "body" => malformed_body
               }
             }
           ]

@@ -1,40 +1,52 @@
 defmodule MarketMySpec.Engagements.Source.Reddit do
   @moduledoc """
-  Reddit Source adapter.
+  Reddit Source adapter — RSS (Atom) edition.
 
-  Reddit blocks searches from datacenter IPs (we get HTTP 403 from prod's
-  Hetzner host), so all `search/3` calls funnel through the user's paired
-  MMS Agent over the channel transport. The binary lives on the user's
-  residential network — that IP isn't on Reddit's block list. No OAuth
-  involved; we just hit the public `www.reddit.com/r/<sub>/search.json`
-  endpoint from a non-datacenter IP.
+  As of mid-2026 Reddit requires OAuth credentials for the JSON listing/
+  search API (`*.json`), and serves HTTP 403 to anonymous + datacenter
+  callers. The public **Atom feeds** (`*.rss`) are still served anonymously
+  and — confirmed empirically — are reachable from datacenter IPs that get
+  403 on the JSON endpoints. So every read funnels through `.rss`.
 
-  ## search/3
+  ## Transport: direct vs agent
 
-  Issues `GET /r/{sub}/search.json?q=<q>&restrict_sr=1&sort=new&limit=25`
-  (plus `&after=<cursor>` when paginating). When called with a `scope`,
-  the request is dispatched to the user's online agent. When called
-  without a scope (test fixtures only), the request hits Reddit directly.
-  There is no anonymous fallback from a `scope` call — if the agent isn't
-  available, the error propagates so the caller surfaces a clear
-  "pair an agent" message instead of silently 403'ing.
+  `search/3` still supports the paired MMS Agent transport (residential IP)
+  as belt-and-suspenders in case a specific host lands on Reddit's RSS
+  block list, but the direct path from the server is now the expected path:
 
-  Maps Reddit's Listing JSON to the canonical candidate shape
-  (`title, source, url, score, reply_count, recency, snippet`). `recency`
-  is `created_utc` for v1 (last-activity requires a per-thread API call —
-  see story 706 follow-up).
+    * with a `:scope` opt → dispatched through the user's online agent
+    * without `:scope` (or no agent) → hits Reddit directly via `Req`
+
+  No OAuth is involved on either path; both hit `www.reddit.com/.../*.rss`.
+
+  ## What RSS gives up vs JSON
+
+  Atom feeds carry no vote score and no comment count, and comment feeds
+  are **flat** (no nested reply tree, no per-comment score). Accordingly:
+
+    * search candidates carry `score: 0` and `reply_count: 0`
+    * `get_thread` returns a flat `comment_tree` (every comment `depth: 0`,
+      `score: 0`)
+
+  Search pagination is derived client-side: Reddit honors `?after=<fullname>`
+  on `.rss`, so `next_cursor` is the last entry's `t3_` fullname whenever a
+  full page (== `limit`) comes back, else `nil`.
 
   ## get_thread/2, post/3
 
-  Still scaffolds — implemented in stories 706 and 707.
+  `get_thread` reads `/comments/<id>.rss`. `post/3` remains unsupported
+  (no anonymous write surface).
   """
 
   @behaviour MarketMySpec.Engagements.Source
+
+  import SweetXml, only: [sigil_x: 2]
 
   alias MarketMySpec.Agents.Dispatcher
   alias MarketMySpec.Engagements.HTTP
 
   @snippet_length 280
+  @page_limit 25
 
   @doc """
   Validates subreddit name format.
@@ -54,15 +66,15 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   def validate_venue(_identifier), do: {:error, "Subreddit name must be a string"}
 
   @doc """
-  Searches a subreddit via Reddit's per-subreddit search.json endpoint.
+  Searches a subreddit via Reddit's per-subreddit `search.rss` Atom feed.
 
   Returns `{:ok, %{candidates: [candidate], next_cursor: nil | string}}` on
-  HTTP 200, or `{:error, reason}` on non-200 / network failure. The
-  orchestrator collects the per-venue failure into the response envelope's
-  `failures` list.
+  HTTP 200, or `{:error, reason}` on non-200 / network failure.
 
   Accepts an optional `:cursor` opt for pagination — passed as Reddit's
-  `after` query param.
+  `after` query param. When a `:scope` opt is present the request is
+  dispatched through the user's online agent; otherwise it hits Reddit
+  directly.
   """
   @spec search(map(), String.t(), keyword()) ::
           {:ok, %{candidates: [map()], next_cursor: nil | String.t()}} | {:error, term()}
@@ -74,16 +86,12 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   end
 
   defp search_direct(venue, query, opts) do
-    cursor = Keyword.get(opts, :cursor)
-    params = [q: query, restrict_sr: 1, sort: "new", limit: 25]
-    params = if is_binary(cursor) and cursor != "", do: params ++ [after: cursor], else: params
-
     case Req.get(HTTP.reddit_client(),
-           url: "/r/#{venue.identifier}/search.json",
-           params: params
+           url: "/r/#{venue.identifier}/search.rss",
+           params: search_params(query, Keyword.get(opts, :cursor))
          ) do
       {:ok, %Req.Response{status: 200, body: body}} ->
-        {:ok, normalize_listing(body)}
+        {:ok, normalize_feed(to_xml(body))}
 
       {:ok, %Req.Response{status: status}} ->
         {:error, {:http_status, status}}
@@ -93,19 +101,13 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
     end
   end
 
-  # Dispatches the anonymous public `www.reddit.com/r/<sub>/search.json`
-  # endpoint THROUGH the agent. Reddit blocks this endpoint from datacenter
-  # IPs (we see 403 from prod's Hetzner host); the agent lives on the
-  # user's residential network, which isn't on Reddit's block list. We
-  # deliberately do NOT hit `oauth.reddit.com` — the binary has no
-  # Reddit OAuth credentials, that'd just 401.
+  # Dispatches the anonymous public `search.rss` feed THROUGH the agent.
+  # Belt-and-suspenders for the (now unlikely) case Reddit blocks the
+  # server's IP on RSS too. No OAuth — the binary just GETs the public feed.
   defp search_via_agent(venue, query, opts, scope) do
-    cursor = Keyword.get(opts, :cursor)
-    qs = [q: query, restrict_sr: 1, sort: "new", limit: 25]
-    qs = if is_binary(cursor) and cursor != "", do: qs ++ [after: cursor], else: qs
-
     url =
-      "https://www.reddit.com/r/#{venue.identifier}/search.json?" <> URI.encode_query(qs)
+      "https://www.reddit.com/r/#{venue.identifier}/search.rss?" <>
+        URI.encode_query(search_params(query, Keyword.get(opts, :cursor)))
 
     case Dispatcher.dispatch_http(scope.user, %{
            method: :get,
@@ -114,8 +116,7 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
            body: ""
          }) do
       {:ok, %{status: 200, body: body}} ->
-        decoded = if is_binary(body), do: Jason.decode!(body), else: body
-        {:ok, normalize_listing(decoded)}
+        {:ok, normalize_feed(to_xml(body))}
 
       {:ok, %{status: status}} ->
         {:error, {:http_status, status}}
@@ -125,75 +126,90 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
     end
   end
 
-  defp normalize_listing(body) do
-    candidates =
-      body
-      |> get_in(["data", "children"])
-      |> List.wrap()
-      |> Enum.map(&normalize_child/1)
-      |> Enum.reject(&is_nil/1)
+  defp search_params(query, cursor) do
+    base = [q: query, restrict_sr: 1, sort: "new", limit: @page_limit]
 
-    %{candidates: candidates, next_cursor: get_in(body, ["data", "after"])}
+    if is_binary(cursor) and cursor != "",
+      do: base ++ [after: cursor],
+      else: base
   end
 
-  defp normalize_child(%{"data" => data}) when is_map(data) do
-    source_thread_id = Map.get(data, "id")
+  # A malformed feed from one venue degrades to zero candidates rather than
+  # crashing the multi-venue fan-out (xmerl raises an `exit`, which the
+  # orchestrator's `rescue` would not catch).
+  defp normalize_feed(xml) do
+    entries = xml |> parse_xml() |> SweetXml.xpath(~x"//entry"l)
 
-    if is_nil(source_thread_id) or source_thread_id == "" do
+    candidates =
+      entries
+      |> Enum.map(&normalize_entry/1)
+      |> Enum.reject(&is_nil/1)
+
+    %{candidates: candidates, next_cursor: next_cursor(entries, candidates)}
+  rescue
+    _ -> %{candidates: [], next_cursor: nil}
+  catch
+    _, _ -> %{candidates: [], next_cursor: nil}
+  end
+
+  # Reddit RSS exposes no server cursor. We derive one: when a full page
+  # (== limit) comes back there is probably more, so hand back the last
+  # entry's fullname (the `t3_` id, which Reddit's `after` param expects).
+  # A short page means end-of-listing → nil.
+  defp next_cursor(entries, candidates) do
+    if length(candidates) >= @page_limit do
+      entries
+      |> List.last()
+      |> entry_raw_id()
+      |> case do
+        "" -> nil
+        id -> id
+      end
+    else
+      nil
+    end
+  end
+
+  defp normalize_entry(entry) do
+    source_thread_id = entry |> entry_raw_id() |> strip_fullname()
+
+    if source_thread_id == "" do
       nil
     else
       %{
         "source_thread_id" => source_thread_id,
-        "title" => Map.get(data, "title", ""),
+        "title" => node_text(entry, ~x"./title/text()"sl),
         "source" => "reddit",
-        "url" => "https://www.reddit.com" <> (Map.get(data, "permalink") || ""),
-        "score" => Map.get(data, "score") || Map.get(data, "ups") || 0,
-        "reply_count" => Map.get(data, "num_comments", 0),
-        "recency" => Map.get(data, "created_utc"),
-        "snippet" => (Map.get(data, "selftext") || "") |> snippet()
+        "url" => entry |> SweetXml.xpath(~x"./link/@href"s) |> to_string(),
+        "score" => 0,
+        "reply_count" => 0,
+        "recency" => entry_timestamp(entry),
+        "snippet" => entry |> node_text(~x"./content/text()"sl) |> strip_html() |> snippet()
       }
     end
   end
 
-  defp normalize_child(_other), do: nil
-
-  defp snippet(text) when is_binary(text), do: String.slice(text, 0, @snippet_length)
-  defp snippet(_), do: ""
-
   @doc """
-  Fetches full Reddit thread JSON via `GET /comments/<id>.json` and
-  normalizes it into a Thread-compatible map with a comment_tree preserving
-  Reddit's response order at every level. Each comment carries author, body,
-  score, created_utc, and depth.
+  Fetches a Reddit thread's `/comments/<id>.rss` Atom feed and normalizes it
+  into a Thread-compatible map.
 
-  Returns `{:ok, map}` on HTTP 200, `{:error, reason}` on non-200 or
-  network failure. The caller (ThreadsRepository or GetThread tool) decides
-  whether to write the result to the DB.
+  Atom comment feeds are flat, so the returned `comment_tree` is a single
+  level (`%{"children" => [...]}`) with every comment at `depth: 0` and
+  `score: 0` (RSS carries neither nesting nor vote counts). `op_body` and
+  `title` come from the post entry (`t3_`); `last_activity_at` is the newest
+  entry timestamp. `comments_cursor` is always `nil`.
 
-  Default page caps top-level comments at 25; passes `limit=25` to Reddit.
-  Comments cursor (Reddit's `data.after`) is included in the returned map
-  so the tool layer can surface it.
+  Returns `{:ok, map}` on HTTP 200, `{:error, reason}` otherwise.
   """
   @spec get_thread(map() | nil, String.t(), keyword()) ::
           {:ok, map()} | {:error, term()}
   def get_thread(_venue, source_thread_id, opts \\ []) do
-    sort = Keyword.get(opts, :sort, "confidence")
-    limit = Keyword.get(opts, :limit, 25)
-    after_param = Keyword.get(opts, :after, nil)
-
-    params = [sort: sort, limit: limit]
-    params = if is_binary(after_param) and after_param != "", do: params ++ [after: after_param], else: params
-
     case Req.get(HTTP.reddit_client(),
-           url: "/comments/#{source_thread_id}.json",
-           params: params
+           url: "/comments/#{source_thread_id}.rss",
+           params: thread_params(opts)
          ) do
-      {:ok, %Req.Response{status: 200, body: [post_listing, comments_listing]}} ->
-        normalize_thread_response(source_thread_id, post_listing, comments_listing)
-
-      {:ok, %Req.Response{status: 200, body: body}} when is_list(body) and length(body) >= 2 ->
-        [post_listing | [comments_listing | _]] = body
-        normalize_thread_response(source_thread_id, post_listing, comments_listing)
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        {:ok, normalize_thread_feed(source_thread_id, to_xml(body))}
 
       {:ok, %Req.Response{status: status}} ->
         {:error, {:http_status, status}}
@@ -203,130 +219,201 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
     end
   end
 
-  defp normalize_thread_response(source_thread_id, post_listing, comments_listing) do
-    post_data =
-      post_listing
-      |> get_in(["data", "children"])
-      |> List.wrap()
-      |> List.first()
-      |> case do
-        %{"data" => d} -> d
-        _ -> %{}
-      end
+  defp thread_params(opts) do
+    sort = Keyword.get(opts, :sort, "confidence")
+    limit = Keyword.get(opts, :limit, @page_limit)
+    after_param = Keyword.get(opts, :after)
 
-    op_body = Map.get(post_data, "selftext", "")
-    title = Map.get(post_data, "title", "Thread #{source_thread_id}")
-    post_created_utc = Map.get(post_data, "created_utc")
+    base = [sort: sort, limit: limit]
 
-    raw_comments =
-      comments_listing
-      |> get_in(["data", "children"])
-      |> List.wrap()
-
-    comments_cursor = get_in(comments_listing, ["data", "after"])
-
-    {comment_tree, normalization_error} =
-      try do
-        tree =
-          raw_comments
-          |> Enum.map(&normalize_comment(&1, 0))
-          |> Enum.reject(&is_nil/1)
-
-        {tree, nil}
-      rescue
-        e -> {nil, Exception.message(e)}
-      end
-
-    last_activity_at =
-      if comment_tree && comment_tree != [] do
-        max_utc =
-          comment_tree
-          |> flatten_comments()
-          |> Enum.map(&Map.get(&1, "created_utc"))
-          |> Enum.reject(&is_nil/1)
-          |> Enum.max(fn -> nil end)
-
-        utc_to_datetime(max_utc) || utc_to_datetime(post_created_utc)
-      else
-        utc_to_datetime(post_created_utc)
-      end
-
-    result = %{
-      title: title,
-      op_body: op_body,
-      comment_tree: %{"children" => comment_tree || []},
-      raw_payload: %{
-        "post" => post_listing,
-        "comments" => comments_listing
-      },
-      last_activity_at: last_activity_at,
-      comments_cursor: comments_cursor
-    }
-
-    result =
-      if normalization_error do
-        Map.put(result, :normalization_error, normalization_error)
-      else
-        result
-      end
-
-    {:ok, result}
+    if is_binary(after_param) and after_param != "",
+      do: base ++ [after: after_param],
+      else: base
   end
 
-  defp normalize_comment(%{"kind" => "t1", "data" => data}, depth) do
-    replies_raw =
-      case Map.get(data, "replies") do
-        %{"data" => %{"children" => children}} -> children
-        _ -> []
+  # Parsing is wrapped so a malformed feed still persists raw_payload and
+  # surfaces a `:normalization_error` — the GetThread tool then keeps the
+  # thread's prior comment_tree rather than clobbering it (story 706).
+  defp normalize_thread_feed(source_thread_id, xml) do
+    parse_thread_feed(source_thread_id, xml)
+  rescue
+    error ->
+      %{
+        raw_payload: %{"feed" => xml},
+        comment_tree: nil,
+        last_activity_at: nil,
+        comments_cursor: nil,
+        normalization_error: Exception.message(error)
+      }
+  catch
+    kind, reason ->
+      %{
+        raw_payload: %{"feed" => xml},
+        comment_tree: nil,
+        last_activity_at: nil,
+        comments_cursor: nil,
+        normalization_error: "#{kind}: #{inspect(reason)}"
+      }
+  end
+
+  defp parse_thread_feed(source_thread_id, xml) do
+    doc = parse_xml(xml)
+    entries = SweetXml.xpath(doc, ~x"//entry"l)
+    feed_title = node_text(doc, ~x"/feed/title/text()"sl)
+
+    {post_entries, comment_entries} =
+      Enum.split_with(entries, fn e -> String.starts_with?(entry_raw_id(e), "t3_") end)
+
+    post = List.first(post_entries)
+
+    op_body =
+      if post, do: post |> node_text(~x"./content/text()"sl) |> strip_html(), else: ""
+
+    post_title = if post, do: node_text(post, ~x"./title/text()"sl), else: ""
+
+    title =
+      cond do
+        post_title != "" -> post_title
+        feed_title != "" -> feed_title
+        true -> "Thread #{source_thread_id}"
       end
 
-    replies =
-      replies_raw
-      |> Enum.map(&normalize_comment(&1, depth + 1))
+    comments =
+      comment_entries
+      |> Enum.map(&normalize_flat_comment/1)
       |> Enum.reject(&is_nil/1)
 
-    comment = %{
-      "id" => Map.fetch!(data, "id"),
-      "author" => Map.fetch!(data, "author"),
-      "body" => Map.fetch!(data, "body"),
-      "score" => Map.get(data, "score", 0),
-      "created_utc" => Map.get(data, "created_utc"),
-      "depth" => depth
-    }
+    last_activity_at =
+      entries
+      |> Enum.map(&entry_datetime/1)
+      |> Enum.reject(&is_nil/1)
+      |> max_datetime()
 
-    if replies == [] do
-      comment
+    %{
+      title: title,
+      op_body: op_body,
+      comment_tree: %{"children" => comments},
+      raw_payload: %{"feed" => xml},
+      last_activity_at: last_activity_at,
+      comments_cursor: nil
+    }
+  end
+
+  defp normalize_flat_comment(entry) do
+    id = entry |> entry_raw_id() |> strip_fullname()
+
+    if id == "" do
+      nil
     else
-      Map.put(comment, "replies", %{"children" => replies})
+      %{
+        "id" => id,
+        "author" => entry |> node_text(~x"./author/name/text()"sl) |> strip_user_prefix(),
+        "body" => entry |> node_text(~x"./content/text()"sl) |> strip_html(),
+        "score" => 0,
+        "created_utc" => entry_timestamp(entry),
+        "depth" => 0
+      }
     end
   end
 
-  defp normalize_comment(_other, _depth), do: nil
-
-  defp flatten_comments(comments) when is_list(comments) do
-    comments
-    |> Enum.reject(&is_nil/1)
-    |> Enum.flat_map(fn c ->
-      nested =
-        case Map.get(c, "replies") do
-          %{"children" => children} -> flatten_comments(children)
-          _ -> []
-        end
-
-      [c | nested]
-    end)
-  end
-
-  defp utc_to_datetime(nil), do: nil
-  defp utc_to_datetime(val) when is_float(val), do: DateTime.from_unix!(trunc(val))
-  defp utc_to_datetime(val) when is_integer(val), do: DateTime.from_unix!(val)
-  defp utc_to_datetime(_), do: nil
-
   @doc """
   v1 does not support programmatic posting.
-  Reddit's public API requires OAuth credentials that are not yet wired.
+  Reddit's write API requires OAuth credentials that are not yet wired.
   Returns {:error, :posting_not_supported}.
   """
   @spec post(term(), String.t(), String.t()) :: {:error, :posting_not_supported}
   def post(_credential, _thread_id, _body), do: {:error, :posting_not_supported}
+
+  # ── parsing helpers ──────────────────────────────────────────────────
+
+  # Req leaves XML bodies as binaries; the agent transport hands back a
+  # string (or, defensively, an already-parsed term we stringify).
+  defp to_xml(body) when is_binary(body), do: body
+  defp to_xml(body), do: to_string(body)
+
+  # `quiet: true` keeps xmerl from writing an error_logger entry on malformed
+  # input — it still throws (we catch it), but without the noisy log line.
+  defp parse_xml(xml), do: SweetXml.parse(xml, quiet: true)
+
+  defp entry_raw_id(nil), do: ""
+  defp entry_raw_id(entry), do: entry |> node_text(~x"./id/text()"sl) |> String.trim()
+
+  defp strip_fullname("t3_" <> rest), do: rest
+  defp strip_fullname("t1_" <> rest), do: rest
+  defp strip_fullname(other), do: other
+
+  defp strip_user_prefix("/u/" <> user), do: user
+  defp strip_user_prefix("/user/" <> user), do: user
+  defp strip_user_prefix(other), do: other
+
+  # Prefer <published>, fall back to <updated>; returns the raw ISO8601 string
+  # (search recency is recomputed downstream from the persisted Thread).
+  defp entry_timestamp(entry) do
+    case node_text(entry, ~x"./published/text()"sl) do
+      "" -> node_text(entry, ~x"./updated/text()"sl)
+      published -> published
+    end
+  end
+
+  defp entry_datetime(entry) do
+    entry |> entry_timestamp() |> parse_iso8601()
+  end
+
+  defp parse_iso8601(ts) when is_binary(ts) and ts != "" do
+    case DateTime.from_iso8601(ts) do
+      {:ok, dt, _offset} -> DateTime.truncate(dt, :second)
+      _ -> nil
+    end
+  end
+
+  defp parse_iso8601(_), do: nil
+
+  defp max_datetime([]), do: nil
+
+  defp max_datetime(datetimes) do
+    Enum.reduce(datetimes, fn dt, acc ->
+      if DateTime.compare(dt, acc) == :gt, do: dt, else: acc
+    end)
+  end
+
+  # Concatenate every text node under `path` (xmerl splits text across
+  # entity-reference boundaries, so the first node alone can truncate).
+  defp node_text(node, path) do
+    node
+    |> SweetXml.xpath(path)
+    |> Enum.map_join("", &to_string/1)
+  end
+
+  defp snippet(text) when is_binary(text), do: String.slice(text, 0, @snippet_length)
+  defp snippet(_), do: ""
+
+  defp strip_html(nil), do: ""
+
+  defp strip_html(html) when is_binary(html) do
+    html
+    |> String.replace(~r{</?[^>]*>}, " ")
+    |> decode_entities()
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
+  end
+
+  defp decode_entities(string) do
+    string
+    |> String.replace("&lt;", "<")
+    |> String.replace("&gt;", ">")
+    |> String.replace("&quot;", "\"")
+    |> String.replace("&#39;", "'")
+    |> String.replace("&#x27;", "'")
+    |> String.replace("&nbsp;", " ")
+    |> decode_numeric_entities()
+    |> String.replace("&amp;", "&")
+  end
+
+  defp decode_numeric_entities(string) do
+    Regex.replace(~r/&#(\d+);/, string, fn _, digits ->
+      <<String.to_integer(digits)::utf8>>
+    end)
+  rescue
+    _ -> string
+  end
 end
