@@ -55,12 +55,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6591Spex do
       then_ "the token badge reflects the persisted token counts", context do
         # 40 input + 8 output = 48 total tokens.
         assert render(element(context.reloaded_view, "[data-test='token-badge']")) =~ "48"
-        :ok
+        {:ok, context}
       end
 
       then_ "the cost badge reflects the persisted cost", context do
         assert render(element(context.reloaded_view, "[data-test='cost-badge']")) =~ "0.000470"
-        :ok
+        {:ok, context}
       end
 
       then_ "the assistant message records provider, model, and finish reason", context do
@@ -69,7 +69,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6591Spex do
                  "[data-test='assistant-message'][data-provider='anthropic'][data-model='claude-sonnet-4-6'][data-finish-reason='stop']"
                )
 
-        :ok
+        {:ok, context}
       end
     end
   end

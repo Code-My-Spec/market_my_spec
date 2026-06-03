@@ -46,7 +46,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6582Spex do
         assert has_element?(context.view, "[data-test='chat-form']")
         # …yet no user bubble was created.
         refute has_element?(context.view, "[data-test='user-message']")
-        :ok
+        {:ok, context}
       end
 
       then_ "nothing was persisted — a fresh mount is still empty", context do
@@ -54,7 +54,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6582Spex do
 
         assert has_element?(fresh_view, "[data-test='chat-form']")
         refute has_element?(fresh_view, "[data-test='user-message']")
-        :ok
+        {:ok, context}
       end
     end
   end

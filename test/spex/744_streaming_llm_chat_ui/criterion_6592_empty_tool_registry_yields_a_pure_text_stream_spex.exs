@@ -56,12 +56,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6592Spex do
                  "A plain text answer with no tools involved."
                )
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no tool-call affordance appears in the thread", context do
         refute has_element?(context.view, "[data-test='tool-call']")
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -54,25 +54,47 @@ defmodule MarketMySpec.Chat.Runner do
   def topic(chat_id), do: "chat:#{chat_id}"
 
   @doc """
-  Start streaming a reply for `conversation` in a supervised task. Returns
-  immediately; the caller observes progress over PubSub.
+  Start streaming a reply for `conversation`.
+
+  In production the LLM call runs in a supervised task so the LiveView never
+  blocks (R3); a crash there is reraised so the supervisor sees it. When the
+  `:chat_llm` test fixture is configured the stream runs synchronously in the
+  caller's process — it shares the test's DB sandbox connection and its
+  broadcasts land in the LiveView's mailbox deterministically. The caller
+  observes progress over PubSub either way.
   """
   @spec run(Conversation.t()) :: {:ok, pid()} | {:error, term()}
   def run(%Conversation{} = conversation) do
-    Task.Supervisor.start_child(@task_supervisor, fn -> stream(conversation) end)
+    case Application.get_env(:market_my_spec, :chat_llm) do
+      nil ->
+        Task.Supervisor.start_child(@task_supervisor, fn ->
+          stream(conversation, reraise: true)
+        end)
+
+      _fixture ->
+        stream(conversation, reraise: false)
+        {:ok, self()}
+    end
   end
 
   @doc """
-  Run the streaming loop synchronously (used by `run/1` inside the task, and
-  directly in tests). Builds history, registers an assistant placeholder, and
-  streams to completion or error.
+  Run the streaming loop. Builds history, registers an assistant placeholder,
+  streams to completion or error. On an unexpected crash it broadcasts the
+  error and, when `:reraise` is set, reraises so the supervisor restarts.
   """
-  @spec stream(Conversation.t()) :: :ok
-  def stream(%Conversation{} = conversation) do
+  @spec stream(Conversation.t(), keyword()) :: :ok
+  def stream(%Conversation{} = conversation, opts \\ []) do
     history = build_history(conversation)
     assistant = start_assistant(conversation)
     ActiveTasks.track(conversation.id, assistant.id)
-    run_stream(conversation, assistant, history)
+
+    try do
+      run_stream(conversation, assistant, history)
+    rescue
+      exception ->
+        fail(conversation, assistant, Exception.message(exception))
+        if Keyword.get(opts, :reraise, false), do: reraise(exception, __STACKTRACE__), else: :ok
+    end
   end
 
   # --- stream sources ---
@@ -156,9 +178,11 @@ defmodule MarketMySpec.Chat.Runner do
   end
 
   defp finalize_or_hang(_conversation, _assistant, _chunks, %{hang: true}) do
-    # Leave the reply in-flight so reconnect/progressive-render specs can
-    # observe the partial state held in ActiveTasks.
-    Process.sleep(:infinity)
+    # Leave the reply in-flight: the assistant message stays :streaming and the
+    # partial text lives in ActiveTasks, so reconnect / progressive-render specs
+    # can observe it. (In production a genuine in-flight stream keeps the task
+    # alive; here we simply stop emitting.)
+    :ok
   end
 
   defp finalize_or_hang(conversation, assistant, chunks, fixture) do

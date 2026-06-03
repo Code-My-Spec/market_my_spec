@@ -46,14 +46,14 @@ defmodule MarketMySpecSpex.Story744.Criterion6586Spex do
         assert has_element?(context.view, "[data-test='message-error']")
         # No perpetual in-progress spinner left behind by the dead task.
         refute has_element?(context.view, "[data-test='streaming-indicator']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the LiveView is still alive and usable", context do
         assert has_element?(context.view, "[data-test='chat-form']")
         # The founder's own message is still in the thread — the page did not reset.
         assert has_element?(context.view, "[data-test='user-message']", "trigger a crash")
-        :ok
+        {:ok, context}
       end
     end
   end

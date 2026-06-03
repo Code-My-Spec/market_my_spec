@@ -53,20 +53,20 @@ defmodule MarketMySpecSpex.Story744.Criterion6581Spex do
                  "draft a launch post for the granite shop"
                )
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the input is still free to accept another message", context do
         assert has_element?(context.view, "[data-test='chat-form']")
         refute has_element?(context.view, "[data-test='chat-form'] [disabled]")
-        :ok
+        {:ok, context}
       end
 
       then_ "the message is persisted — a fresh mount still shows it", context do
         {:ok, _fresh_view, fresh_html} = live(context.conn, "/chat")
 
         assert fresh_html =~ "draft a launch post for the granite shop"
-        :ok
+        {:ok, context}
       end
     end
   end

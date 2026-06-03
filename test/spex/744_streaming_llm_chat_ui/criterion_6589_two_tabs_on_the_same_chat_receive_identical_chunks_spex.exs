@@ -6,7 +6,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6589Spex do
   Rule R4: multiple subscribers on the same chat topic all receive identical
   stream chunks. Two LiveView mounts on the same active chat both render the
   same streamed assistant text — the reply fans out over PubSub on
-  "chat:#{chat_id}", it is not local to the tab that sent the message.
+  "chat:<chat_id>", it is not local to the tab that sent the message.
 
   Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/chat"), two
   concurrent mounts sharing one authenticated session.
@@ -52,12 +52,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6589Spex do
 
       then_ "the first tab shows the streamed reply", context do
         assert has_element?(context.tab_one, "[data-test='assistant-message']", "Shared reply across both tabs")
-        :ok
+        {:ok, context}
       end
 
       then_ "the second tab shows the identical streamed reply", context do
         assert has_element?(context.tab_two, "[data-test='assistant-message']", "Shared reply across both tabs")
-        :ok
+        {:ok, context}
       end
     end
   end

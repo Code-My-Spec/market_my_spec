@@ -58,12 +58,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6585Spex do
         assert html =~ "second prompt while streaming"
         # The in-progress reply is still shown — the page did not hang or reset.
         assert has_element?(context.view, "[data-test='streaming-indicator']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the model selector reflects the founder's mid-stream change", context do
         assert has_element?(context.view, "[data-test='model-form'] [value='gpt-5-mini']")
-        :ok
+        {:ok, context}
       end
     end
   end

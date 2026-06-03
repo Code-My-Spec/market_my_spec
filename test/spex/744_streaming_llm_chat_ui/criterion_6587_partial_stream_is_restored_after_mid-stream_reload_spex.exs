@@ -56,12 +56,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6587Spex do
                  "Draft so far: the granite shop is open"
                )
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the in-progress indicator is restored too", context do
         assert has_element?(context.reloaded_view, "[data-test='streaming-indicator']")
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -45,12 +45,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6595Spex do
       then_ "a clear provider-auth-failed message is shown", context do
         assert has_element?(context.view, "[data-test='message-error']")
         assert render(context.view) =~ "provider auth failed"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page did not crash — the chat is still rendered", context do
         assert has_element?(context.view, "[data-test='chat-form']")
-        :ok
+        {:ok, context}
       end
     end
   end

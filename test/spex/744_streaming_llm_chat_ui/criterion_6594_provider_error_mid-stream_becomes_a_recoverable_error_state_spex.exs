@@ -46,13 +46,13 @@ defmodule MarketMySpecSpex.Story744.Criterion6594Spex do
         assert has_element?(context.view, "[data-test='message-error']")
         assert has_element?(context.view, "[data-test='retry-button']")
         refute has_element?(context.view, "[data-test='streaming-indicator']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the LiveView itself is unaffected and still usable", context do
         assert has_element?(context.view, "[data-test='chat-form']")
         assert has_element?(context.view, "[data-test='user-message']", "draft something")
-        :ok
+        {:ok, context}
       end
     end
   end

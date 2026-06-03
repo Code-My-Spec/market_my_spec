@@ -56,7 +56,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6583Spex do
         second_at = :binary.match(html, "second question") |> elem(0)
         assert first_at < second_at, "expected 'first question' to render before 'second question'"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "both survive a reload in the same order", context do
@@ -65,7 +65,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6583Spex do
         first_at = :binary.match(fresh_html, "first question") |> elem(0)
         second_at = :binary.match(fresh_html, "second question") |> elem(0)
         assert first_at < second_at
-        :ok
+        {:ok, context}
       end
     end
   end

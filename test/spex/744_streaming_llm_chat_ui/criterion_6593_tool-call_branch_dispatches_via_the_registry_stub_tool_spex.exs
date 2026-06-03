@@ -72,13 +72,13 @@ defmodule MarketMySpecSpex.Story744.Criterion6593Spex do
                  "Using the fact: GRANITE_FACT, here is the answer."
                )
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the reply finalizes normally — the contract is unchanged", context do
         refute has_element?(context.view, "[data-test='streaming-indicator']")
         refute has_element?(context.view, "[data-test='message-error']")
-        :ok
+        {:ok, context}
       end
     end
   end

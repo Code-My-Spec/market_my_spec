@@ -53,12 +53,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6584Spex do
                  "Here is the first part of the launch post"
                )
 
-        :ok
+        {:ok, context}
       end
 
       then_ "an in-progress indicator is shown while the reply is unfinished", context do
         assert has_element?(context.view, "[data-test='streaming-indicator']")
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -70,7 +70,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6590Spex do
                  "[data-test='assistant-message'][data-provider='anthropic'][data-model='claude-sonnet-4-6']"
                )
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the second assistant message records the OpenAI model", context do
@@ -79,7 +79,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6590Spex do
                  "[data-test='assistant-message'][data-provider='openai'][data-model='gpt-5-mini']"
                )
 
-        :ok
+        {:ok, context}
       end
     end
   end

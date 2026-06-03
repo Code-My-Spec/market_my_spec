@@ -53,12 +53,12 @@ defmodule MarketMySpecSpex.Story744.Criterion6588Spex do
 
       then_ "the completed assistant message is loaded from the database", context do
         assert context.html =~ "The granite shop is now open for business."
-        :ok
+        {:ok, context}
       end
 
       then_ "no loading or in-progress indicator is shown", context do
         refute has_element?(context.reloaded_view, "[data-test='streaming-indicator']")
-        :ok
+        {:ok, context}
       end
     end
   end
