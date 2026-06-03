@@ -37,25 +37,19 @@
     </script>
   </head>
   <body class="min-h-screen bg-base-100 text-base-content">
-    <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end border-b border-base-300 bg-base-200">
-      <%= if @current_scope do %>
-        <li class="font-mono text-xs text-base-content/60">
-          {@current_scope.user.email}
-        </li>
-        <li>
-          <.link href={~p"/users/settings"} class="font-mono text-xs hover:text-primary">Settings</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/log-out"} method="delete" class="font-mono text-xs hover:text-primary">Log out</.link>
-        </li>
-      <% else %>
-        <li>
-          <.link href={~p"/users/register"} class="font-mono text-xs hover:text-primary">Register</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/log-in"} class="btn btn-sm btn-primary">Log in</.link>
-        </li>
-      <% end %>
+    <%!-- Public auth nav only. Authenticated pages get email/Settings/Log out
+    from the app sidebar (Layouts.app), so this bar is hidden when signed in —
+    it otherwise stacks above the min-h-screen drawer and forces a scrollbar. --%>
+    <ul
+      :if={is_nil(@current_scope)}
+      class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end border-b border-base-300 bg-base-200"
+    >
+      <li>
+        <.link href={~p"/users/register"} class="font-mono text-xs hover:text-primary">Register</.link>
+      </li>
+      <li>
+        <.link href={~p"/users/log-in"} class="btn btn-sm btn-primary">Log in</.link>
+      </li>
     </ul>
     {@inner_content}
   </body>
