@@ -31,6 +31,7 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.RunGather do
     # when mode=\"probe\".
     field :description, :string,
       required: false,
+      max_length: 4096,
       doc: "Probe mode: draft Frame's hypothesis statement"
 
     field :saved_searches, {:list, :string},

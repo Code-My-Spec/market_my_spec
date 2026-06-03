@@ -10,7 +10,12 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.CreateFrame do
   alias MarketMySpec.ProblemDiscovery
 
   schema do
-    field :description, :string, required: true, doc: "Hypothesis statement (1-3 sentences)"
+    # Explicit max_length so MCP clients don't impose a default short cap
+    # client-side (~256) and silently reject natural-length hypothesis prose.
+    field :description, :string,
+      required: true,
+      max_length: 4096,
+      doc: "Hypothesis statement (1-3 sentences). Up to 4096 chars."
 
     field :saved_searches, {:list, :string},
       required: true,

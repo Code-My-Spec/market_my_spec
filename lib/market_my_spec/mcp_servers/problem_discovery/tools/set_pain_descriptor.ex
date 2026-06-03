@@ -16,7 +16,9 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.SetPainDescriptor do
 
     field :pain_descriptor, :string,
       required: true,
-      doc: "≤10 words in the posting's own language; describes the underlying pain"
+      max_length: 256,
+      doc:
+        "≤10 words in the posting's own language; describes the underlying pain. Up to 256 chars."
   end
 
   @impl true

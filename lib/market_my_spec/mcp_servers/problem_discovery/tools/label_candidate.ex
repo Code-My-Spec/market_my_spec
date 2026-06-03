@@ -12,7 +12,10 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.LabelCandidate do
 
   schema do
     field :candidate_id, :string, required: true
-    field :label, :string, required: true
+
+    # Explicit max_length so MCP clients don't impose a default short cap
+    # client-side (~256) and silently reject longer labels.
+    field :label, :string, required: true, max_length: 256
   end
 
   @impl true

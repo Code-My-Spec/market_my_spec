@@ -12,7 +12,10 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.UpdateFrame do
 
   schema do
     field :frame_id, :string, required: true
-    field :description, :string, required: false
+
+    # Explicit max_length so MCP clients don't impose a default short cap
+    # client-side (~256) and silently reject natural-length prose.
+    field :description, :string, required: false, max_length: 4096
 
     field :saved_searches, {:list, :string},
       required: false,

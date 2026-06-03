@@ -18,13 +18,23 @@ defmodule MarketMySpec.McpServers.ProblemDiscovery.Tools.RedTeamCandidate do
       required: true,
       doc: "\"keep_productizable\" | \"keep_service_only\" | \"watch\" | \"kill\""
 
+    # `max_length` here is the DB schema's validate_length cap, surfaced
+    # to the MCP client as JSON Schema `maxLength`. Without an explicit
+    # bound on `:string` fields, some MCP clients impose a default
+    # short cap (~256) on outbound tool args and reject longer values
+    # client-side with a silent -32602, blocking real Klein pre-mortem
+    # prose. Matching the DB cap removes the ambiguity.
     field :kill_argument, :string,
       required: true,
-      doc: "Past-tense Klein pre-mortem: \"this bet failed because...\""
+      max_length: 4096,
+      doc:
+        "Past-tense Klein pre-mortem: \"this bet failed because...\" Up to 4096 chars."
 
     field :cheapest_kill_test, :string,
       required: true,
-      doc: "The single cheapest experiment that would confirm or kill this verdict"
+      max_length: 1024,
+      doc:
+        "The single cheapest experiment that would confirm or kill this verdict. Up to 1024 chars."
   end
 
   @impl true
