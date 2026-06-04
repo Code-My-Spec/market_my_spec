@@ -86,6 +86,18 @@ defmodule MarketMySpec.Chat do
     conversation
   end
 
+  @doc """
+  Lists the account's conversations, most recently active first — the chats
+  index/menu.
+  """
+  @spec list_conversations(Scope.t()) :: [Conversation.t()]
+  def list_conversations(%Scope{active_account_id: account_id}) do
+    Conversation
+    |> where([c], c.account_id == ^account_id)
+    |> order_by([c], desc: c.updated_at)
+    |> Repo.all()
+  end
+
   @doc "Fetches a conversation by id within the caller's account scope."
   @spec get_conversation(Scope.t(), Ecto.UUID.t()) :: Conversation.t() | nil
   def get_conversation(%Scope{active_account_id: account_id}, id) do
@@ -114,10 +126,26 @@ defmodule MarketMySpec.Chat do
           {:ok, Message.t()} | {:error, Ecto.Changeset.t()}
   def send_message(%Conversation{} = conversation, content) do
     with {:ok, message} <- persist_user_message(conversation, content) do
+      maybe_set_title(conversation, message.content)
       Runner.run(conversation)
       {:ok, message}
     end
   end
+
+  # Title an untitled conversation from its first message — gives the chats
+  # menu a readable label. Done with update_all (not a changeset on the loaded
+  # struct) and only when still untitled, so it stays a cheap, isolated write.
+  defp maybe_set_title(%Conversation{id: id, title: nil}, content) do
+    title = content |> String.slice(0, 60) |> String.trim()
+
+    Conversation
+    |> where([c], c.id == ^id and is_nil(c.title))
+    |> Repo.update_all(set: [title: title])
+
+    :ok
+  end
+
+  defp maybe_set_title(_conversation, _content), do: :ok
 
   @doc """
   Re-runs the assistant reply for the conversation's existing history. Used by

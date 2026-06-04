@@ -45,12 +45,37 @@ defmodule MarketMySpecWeb.ChatLive do
         class="mx-auto flex w-full max-w-3xl flex-col"
       >
         <header class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 pb-3">
-          <h1 class="text-lg font-semibold">
-            Chat
-            <span :if={@conversation.type} class="badge badge-outline badge-sm ml-1">
-              {chat_type_label(@conversation.type)}
-            </span>
-          </h1>
+          <div class="flex items-center gap-2">
+            <div class="dropdown" data-test="chats-menu">
+              <button tabindex="0" type="button" class="btn btn-ghost btn-xs">
+                <.icon name="hero-bars-3" class="size-4" /> Chats
+              </button>
+              <ul
+                tabindex="0"
+                class="dropdown-content menu bg-base-200 rounded-box z-20 mt-1 max-h-80 w-72 flex-nowrap overflow-y-auto p-2 shadow"
+              >
+                <li :for={c <- @conversations}>
+                  <button
+                    type="button"
+                    phx-click="open_chat"
+                    phx-value-id={c.id}
+                    data-test="chat-list-item"
+                    class={["block truncate", c.id == @conversation.id && "active"]}
+                  >
+                    {conversation_label(c)}
+                  </button>
+                </li>
+                <li :if={@conversations == []} class="px-2 py-1 text-xs opacity-60">No chats yet</li>
+              </ul>
+            </div>
+
+            <h1 class="text-lg font-semibold">
+              Chat
+              <span :if={@conversation.type} class="badge badge-outline badge-sm ml-1">
+                {chat_type_label(@conversation.type)}
+              </span>
+            </h1>
+          </div>
 
           <div class="flex shrink-0 items-center gap-2">
             <.form for={%{}} phx-submit="new_chat" data-test="new-chat-form" class="flex items-center gap-1">
@@ -180,32 +205,51 @@ defmodule MarketMySpecWeb.ChatLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    conversation = Chat.get_or_create_active_conversation(socket.assigns.current_scope)
-    messages = Chat.list_messages(conversation)
-    {streaming_messages, settled} = Enum.split_with(messages, &(&1.status == :streaming))
-
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(MarketMySpec.PubSub, Runner.topic(conversation.id))
-    end
-
-    {token_total, cost_total} = totals(settled)
+    scope = socket.assigns.current_scope
+    conversation = Chat.get_or_create_active_conversation(scope)
 
     socket =
       socket
-      |> assign(:conversation, conversation)
-      |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
-      |> assign(:streaming, restore_streaming(conversation, List.last(streaming_messages)))
-      |> assign(:step_limit, false)
-      |> assign(:token_total, token_total)
-      |> assign(:cost_total, cost_total)
-      |> stream(:messages, settled)
+      |> assign(:conversations, Chat.list_conversations(scope))
+      |> load_conversation(conversation)
 
     {:ok, socket}
+  end
+
+  # Switch the active conversation: unsubscribe the previous topic, subscribe
+  # the new one, load its messages, and reset per-conversation assigns. Shared
+  # by mount, new_chat, and open_chat.
+  defp load_conversation(socket, conversation) do
+    previous = socket.assigns[:conversation]
+
+    # Only (un)subscribe when the active conversation actually changes —
+    # re-subscribing to the same topic would deliver every broadcast twice.
+    if connected?(socket) and (is_nil(previous) or previous.id != conversation.id) do
+      if previous, do: Phoenix.PubSub.unsubscribe(MarketMySpec.PubSub, Runner.topic(previous.id))
+      Phoenix.PubSub.subscribe(MarketMySpec.PubSub, Runner.topic(conversation.id))
+    end
+
+    messages = Chat.list_messages(conversation)
+    {streaming_messages, settled} = Enum.split_with(messages, &(&1.status == :streaming))
+    {token_total, cost_total} = totals(settled)
+
+    socket
+    |> assign(:conversation, conversation)
+    |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
+    |> assign(:streaming, restore_streaming(conversation, List.last(streaming_messages)))
+    |> assign(:step_limit, false)
+    |> assign(:token_total, token_total)
+    |> assign(:cost_total, cost_total)
+    |> stream(:messages, settled, reset: true)
   end
 
   defp chat_type_label(:problem_discovery), do: "Problem Discovery"
   defp chat_type_label(:marketing_strategy), do: "Marketing Strategy"
   defp chat_type_label(_), do: nil
+
+  defp conversation_label(%{title: title}) when is_binary(title) and title != "", do: title
+  defp conversation_label(%{type: type}) when not is_nil(type), do: "New #{chat_type_label(type)} chat"
+  defp conversation_label(_), do: "New chat"
 
   @impl true
   def handle_event("send", %{"message" => %{"content" => content}}, socket) do
@@ -215,6 +259,7 @@ defmodule MarketMySpecWeb.ChatLive do
          socket
          |> stream_insert(:messages, message)
          |> assign(:step_limit, false)
+         |> assign(:conversations, Chat.list_conversations(socket.assigns.current_scope))
          |> assign(:message_form, to_form(%{"content" => ""}, as: :message))}
 
       {:error, _changeset} ->
@@ -224,23 +269,21 @@ defmodule MarketMySpecWeb.ChatLive do
 
   def handle_event("new_chat", %{"conversation" => %{"type" => type}}, socket) do
     scope = socket.assigns.current_scope
-    old = socket.assigns.conversation
-    conversation = Chat.start_typed_chat(scope, old, String.to_existing_atom(type))
 
-    if connected?(socket) and conversation.id != old.id do
-      Phoenix.PubSub.unsubscribe(MarketMySpec.PubSub, Runner.topic(old.id))
-      Phoenix.PubSub.subscribe(MarketMySpec.PubSub, Runner.topic(conversation.id))
-    end
+    conversation =
+      Chat.start_typed_chat(scope, socket.assigns.conversation, String.to_existing_atom(type))
 
     {:noreply,
      socket
-     |> assign(:conversation, conversation)
-     |> assign(:streaming, nil)
-     |> assign(:step_limit, false)
-     |> assign(:token_total, 0)
-     |> assign(:cost_total, nil)
-     |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
-     |> stream(:messages, [], reset: true)}
+     |> load_conversation(conversation)
+     |> assign(:conversations, Chat.list_conversations(scope))}
+  end
+
+  def handle_event("open_chat", %{"id" => id}, socket) do
+    case Chat.get_conversation(socket.assigns.current_scope, id) do
+      nil -> {:noreply, socket}
+      conversation -> {:noreply, load_conversation(socket, conversation)}
+    end
   end
 
   def handle_event("retry", _params, socket) do
