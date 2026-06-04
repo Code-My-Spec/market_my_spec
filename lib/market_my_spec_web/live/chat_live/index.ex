@@ -22,7 +22,7 @@ defmodule MarketMySpecWeb.ChatLive.Index do
             <summary class="btn btn-primary btn-sm list-none [&::-webkit-details-marker]:hidden">
               <.icon name="hero-plus" class="size-4" /> New chat
             </summary>
-            <ul class="menu absolute right-0 top-full z-30 mt-1 w-52 rounded-box bg-base-200 p-2 shadow">
+            <ul class="menu absolute right-0 top-full z-30 mt-1 w-max rounded-box bg-base-200 p-2 shadow [&_li>button]:whitespace-nowrap">
               <li>
                 <button
                   type="button"
