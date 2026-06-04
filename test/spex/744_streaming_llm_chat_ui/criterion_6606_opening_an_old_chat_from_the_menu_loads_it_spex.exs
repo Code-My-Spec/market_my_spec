@@ -1,11 +1,12 @@
-defmodule MarketMySpecSpex.Story744.ChatIndexNavigationSpex do
+defmodule MarketMySpecSpex.Story744.Criterion6606Spex do
   @moduledoc """
-  Story 744 — Streaming LLM Chat UI (enhancement)
-  Chats index/menu — list the account's chats and navigate back to old ones.
+  Story 744 — Streaming LLM Chat UI
+  Criterion 6606 — Opening an old chat from the menu loads it
 
-  The header carries a chats menu listing the account's conversations (titled
-  from their first message); clicking one switches the active chat to it and
-  loads that conversation's messages.
+  Rule: the chat header lists the account's chats and lets the founder open an
+  old one. With a newer chat active, clicking an older chat in the menu makes
+  it the active chat and loads its messages; the other chat's messages are no
+  longer shown.
 
   Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
   """
@@ -19,9 +20,9 @@ defmodule MarketMySpecSpex.Story744.ChatIndexNavigationSpex do
     :ok
   end
 
-  spex "the chats menu lists chats and navigates to old ones" do
-    scenario "two chats exist; open the older one from the menu" do
-      given_ "a signed-in founder who has had two separate chats", context do
+  spex "opening an older chat from the menu loads it" do
+    scenario "click the older chat while a newer one is active" do
+      given_ "a signed-in founder with an older chat and a newer active chat", context do
         user = Fixtures.user_fixture()
         {token, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
@@ -30,12 +31,12 @@ defmodule MarketMySpecSpex.Story744.ChatIndexNavigationSpex do
 
         {:ok, view, _html} = live(conn, "/app/chat")
 
-        # First chat (the auto-created active conversation).
+        # Older chat.
         view
         |> form("[data-test='chat-form']", message: %{content: "alpha question"})
         |> render_submit()
 
-        # Start a second, separate chat and send in it.
+        # Newer chat — now the active one.
         view
         |> form("[data-test='new-chat-form']", conversation: %{type: "marketing_strategy"})
         |> render_submit()
@@ -47,14 +48,7 @@ defmodule MarketMySpecSpex.Story744.ChatIndexNavigationSpex do
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 
-      then_ "the chats menu lists both chats", context do
-        assert has_element?(context.view, "[data-test='chats-menu']")
-        assert has_element?(context.view, "[data-test='chat-list-item']", "alpha question")
-        assert has_element?(context.view, "[data-test='chat-list-item']", "beta question")
-        {:ok, context}
-      end
-
-      when_ "the founder opens the older chat from the menu", context do
+      when_ "the founder clicks the older chat in the menu", context do
         context.view
         |> element("[data-test='chat-list-item']", "alpha question")
         |> render_click()
@@ -62,8 +56,12 @@ defmodule MarketMySpecSpex.Story744.ChatIndexNavigationSpex do
         {:ok, context}
       end
 
-      then_ "the older chat's messages load and the other chat's do not", context do
+      then_ "the older chat becomes active and its messages load", context do
         assert has_element?(context.view, "[data-test='user-message']", "alpha question")
+        {:ok, context}
+      end
+
+      then_ "the newer chat's messages are no longer shown", context do
         refute has_element?(context.view, "[data-test='user-message']", "beta question")
         {:ok, context}
       end
