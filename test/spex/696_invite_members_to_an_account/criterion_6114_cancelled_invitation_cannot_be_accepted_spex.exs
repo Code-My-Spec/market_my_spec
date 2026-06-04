@@ -26,7 +26,8 @@ defmodule MarketMySpecSpex.Story696.Criterion6114Spex do
             %Scope{user: alice, active_account_id: account.id},
             account.id,
             "bob@example.com",
-            :member
+            :member,
+            fn _token -> "https://example.com/invitations/accept/x" end
           )
 
         {:ok, _} =

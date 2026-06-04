@@ -26,7 +26,8 @@ defmodule MarketMySpecSpex.Story696.Criterion6116Spex do
             %Scope{user: alice, active_account_id: account.id},
             account.id,
             bob.email,
-            :member
+            :member,
+            fn _token -> "https://example.com/invitations/accept/x" end
           )
 
         {bob_token, _} = Fixtures.generate_user_magic_link_token(bob)

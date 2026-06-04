@@ -348,7 +348,13 @@ defmodule MarketMySpecWeb.AccountLive.Index do
     email = invitation_params["email"]
     role = invitation_params["role"] |> String.to_existing_atom()
 
-    case Accounts.invite_user(socket.assigns.current_scope, account_id, email, role) do
+    case Accounts.invite_user(
+           socket.assigns.current_scope,
+           account_id,
+           email,
+           role,
+           &url(~p"/invitations/accept/#{&1}")
+         ) do
       {:ok, _invitation} ->
         accounts = socket.assigns.accounts
         pending_invitations = load_pending_invitations(socket.assigns.current_scope, accounts)

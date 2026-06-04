@@ -230,13 +230,27 @@ defmodule MarketMySpec.Accounts do
     Phoenix.PubSub.broadcast(MarketMySpec.PubSub, "user:#{key}:invitations", message)
   end
 
-  def invite_user(scope, account_id, email, role)
-      when is_binary(email) and role in [:owner, :admin, :member] and not is_nil(account_id) do
+  @doc """
+  Create an invitation and email the acceptance link.
+
+  `url_fn` is a 1-arity function that takes the invitation token and
+  returns the full HTTPS URL to the acceptance page. The caller (a
+  LiveView or controller) supplies it because URL generation lives in
+  the web layer, not the context — passing it in keeps Boundary clean.
+
+  Example caller:
+
+      Accounts.invite_user(scope, account_id, email, role,
+        &url(~p"/invitations/accept/\#{&1}"))
+  """
+  def invite_user(scope, account_id, email, role, url_fn)
+      when is_binary(email) and role in [:owner, :admin, :member] and
+             not is_nil(account_id) and is_function(url_fn, 1) do
     with :ok <- validate_manage_members_permission(scope, account_id),
          :ok <- validate_user_not_already_member(email, account_id),
          :ok <- validate_no_pending_invitation(email, account_id),
          {:ok, invitation} <- create_invitation(scope, account_id, email, role),
-         :ok <- send_invitation_email(invitation) do
+         :ok <- send_invitation_email(invitation, url_fn) do
       broadcast_invitation(scope, {:created, invitation})
       {:ok, invitation}
     end
@@ -319,9 +333,8 @@ defmodule MarketMySpec.Accounts do
     InvitationRepository.create_invitation(scope, attrs)
   end
 
-  defp send_invitation_email(invitation) do
-    base = Application.get_env(:market_my_spec, :base_url, "http://localhost:4000")
-    url = base <> "/invitations/accept/#{invitation.token}"
+  defp send_invitation_email(invitation, url_fn) do
+    url = url_fn.(invitation.token)
 
     case InvitationNotifier.deliver_invitation_email(invitation, url) do
       {:ok, _} -> :ok

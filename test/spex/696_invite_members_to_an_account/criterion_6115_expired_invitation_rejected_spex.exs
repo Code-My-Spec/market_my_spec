@@ -25,7 +25,8 @@ defmodule MarketMySpecSpex.Story696.Criterion6115Spex do
             %Scope{user: alice, active_account_id: account.id},
             account.id,
             "bob@example.com",
-            :member
+            :member,
+            fn _token -> "https://example.com/invitations/accept/x" end
           )
 
         # Force-expire the invitation by setting expires_at to the past

@@ -26,7 +26,8 @@ defmodule MarketMySpecSpex.Story696.Criterion6111Spex do
             %Scope{user: alice, active_account_id: account.id},
             account.id,
             bob.email,
-            :member
+            :member,
+            fn _token -> "https://example.com/invitations/accept/x" end
           )
 
         {:ok, Map.merge(context, %{alice: alice, bob: bob, account: account, invitation: invitation})}
