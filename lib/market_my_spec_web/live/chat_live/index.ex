@@ -18,11 +18,11 @@ defmodule MarketMySpecWeb.ChatLive.Index do
         <header class="flex items-center justify-between gap-3 pb-4">
           <h1 class="text-2xl font-semibold">Chats</h1>
 
-          <div class="dropdown dropdown-end" data-test="new-chat-menu">
-            <button tabindex="0" type="button" class="btn btn-primary btn-sm">
+          <details class="dropdown dropdown-end" data-test="new-chat-menu">
+            <summary class="btn btn-primary btn-sm">
               <.icon name="hero-plus" class="size-4" /> New chat
-            </button>
-            <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-20 mt-1 w-52 p-2 shadow">
+            </summary>
+            <ul class="dropdown-content menu bg-base-200 rounded-box z-20 mt-1 w-52 p-2 shadow">
               <li>
                 <button
                   type="button"
@@ -44,7 +44,7 @@ defmodule MarketMySpecWeb.ChatLive.Index do
                 </button>
               </li>
             </ul>
-          </div>
+          </details>
         </header>
 
         <table class="table" data-test="chats-table">
