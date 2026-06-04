@@ -80,6 +80,23 @@ defmodule MarketMySpec.Chat do
 
   def conversation_label(_conversation), do: "New chat"
 
+  @doc """
+  Deletes a conversation and its messages within the caller's account scope.
+  Returns `:ok` whether or not the conversation existed (idempotent).
+  """
+  @spec delete_conversation(Scope.t(), Ecto.UUID.t()) :: :ok
+  def delete_conversation(%Scope{} = scope, id) do
+    case get_conversation(scope, id) do
+      nil ->
+        :ok
+
+      %Conversation{} = conversation ->
+        Repo.delete_all(from m in Message, where: m.conversation_id == ^conversation.id)
+        Repo.delete!(conversation)
+        :ok
+    end
+  end
+
   @doc "Fetches a conversation by id within the caller's account scope."
   @spec get_conversation(Scope.t(), Ecto.UUID.t()) :: Conversation.t() | nil
   def get_conversation(%Scope{active_account_id: account_id}, id) do

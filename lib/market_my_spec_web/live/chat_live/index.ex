@@ -3,7 +3,8 @@ defmodule MarketMySpecWeb.ChatLive.Index do
   The chats index — a plain table of the account's conversations (R: chats
   index, story 744). Clicking a row opens that chat (`ChatLive.Show`); "New
   chat" picks a type (problem_discovery | marketing_strategy, story 745),
-  creates the conversation, and navigates straight into it.
+  creates the conversation, and navigates straight into it. Each row carries a
+  delete affordance that removes the conversation and its messages.
   """
 
   use MarketMySpecWeb, :live_view
@@ -18,11 +19,11 @@ defmodule MarketMySpecWeb.ChatLive.Index do
         <header class="flex items-center justify-between gap-3 pb-4">
           <h1 class="text-2xl font-semibold">Chats</h1>
 
-          <details class="relative" data-test="new-chat-menu">
+          <details class="relative z-50" data-test="new-chat-menu">
             <summary class="btn btn-primary btn-sm list-none [&::-webkit-details-marker]:hidden">
               <.icon name="hero-plus" class="size-4" /> New chat
             </summary>
-            <ul class="absolute right-0 top-full z-30 mt-1 w-max rounded-box bg-base-200 p-1 shadow">
+            <ul class="absolute right-0 top-full z-50 mt-1 w-max rounded-box bg-base-200 p-1 shadow">
               <li>
                 <button
                   type="button"
@@ -55,11 +56,12 @@ defmodule MarketMySpecWeb.ChatLive.Index do
               <th>Chat</th>
               <th>Type</th>
               <th>Last active</th>
+              <th class="w-0"></th>
             </tr>
           </thead>
           <tbody>
             <tr :if={@conversations == []} data-test="chats-empty">
-              <td colspan="3" class="text-center opacity-60">No chats yet</td>
+              <td colspan="4" class="text-center opacity-60">No chats yet</td>
             </tr>
             <tr
               :for={c <- @conversations}
@@ -75,6 +77,19 @@ defmodule MarketMySpecWeb.ChatLive.Index do
                 </span>
               </td>
               <td class="text-sm opacity-70">{Calendar.strftime(c.updated_at, "%Y-%m-%d %H:%M")}</td>
+              <td class="text-right">
+                <button
+                  type="button"
+                  phx-click="delete_chat"
+                  phx-value-id={c.id}
+                  data-confirm="Delete this chat? This cannot be undone."
+                  data-test={"delete-chat-#{c.id}"}
+                  aria-label="Delete chat"
+                  class="btn btn-ghost btn-xs text-error"
+                >
+                  <.icon name="hero-trash" class="size-4" />
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -98,6 +113,11 @@ defmodule MarketMySpecWeb.ChatLive.Index do
       Chat.create_conversation(socket.assigns.current_scope, String.to_existing_atom(type))
 
     {:noreply, push_navigate(socket, to: ~p"/app/chats/#{conversation.id}")}
+  end
+
+  def handle_event("delete_chat", %{"id" => id}, socket) do
+    Chat.delete_conversation(socket.assigns.current_scope, id)
+    {:noreply, assign_conversations(socket)}
   end
 
   defp assign_conversations(socket) do
