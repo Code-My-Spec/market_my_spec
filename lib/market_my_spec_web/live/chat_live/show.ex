@@ -136,17 +136,21 @@ defmodule MarketMySpecWeb.ChatLive.Show do
 
   defp render_message(%{message: %Message{role: :tool}} = assigns) do
     ~H"""
-    <div
-      data-test="tool-call"
-      data-tool-name={@message.tool_name}
-      class={[
-        "rounded border px-3 py-2 text-xs font-mono",
-        @message.status == :error && "border-error/50 text-error" || "border-base-300 opacity-80"
-      ]}
-    >
-      <span class="font-semibold">{@message.tool_name}</span>
-      <span class="ml-2 whitespace-pre-wrap">{@message.content}</span>
-    </div>
+    <details data-test="tool-call" data-tool-name={@message.tool_name} class="group my-1">
+      <summary class={[
+        "flex w-fit cursor-pointer list-none items-center gap-2 rounded border px-2 py-1 text-xs font-mono [&::-webkit-details-marker]:hidden",
+        (@message.status == :error && "border-error/50 text-error") || "border-base-300 opacity-80"
+      ]}>
+        <.icon
+          name="hero-chevron-right"
+          class="size-3.5 transition-transform group-open:rotate-90"
+        />
+        <.icon name="hero-wrench-screwdriver" class="size-3.5" />
+        <span class="font-semibold">{@message.tool_name}</span>
+        <span :if={@message.status == :error} class="badge badge-error badge-xs">error</span>
+      </summary>
+      <pre class="mt-1 max-h-80 overflow-auto whitespace-pre-wrap rounded bg-base-200 px-3 py-2 text-xs font-mono">{@message.content}</pre>
+    </details>
     """
   end
 
