@@ -35,6 +35,7 @@ defmodule MarketMySpec.Chat.Runner do
 
   alias MarketMySpec.Chat.{ActiveTasks, Conversation, McpToolRegistry, Message, NullToolRegistry}
   alias MarketMySpec.Repo
+  alias MarketMySpec.Skills
 
   @pubsub MarketMySpec.PubSub
   @task_supervisor MarketMySpec.Chat.TaskSupervisor
@@ -111,7 +112,7 @@ defmodule MarketMySpec.Chat.Runner do
     model_spec = "#{conversation.provider}:#{conversation.model}"
     tools = registry().list_tools(conversation)
 
-    case ReqLLM.stream_text(model_spec, history, tools: tools) do
+    case stream_text(model_spec, history, conversation, tools) do
       {:ok, response} ->
         # Materialize the stream once: a ReqLLM stream is single-use, so we
         # broadcast content from the collected chunks AND reuse the same list
@@ -147,7 +148,7 @@ defmodule MarketMySpec.Chat.Runner do
 
         model_spec = "#{conversation.provider}:#{conversation.model}"
 
-        case ReqLLM.stream_text(model_spec, next_history, tools: tools) do
+        case stream_text(model_spec, next_history, conversation, tools) do
           {:ok, response2} ->
             acc2 = consume(response2.stream, conversation, assistant)
             finalize(conversation, assistant, acc <> acc2, real_metadata(conversation, response2))
@@ -156,6 +157,49 @@ defmodule MarketMySpec.Chat.Runner do
             fail(conversation, assistant, normalize_error(reason))
         end
     end
+  end
+
+  # Wrap ReqLLM.stream_text so every turn (initial + tool continuation) carries
+  # the conversation's system prompt.
+  defp stream_text(model_spec, messages, conversation, tools) do
+    opts =
+      case system_prompt(conversation) do
+        nil -> [tools: tools]
+        prompt -> [tools: tools, system_prompt: prompt]
+      end
+
+    ReqLLM.stream_text(model_spec, messages, opts)
+  end
+
+  @doc """
+  The system prompt for a conversation, by chat type.
+
+  Marketing-strategy chats carry the full SKILL.md playbook so the assistant
+  runs the skill directly in the conversation — no `start_interview` tool
+  round-trip. Returns `nil` for types with no preamble (the model gets the bare
+  message history).
+  """
+  @spec system_prompt(Conversation.t()) :: String.t() | nil
+  def system_prompt(%Conversation{type: :marketing_strategy}) do
+    case Skills.read_skill_md() do
+      {:ok, skill_md} -> marketing_strategy_system_prompt(skill_md)
+      {:error, _reason} -> nil
+    end
+  end
+
+  def system_prompt(%Conversation{}), do: nil
+
+  defp marketing_strategy_system_prompt(skill_md) do
+    """
+    You are MarketMySpec's marketing-strategy assistant, working directly with a \
+    founder in this chat. Follow the skill playbook below and begin the interview \
+    yourself — do not wait to be told to start, and do not announce that you are \
+    loading a skill. Use your available tools (account files and engagement data) \
+    as the playbook directs, writing step artifacts as you complete each step.
+
+    ----- marketing-strategy SKILL.md -----
+    #{skill_md}
+    """
   end
 
   defp consume(stream, conversation, assistant) do

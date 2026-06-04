@@ -13,7 +13,7 @@ defmodule MarketMySpec.Chat.RunnerTest do
   alias MarketMySpec.Chat.{Conversation, Message, Runner}
   alias MarketMySpec.Repo
 
-  defp conversation_fixture do
+  defp conversation_fixture(type \\ :marketing_strategy) do
     user = MarketMySpec.UsersFixtures.user_fixture()
     account = MarketMySpec.UsersFixtures.account_fixture(user)
 
@@ -23,7 +23,7 @@ defmodule MarketMySpec.Chat.RunnerTest do
         account_id: account.id,
         provider: :anthropic,
         model: "claude-sonnet-4-6",
-        type: :marketing_strategy
+        type: type
       })
       |> Repo.insert()
 
@@ -84,6 +84,25 @@ defmodule MarketMySpec.Chat.RunnerTest do
       insert_message!(conversation, %{role: :assistant, status: :streaming, content: "partial"})
 
       assert Runner.build_history(conversation) == [%{role: :user, content: "hi"}]
+    end
+  end
+
+  describe "system_prompt/1" do
+    test "marketing-strategy chats carry the SKILL.md playbook" do
+      conversation = conversation_fixture(:marketing_strategy)
+      {:ok, skill_md} = MarketMySpec.Skills.read_skill_md()
+
+      prompt = Runner.system_prompt(conversation)
+
+      assert is_binary(prompt)
+      assert String.contains?(prompt, skill_md)
+      # It instructs the model to start on its own, not wait for a tool.
+      assert prompt =~ "begin the interview"
+    end
+
+    test "other chat types get no system prompt" do
+      assert Runner.system_prompt(conversation_fixture(:problem_discovery)) == nil
+      assert Runner.system_prompt(conversation_fixture(nil)) == nil
     end
   end
 end
