@@ -1,5 +1,14 @@
 defmodule MarketMySpec.McpServers.MarketingStrategyServer do
-  @moduledoc false
+  @moduledoc """
+  Anubis MCP server for the marketing-strategy topic: the interview tool and its
+  guiding resources. Mounted at `/mcp/marketing-strategy`.
+
+  Engagement tools (venues, searches, threads, touchpoints) now live in
+  `MarketMySpec.McpServers.EngagementServer`, and generic file operations in
+  `MarketMySpec.McpServers.FilesServer` — separate topics, separate endpoints.
+  The base `/mcp` (`MarketMySpec.McpServers.AllToolsServer`) still exposes every
+  tool for a single connection.
+  """
 
   use Anubis.Server,
     name: "marketing-strategy",
@@ -7,26 +16,6 @@ defmodule MarketMySpec.McpServers.MarketingStrategyServer do
     capabilities: [:tools, :resources]
 
   component(MarketMySpec.McpServers.MarketingStrategy.Tools.StartInterview)
-  component(MarketMySpec.McpServers.Marketing.Tools.ReadFile)
-  component(MarketMySpec.McpServers.Marketing.Tools.WriteFile)
-  component(MarketMySpec.McpServers.Marketing.Tools.ListFiles)
-  component(MarketMySpec.McpServers.Marketing.Tools.EditFile)
-  component(MarketMySpec.McpServers.Marketing.Tools.DeleteFile)
-  component(MarketMySpec.McpServers.Engagements.Tools.SearchEngagements)
-  component(MarketMySpec.McpServers.Engagements.Tools.RunSearch)
-  component(MarketMySpec.McpServers.Engagements.Tools.StageResponse)
-  component(MarketMySpec.McpServers.Engagements.Tools.PolishTouchpoint)
-  component(MarketMySpec.McpServers.Engagements.Tools.UpdateTouchpoint)
-  component(MarketMySpec.McpServers.Engagements.Tools.ListTouchpoints)
-  component(MarketMySpec.McpServers.Engagements.Tools.DeleteTouchpoint)
-  component(MarketMySpec.McpServers.Engagements.Tools.AddVenue)
-  component(MarketMySpec.McpServers.Engagements.Tools.ListVenues)
-  component(MarketMySpec.McpServers.Engagements.Tools.UpdateVenue)
-  component(MarketMySpec.McpServers.Engagements.Tools.RemoveVenue)
-  component(MarketMySpec.McpServers.Engagements.Tools.CreateSearch)
-  component(MarketMySpec.McpServers.Engagements.Tools.ListSearches)
-  component(MarketMySpec.McpServers.Engagements.Tools.UpdateSearch)
-  component(MarketMySpec.McpServers.Engagements.Tools.DeleteSearch)
   component(MarketMySpec.McpServers.MarketingStrategy.Resources.SkillOrientation)
   component(MarketMySpec.McpServers.MarketingStrategy.Resources.Step)
 end

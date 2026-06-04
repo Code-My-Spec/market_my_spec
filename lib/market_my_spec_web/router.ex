@@ -44,6 +44,9 @@ defmodule MarketMySpecWeb.Router do
     pipe_through :mcp_authenticated
 
     match :*, "/", McpController, :handle
+    match :*, "/marketing-strategy", MarketingStrategyMcpController, :handle
+    match :*, "/engagement", EngagementMcpController, :handle
+    match :*, "/files", FilesMcpController, :handle
     match :*, "/analytics-admin", AnalyticsAdminMcpController, :handle
     match :*, "/problem-discovery", ProblemDiscoveryMcpController, :handle
   end

@@ -5,8 +5,8 @@ defmodule MarketMySpecSpex.Story708.Criterion6138Spex do
   source), `update_venue`, and `remove_venue` MCP tools.
 
   The engagement MCP server exposes four venue management tools registered on
-  `MarketMySpec.McpServers.MarketingStrategyServer`. Each tool exposes the
-  Anubis component contract (`execute/2` returning `{:reply, %Response{}, frame}`).
+  `MarketMySpec.McpServers.EngagementServer`. Each tool exposes the Anubis
+  component contract (`execute/2` returning `{:reply, %Response{}, frame}`).
 
   Interaction surface: MCP tool execution (agent surface).
   """
@@ -18,7 +18,7 @@ defmodule MarketMySpecSpex.Story708.Criterion6138Spex do
   alias MarketMySpec.McpServers.Engagements.Tools.ListVenues
   alias MarketMySpec.McpServers.Engagements.Tools.RemoveVenue
   alias MarketMySpec.McpServers.Engagements.Tools.UpdateVenue
-  alias MarketMySpec.McpServers.MarketingStrategyServer
+  alias MarketMySpec.McpServers.EngagementServer
   alias MarketMySpecSpex.Fixtures
 
   defp build_frame(scope) do
@@ -29,9 +29,9 @@ defmodule MarketMySpecSpex.Story708.Criterion6138Spex do
   end
 
   spex "LLM can call add_venue, list_venues, update_venue, and remove_venue MCP tools" do
-    scenario "all four venue tools are registered on the marketing-strategy MCP server" do
-      given_ "the marketing-strategy server's tool list", context do
-        names = MarketingStrategyServer.__components__(:tool) |> Enum.map(& &1.name)
+    scenario "all four venue tools are registered on the engagement MCP server" do
+      given_ "the engagement server's tool list", context do
+        names = EngagementServer.__components__(:tool) |> Enum.map(& &1.name)
         {:ok, Map.put(context, :tool_names, names)}
       end
 
@@ -39,7 +39,7 @@ defmodule MarketMySpecSpex.Story708.Criterion6138Spex do
             context do
         for name <- ~w(add_venue list_venues update_venue remove_venue) do
           assert name in context.tool_names,
-                 "expected #{name} on MarketingStrategyServer; got: #{inspect(context.tool_names)}"
+                 "expected #{name} on EngagementServer; got: #{inspect(context.tool_names)}"
         end
 
         {:ok, context}

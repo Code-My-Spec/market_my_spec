@@ -8,9 +8,11 @@ defmodule MarketMySpecWeb.McpController do
 
   This controller delegates the request to
   `Anubis.Server.Transport.StreamableHTTP.Plug`, configured to serve the
-  `MarketMySpec.McpServers.MarketingStrategyServer`. The Anubis transport
-  handles JSON-RPC over POST and the long-lived SSE stream over GET, plus
-  session lifecycle.
+  `MarketMySpec.McpServers.AllToolsServer` — the aggregate of every topic's
+  tools, so the base `/mcp` endpoint is a single all-in-one connection. The
+  focused topic surfaces live on their own `/mcp/*` endpoints. The Anubis
+  transport handles JSON-RPC over POST and the long-lived SSE stream over GET,
+  plus session lifecycle.
   """
 
   use MarketMySpecWeb, :controller
@@ -18,7 +20,7 @@ defmodule MarketMySpecWeb.McpController do
   alias Anubis.Server.Transport.StreamableHTTP.Plug, as: AnubisPlug
 
   @anubis_opts AnubisPlug.init(
-                 server: MarketMySpec.McpServers.MarketingStrategyServer
+                 server: MarketMySpec.McpServers.AllToolsServer
                )
 
   @spec handle(Plug.Conn.t(), map()) :: Plug.Conn.t()
