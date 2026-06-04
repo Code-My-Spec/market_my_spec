@@ -286,13 +286,33 @@ defmodule MarketMySpec.Chat.Runner do
     message
   end
 
-  defp build_history(conversation) do
+  @doc """
+  Builds the provider-facing message history from a conversation's completed
+  messages.
+
+  Only user and assistant text turns are sent. Intermediate `:tool` rows are
+  UI/audit artifacts (story 745) and are intentionally excluded: replaying one
+  verbatim emits a tool message with no preceding assistant `tool_calls` (and no
+  matching `tool_call_id`), which providers reject ("Tool message requires
+  tool_call_id"). The assistant's post-tool text reply already carries the tool
+  outcome, so the model keeps the relevant context. Blank assistant turns (a
+  reply that was pure tool-call with no text) are dropped for the same reason —
+  providers reject empty assistant content.
+  """
+  @spec build_history(Conversation.t()) :: [%{role: :user | :assistant, content: String.t()}]
+  def build_history(%Conversation{} = conversation) do
     conversation
     |> Repo.preload(:messages)
     |> Map.fetch!(:messages)
-    |> Enum.filter(&(&1.status == :complete))
+    |> Enum.filter(&provider_message?/1)
     |> Enum.map(&%{role: &1.role, content: &1.content})
   end
+
+  defp provider_message?(%Message{status: :complete, role: role, content: content}) do
+    role in [:user, :assistant] and is_binary(content) and String.trim(content) != ""
+  end
+
+  defp provider_message?(_message), do: false
 
   defp broadcast(chat_id, message) do
     Phoenix.PubSub.broadcast(@pubsub, topic(chat_id), message)
