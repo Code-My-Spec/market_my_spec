@@ -39,7 +39,11 @@ defmodule MarketMySpec.Chat.Runner do
 
   @pubsub MarketMySpec.PubSub
   @task_supervisor MarketMySpec.Chat.TaskSupervisor
-  @max_tool_steps 5
+  # Max tool rounds per assistant reply (cost guardrail). One round can carry
+  # many parallel tool calls, so this bounds back-and-forth rounds, not total
+  # tool calls. High enough for a multi-step interview turn (read files, then
+  # write step artifacts), low enough to stop a runaway loop.
+  @max_tool_steps 12
 
   @typep metadata :: %{
            optional(:provider) => atom(),
@@ -126,11 +130,26 @@ defmodule MarketMySpec.Chat.Runner do
     end
   end
 
-  # After a real turn: finalize if no tool calls, otherwise execute the tools,
-  # thread the results back, and stream a single continuation turn.
+  # After a real turn: if the model requested tools, execute them, thread the
+  # results back, and keep streaming follow-up turns until it stops requesting
+  # tools (or we hit the step cap). A single continuation is not enough — the
+  # model commonly calls tools across several rounds (e.g. list_files, then
+  # read_file on the listed paths), and the agentic loop must run each round.
   defp after_turn(conversation, assistant, history, tools, response, acc) do
+    # `acc` is this (first) turn's text and also the running total so far.
+    run_tool_rounds(conversation, assistant, history, tools, response, acc, acc, 0)
+  end
+
+  # `turn_text` is the latest turn's text (what goes into that turn's assistant
+  # message in the threaded history); `acc` is the cumulative reply text the
+  # streaming bubble shows and that we persist on finalize.
+  defp run_tool_rounds(conversation, assistant, history, tools, response, turn_text, acc, step) do
     case response_tool_calls(response) do
       [] ->
+        finalize(conversation, assistant, acc, real_metadata(conversation, response))
+
+      _calls when step >= @max_tool_steps ->
+        broadcast(conversation.id, {:stream_step_limit, conversation.id})
         finalize(conversation, assistant, acc, real_metadata(conversation, response))
 
       calls ->
@@ -143,15 +162,27 @@ defmodule MarketMySpec.Chat.Runner do
 
         next_history =
           history ++
-            [%{role: :assistant, content: acc, tool_calls: calls}] ++
+            [%{role: :assistant, content: turn_text, tool_calls: calls}] ++
             tool_result_messages(results)
 
         model_spec = "#{conversation.provider}:#{conversation.model}"
 
         case stream_text(model_spec, next_history, conversation, tools) do
           {:ok, response2} ->
-            acc2 = consume(response2.stream, conversation, assistant)
-            finalize(conversation, assistant, acc <> acc2, real_metadata(conversation, response2))
+            # Materialize once — response_tool_calls re-reads `.stream`.
+            chunks = Enum.to_list(response2.stream)
+            acc2 = consume(chunks, conversation, assistant)
+
+            run_tool_rounds(
+              conversation,
+              assistant,
+              next_history,
+              tools,
+              %{response2 | stream: chunks},
+              acc2,
+              acc <> acc2,
+              step + 1
+            )
 
           {:error, reason} ->
             fail(conversation, assistant, normalize_error(reason))
