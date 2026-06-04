@@ -17,6 +17,9 @@ defmodule MarketMySpecSpex.Story745.Criterion6604Spex do
   alias MarketMySpecSpex.Fixtures
 
   setup do
+    # A marketing-strategy chat kicks off a reply on creation (type property),
+    # so script the model deterministically rather than hitting the real API.
+    Application.put_env(:market_my_spec, :chat_llm, %{chunks: ["ready"], finish_reason: "stop"})
     on_exit(fn -> Application.delete_env(:market_my_spec, :chat_llm) end)
     :ok
   end

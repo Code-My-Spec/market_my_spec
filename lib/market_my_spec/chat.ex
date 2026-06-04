@@ -56,8 +56,31 @@ defmodule MarketMySpec.Chat do
       })
       |> Repo.insert()
 
+    maybe_kickoff(conversation)
     conversation
   end
+
+  # Some chat types open with the assistant talking first — it's a property of
+  # the type. The marketing-strategy interview runs straight off its system
+  # prompt, but LLM APIs won't generate from a system prompt alone (they need a
+  # user turn), so we seed the type's kickoff message and start the reply.
+  # Types with no kickoff text (problem_discovery) stay silent until the user
+  # speaks.
+  defp maybe_kickoff(%Conversation{type: type} = conversation) do
+    with text when is_binary(text) <- kickoff_text(type),
+         {:ok, _message} <- persist_user_message(conversation, text) do
+      Runner.run(conversation)
+    end
+
+    :ok
+  end
+
+  # The kickoff user message per chat type, or nil for types that don't open
+  # with the assistant talking.
+  defp kickoff_text(:marketing_strategy),
+    do: "Let's begin — start the marketing strategy interview."
+
+  defp kickoff_text(_type), do: nil
 
   @doc """
   Lists the account's conversations, most recently active first — the chats
