@@ -28,10 +28,10 @@ defmodule MarketMySpecSpex.Story745.Criterion6602Spex do
     scenario "account A's chat lists only account A's candidates" do
       given_ "two accounts each with their own candidate, signed in as account A", context do
         user_a = Fixtures.user_fixture()
-        Fixtures.candidate_fixture(Fixtures.user_scope_fixture(user_a), %{title: "alpha-candidate"})
+        Fixtures.frame_fixture(Fixtures.user_scope_fixture(user_a), %{title: "alpha-frame"})
 
         user_b = Fixtures.user_fixture()
-        Fixtures.candidate_fixture(Fixtures.user_scope_fixture(user_b), %{title: "beta-candidate"})
+        Fixtures.frame_fixture(Fixtures.user_scope_fixture(user_b), %{title: "beta-frame"})
 
         {token, _} = Fixtures.generate_user_magic_link_token(user_a)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
@@ -39,7 +39,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6602Spex do
         Application.put_env(:market_my_spec, :chat_tool_registry_module, MarketMySpec.Chat.McpToolRegistry)
 
         Application.put_env(:market_my_spec, :chat_llm, %{
-          tool_calls: [%{name: "list_candidates", arguments: %{}}],
+          tool_calls: [%{name: "list_frames", arguments: %{}}],
           chunks_after_tool: ["Here is your board."],
           finish_reason: "stop"
         })
@@ -62,12 +62,12 @@ defmodule MarketMySpecSpex.Story745.Criterion6602Spex do
       end
 
       then_ "only account A's candidate is shown", context do
-        assert has_element?(context.view, "[data-test='tool-call']", "alpha-candidate")
+        assert has_element?(context.view, "[data-test='tool-call']", "alpha-frame")
         {:ok, context}
       end
 
       then_ "account B's candidate is never reachable", context do
-        refute render(context.view) =~ "beta-candidate"
+        refute render(context.view) =~ "beta-frame"
         {:ok, context}
       end
     end

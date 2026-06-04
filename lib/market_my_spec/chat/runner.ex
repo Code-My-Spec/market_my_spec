@@ -33,11 +33,12 @@ defmodule MarketMySpec.Chat.Runner do
 
   require Logger
 
-  alias MarketMySpec.Chat.{ActiveTasks, Conversation, Message, NullToolRegistry}
+  alias MarketMySpec.Chat.{ActiveTasks, Conversation, McpToolRegistry, Message, NullToolRegistry}
   alias MarketMySpec.Repo
 
   @pubsub MarketMySpec.PubSub
   @task_supervisor MarketMySpec.Chat.TaskSupervisor
+  @max_tool_steps 5
 
   @typep metadata :: %{
            optional(:provider) => atom(),
@@ -113,10 +114,43 @@ defmodule MarketMySpec.Chat.Runner do
     case ReqLLM.stream_text(model_spec, history, tools: tools) do
       {:ok, response} ->
         acc = consume(response.stream, conversation, assistant)
-        finalize(conversation, assistant, acc, real_metadata(conversation, response))
+        after_turn(conversation, assistant, history, tools, response, acc)
 
       {:error, reason} ->
         fail(conversation, assistant, normalize_error(reason))
+    end
+  end
+
+  # After a real turn: finalize if no tool calls, otherwise execute the tools,
+  # thread the results back, and stream a single continuation turn.
+  defp after_turn(conversation, assistant, history, tools, response, acc) do
+    case response_tool_calls(response) do
+      [] ->
+        finalize(conversation, assistant, acc, real_metadata(conversation, response))
+
+      calls ->
+        results =
+          Enum.map(calls, fn call ->
+            result = run_real_tool(conversation, tools, call)
+            persist_tool_step(conversation, tool_call_name(call), result, tool_call_id(call))
+            {call, result}
+          end)
+
+        next_history =
+          history ++
+            [%{role: :assistant, content: acc, tool_calls: calls}] ++
+            tool_result_messages(results)
+
+        model_spec = "#{conversation.provider}:#{conversation.model}"
+
+        case ReqLLM.stream_text(model_spec, next_history, tools: tools) do
+          {:ok, response2} ->
+            acc2 = consume(response2.stream, conversation, assistant)
+            finalize(conversation, assistant, acc <> acc2, real_metadata(conversation, response2))
+
+          {:error, reason} ->
+            fail(conversation, assistant, normalize_error(reason))
+        end
     end
   end
 
@@ -138,10 +172,9 @@ defmodule MarketMySpec.Chat.Runner do
     acc
   end
 
-  defp handle_chunk(%{type: :tool_call} = chunk, conversation, _assistant, acc) do
-    # v0-unreachable with the empty registry. Dispatch through the registry and
-    # log; the continuation is then driven by the next provider turn.
-    _result = dispatch_tool(conversation, chunk.name, chunk.arguments)
+  defp handle_chunk(%{type: :tool_call}, _conversation, _assistant, acc) do
+    # Tool calls are collected from the assembled response after the stream, not
+    # dispatched per-chunk (the streamed arguments arrive fragmented).
     acc
   end
 
@@ -157,10 +190,12 @@ defmodule MarketMySpec.Chat.Runner do
     fail(conversation, assistant, reason)
   end
 
+  defp fixture_stream(conversation, assistant, %{tool_calls_every_turn: call} = fixture) do
+    run_tool_loop(conversation, assistant, call, fixture, 0)
+  end
+
   defp fixture_stream(conversation, assistant, %{tool_calls: tool_calls} = fixture) do
-    Enum.each(tool_calls, fn call ->
-      dispatch_tool(conversation, call[:name], call[:arguments] || %{})
-    end)
+    Enum.each(tool_calls, &handle_fixture_tool_call(conversation, &1))
 
     continuation = Map.get(fixture, :chunks_after_tool, [])
     emit_all(conversation, assistant, continuation)
@@ -259,27 +294,144 @@ defmodule MarketMySpec.Chat.Runner do
     Phoenix.PubSub.broadcast(@pubsub, topic(chat_id), message)
   end
 
-  defp dispatch_tool(_conversation, name, arguments) do
-    case registry_tool_result(name) do
-      nil ->
-        Logger.debug("chat tool #{inspect(name)} dispatched with #{inspect(arguments)}")
-        nil
+  # --- tool loop (story 745) ---
 
-      result ->
-        result
+  # Fixture cap loop: the scripted model requests a tool every turn; stop at the
+  # step cap with a final message + a step-limit notice (R4).
+  defp run_tool_loop(conversation, assistant, _call, _fixture, step) when step >= @max_tool_steps do
+    broadcast(conversation.id, {:stream_step_limit, conversation.id})
+
+    finalize(conversation, assistant, "Reached the tool step limit; stopping here.", %{
+      provider: conversation.provider,
+      model: conversation.model,
+      finish_reason: "length"
+    })
+  end
+
+  defp run_tool_loop(conversation, assistant, call, fixture, step) do
+    handle_fixture_tool_call(conversation, call)
+    run_tool_loop(conversation, assistant, call, fixture, step + 1)
+  end
+
+  defp handle_fixture_tool_call(conversation, call) do
+    result = fixture_tool_result(conversation, call)
+    persist_tool_step(conversation, call[:name], result, call[:tool_call_id] || generate_call_id())
+  end
+
+  # A scripted error short-circuits; with a real registry configured the real
+  # tool runs (R2); otherwise the fixture supplies the result.
+  defp fixture_tool_result(_conversation, %{error: error}), do: {:error, error}
+
+  defp fixture_tool_result(conversation, call) do
+    case real_registry() do
+      nil ->
+        {:ok, call[:result] || "(no result)"}
+
+      module ->
+        run_real_tool(conversation, module.list_tools(conversation), %{
+          name: call[:name],
+          arguments: call[:arguments] || %{}
+        })
     end
   end
 
-  # In the v0 real path the registry returns no tools, so this is unreachable.
-  # The test seam supplies tool results via :chat_tool_registry.
-  defp registry_tool_result(name) do
-    Application.get_env(:market_my_spec, :chat_tool_registry, %{})
-    |> Map.get(:tools, [])
-    |> Enum.find_value(fn tool -> if tool[:name] == name, do: tool[:result] end)
+  # The account scope is already closed over inside each tool's callback, so
+  # dispatch only needs the conversation's tool list.
+  defp run_real_tool(_conversation, tools, call) do
+    name = tool_call_name(call)
+    args = tool_call_args(call)
+
+    case Enum.find(tools, fn tool -> tool.name == to_string(name) end) do
+      nil ->
+        {:error, "tool not available in this chat: #{name}"}
+
+      tool ->
+        case ReqLLM.Tool.execute(tool, stringify_keys(args)) do
+          {:ok, result} -> {:ok, to_text(result)}
+          {:error, reason} -> {:error, to_text(reason)}
+          result -> {:ok, to_text(result)}
+        end
+    end
   end
 
+  defp persist_tool_step(conversation, name, result, call_id) do
+    {status, content} =
+      case result do
+        {:ok, text} -> {:complete, text}
+        {:error, text} -> {:error, text}
+      end
+
+    {:ok, message} =
+      %Message{}
+      |> Message.changeset(%{
+        conversation_id: conversation.id,
+        role: :tool,
+        status: status,
+        content: content,
+        tool_name: to_string(name),
+        tool_call_id: to_string(call_id),
+        error_reason: if(status == :error, do: content)
+      })
+      |> Repo.insert()
+
+    broadcast(conversation.id, {:stream_tool, conversation.id, message})
+    message
+  end
+
+  defp tool_result_messages(results) do
+    Enum.map(results, fn {call, result} ->
+      %{role: :tool, tool_call_id: tool_call_id(call), content: to_text_result(result)}
+    end)
+  end
+
+  defp response_tool_calls(response) do
+    case ReqLLM.StreamResponse.to_response(response) do
+      {:ok, full} -> ReqLLM.Response.tool_calls(full)
+      _ -> []
+    end
+  rescue
+    _ -> []
+  end
+
+  defp tool_call_name(%{function: %{name: name}}), do: name
+  defp tool_call_name(%{name: name}), do: name
+  defp tool_call_name(call) when is_map(call), do: call[:name]
+
+  defp tool_call_args(%{function: %{arguments: args}}), do: args
+  defp tool_call_args(%{arguments: args}), do: args
+  defp tool_call_args(_call), do: %{}
+
+  defp tool_call_id(%{id: id}) when not is_nil(id), do: id
+  defp tool_call_id(_call), do: generate_call_id()
+
+  defp generate_call_id, do: "call_" <> (:crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower))
+
+  defp stringify_keys(map) when is_map(map) do
+    Map.new(map, fn {k, v} -> {to_string(k), v} end)
+  end
+
+  defp stringify_keys(other), do: other
+
+  defp to_text({:ok, text}), do: to_text(text)
+  defp to_text({:error, text}), do: to_text(text)
+  defp to_text(text) when is_binary(text), do: text
+  defp to_text(other), do: inspect(other)
+
+  defp to_text_result({:ok, text}), do: to_text(text)
+  defp to_text_result({:error, text}), do: to_text(text)
+
   defp registry do
-    Application.get_env(:market_my_spec, :chat_tool_registry_module, NullToolRegistry)
+    Application.get_env(:market_my_spec, :chat_tool_registry_module, McpToolRegistry)
+  end
+
+  # The registry to dispatch real tool execution against, or nil when the
+  # fixture should supply scripted results (no real registry configured).
+  defp real_registry do
+    case Application.get_env(:market_my_spec, :chat_tool_registry_module) do
+      nil -> nil
+      NullToolRegistry -> nil
+      module -> module
+    end
   end
 
   # --- metadata normalization ---

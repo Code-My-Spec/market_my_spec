@@ -66,10 +66,12 @@ defmodule MarketMySpec.Chat.McpToolRegistry do
   defp tool_modules(_conversation), do: []
 
   defp build_tool(module, conversation) do
+    name = tool_name(module)
+
     {:ok, tool} =
       ReqLLM.Tool.new(
-        name: module.name(),
-        description: description(module),
+        name: name,
+        description: description(module, name),
         parameter_schema: module.input_schema(),
         callback: fn args -> dispatch(module, args, conversation) end
       )
@@ -77,10 +79,17 @@ defmodule MarketMySpec.Chat.McpToolRegistry do
     tool
   end
 
-  defp description(module) do
+  # Anubis tool components don't expose a name/0 unless given an explicit :name
+  # option; the MCP-facing name is the snake_case of the module's last segment
+  # (e.g. ListFrames -> "list_frames").
+  defp tool_name(module) do
+    module |> Module.split() |> List.last() |> Macro.underscore()
+  end
+
+  defp description(module, name) do
     case module.__description__() do
       desc when is_binary(desc) and desc != "" -> desc
-      _ -> module.name()
+      _ -> name
     end
   end
 

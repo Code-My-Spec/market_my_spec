@@ -40,13 +40,26 @@ defmodule MarketMySpecWeb.ChatLive do
       <div
         data-test="chat"
         data-chat-id={@conversation.id}
+        data-chat-type={@conversation.type}
         style="height: calc(100dvh - 7rem)"
         class="mx-auto flex w-full max-w-3xl flex-col"
       >
         <header class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 pb-3">
-          <h1 class="text-lg font-semibold">Chat</h1>
+          <h1 class="text-lg font-semibold">
+            Chat
+            <span :if={@conversation.type} class="badge badge-outline badge-sm ml-1">
+              {chat_type_label(@conversation.type)}
+            </span>
+          </h1>
 
           <div class="flex shrink-0 items-center gap-2">
+            <.form for={%{}} phx-submit="new_chat" data-test="new-chat-form" class="flex items-center gap-1">
+              <select name="conversation[type]" class="select select-bordered select-xs">
+                <option value="problem_discovery">Problem Discovery</option>
+                <option value="marketing_strategy">Marketing Strategy</option>
+              </select>
+              <.button type="submit" class="btn-xs">New</.button>
+            </.form>
             <span data-test="token-badge" class="badge badge-neutral badge-sm">{@token_total} tokens</span>
             <span :if={@cost_total} data-test="cost-badge" class="badge badge-ghost badge-sm">
               ${format_cost(@cost_total)}
@@ -82,6 +95,14 @@ defmodule MarketMySpecWeb.ChatLive do
               </button>
             </div>
           </div>
+
+          <div
+            :if={@step_limit}
+            data-test="step-limit-notice"
+            class="alert alert-warning mt-2 text-sm"
+          >
+            Reached the tool step limit for this reply.
+          </div>
         </div>
 
         <div class="shrink-0 border-t border-base-300 pt-3">
@@ -108,6 +129,22 @@ defmodule MarketMySpecWeb.ChatLive do
       <div data-test="user-message" class="chat-bubble chat-bubble-primary whitespace-pre-wrap">
         {@message.content}
       </div>
+    </div>
+    """
+  end
+
+  defp render_message(%{message: %Message{role: :tool}} = assigns) do
+    ~H"""
+    <div
+      data-test="tool-call"
+      data-tool-name={@message.tool_name}
+      class={[
+        "rounded border px-3 py-2 text-xs font-mono",
+        @message.status == :error && "border-error/50 text-error" || "border-base-300 opacity-80"
+      ]}
+    >
+      <span class="font-semibold">{@message.tool_name}</span>
+      <span class="ml-2 whitespace-pre-wrap">{@message.content}</span>
     </div>
     """
   end
@@ -158,12 +195,17 @@ defmodule MarketMySpecWeb.ChatLive do
       |> assign(:conversation, conversation)
       |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
       |> assign(:streaming, restore_streaming(conversation, List.last(streaming_messages)))
+      |> assign(:step_limit, false)
       |> assign(:token_total, token_total)
       |> assign(:cost_total, cost_total)
       |> stream(:messages, settled)
 
     {:ok, socket}
   end
+
+  defp chat_type_label(:problem_discovery), do: "Problem Discovery"
+  defp chat_type_label(:marketing_strategy), do: "Marketing Strategy"
+  defp chat_type_label(_), do: nil
 
   @impl true
   def handle_event("send", %{"message" => %{"content" => content}}, socket) do
@@ -172,11 +214,33 @@ defmodule MarketMySpecWeb.ChatLive do
         {:noreply,
          socket
          |> stream_insert(:messages, message)
+         |> assign(:step_limit, false)
          |> assign(:message_form, to_form(%{"content" => ""}, as: :message))}
 
       {:error, _changeset} ->
         {:noreply, socket}
     end
+  end
+
+  def handle_event("new_chat", %{"conversation" => %{"type" => type}}, socket) do
+    scope = socket.assigns.current_scope
+    old = socket.assigns.conversation
+    conversation = Chat.start_typed_chat(scope, old, String.to_existing_atom(type))
+
+    if connected?(socket) and conversation.id != old.id do
+      Phoenix.PubSub.unsubscribe(MarketMySpec.PubSub, Runner.topic(old.id))
+      Phoenix.PubSub.subscribe(MarketMySpec.PubSub, Runner.topic(conversation.id))
+    end
+
+    {:noreply,
+     socket
+     |> assign(:conversation, conversation)
+     |> assign(:streaming, nil)
+     |> assign(:step_limit, false)
+     |> assign(:token_total, 0)
+     |> assign(:cost_total, nil)
+     |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
+     |> stream(:messages, [], reset: true)}
   end
 
   def handle_event("retry", _params, socket) do
@@ -206,6 +270,14 @@ defmodule MarketMySpecWeb.ChatLive do
 
   def handle_info({:stream_error, _chat_id, message_id, reason}, socket) do
     {:noreply, assign(socket, :streaming, error_streaming(socket, message_id, reason))}
+  end
+
+  def handle_info({:stream_tool, _chat_id, message}, socket) do
+    {:noreply, stream_insert(socket, :messages, message)}
+  end
+
+  def handle_info({:stream_step_limit, _chat_id}, socket) do
+    {:noreply, assign(socket, :step_limit, true)}
   end
 
   # --- streaming-state helpers ---

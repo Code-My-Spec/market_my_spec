@@ -42,6 +42,50 @@ defmodule MarketMySpec.Chat do
     end
   end
 
+  @doc """
+  Starts a typed chat (story 745). If the current conversation has no messages
+  yet, its type is set in place (avoids leaving an empty untyped conversation
+  behind, which also makes "the active chat" deterministic); otherwise a fresh
+  typed conversation is created.
+  """
+  @spec start_typed_chat(Scope.t(), Conversation.t(), Conversation.chat_type()) ::
+          Conversation.t()
+  def start_typed_chat(%Scope{} = scope, %Conversation{} = conversation, type) do
+    case list_messages(conversation) do
+      [] -> retype_conversation(conversation, type)
+      _ -> create_conversation(scope, type)
+    end
+  end
+
+  defp retype_conversation(conversation, type) do
+    {:ok, updated} =
+      conversation
+      |> Conversation.changeset(%{type: type})
+      |> Repo.update()
+
+    updated
+  end
+
+  @doc """
+  Creates a new typed conversation (story 745) and makes it the active chat.
+  The `type` (problem_discovery | marketing_strategy) determines which tools the
+  assistant may use.
+  """
+  @spec create_conversation(Scope.t(), Conversation.chat_type()) :: Conversation.t()
+  def create_conversation(%Scope{active_account_id: account_id}, type) do
+    {:ok, conversation} =
+      %Conversation{}
+      |> Conversation.changeset(%{
+        account_id: account_id,
+        provider: @default_provider,
+        model: default_model(@default_provider),
+        type: type
+      })
+      |> Repo.insert()
+
+    conversation
+  end
+
   @doc "Fetches a conversation by id within the caller's account scope."
   @spec get_conversation(Scope.t(), Ecto.UUID.t()) :: Conversation.t() | nil
   def get_conversation(%Scope{active_account_id: account_id}, id) do

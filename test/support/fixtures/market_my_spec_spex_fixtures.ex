@@ -104,6 +104,26 @@ defmodule MarketMySpecSpex.Fixtures do
   defdelegate venue_fixture(scope), to: MarketMySpec.EngagementsFixtures
   defdelegate venue_fixture(scope, attrs), to: MarketMySpec.EngagementsFixtures
 
+  @doc """
+  Seeds a ProblemDiscovery Frame in the given account scope. Used by chat
+  tool-execution specs (story 745) to give `list_frames` real, account-scoped
+  data to return.
+  """
+  def frame_fixture(scope, attrs \\ %{}) do
+    defaults = %{
+      title: "a frame",
+      description: "a problem hypothesis",
+      money_gate: %{total_spent_min: 5000, hire_rate_min: 50},
+      kill_condition: %{min_money_gated_candidates: 1},
+      saved_searches: [%{source: "reddit", query: "test query"}]
+    }
+
+    {:ok, frame} =
+      MarketMySpec.ProblemDiscovery.create_frame(scope, Map.merge(defaults, Map.new(attrs)))
+
+    frame
+  end
+
   # --- MCP tools (no fixture needed) --------------------------------------
   #
   # Specs drive MCP tools by calling the tool module's execute/2 callback

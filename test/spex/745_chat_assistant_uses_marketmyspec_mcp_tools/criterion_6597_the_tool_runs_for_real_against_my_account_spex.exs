@@ -30,14 +30,14 @@ defmodule MarketMySpecSpex.Story745.Criterion6597Spex do
       given_ "a signed-in founder whose account has a candidate, in a Problem Discovery chat", context do
         user = Fixtures.user_fixture()
         scope = Fixtures.user_scope_fixture(user)
-        Fixtures.candidate_fixture(scope, %{title: "alpha-candidate"})
+        Fixtures.frame_fixture(scope, %{title: "alpha-frame"})
         {token, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
         Application.put_env(:market_my_spec, :chat_tool_registry_module, MarketMySpec.Chat.McpToolRegistry)
 
         Application.put_env(:market_my_spec, :chat_llm, %{
-          tool_calls: [%{name: "list_candidates", arguments: %{}}],
+          tool_calls: [%{name: "list_frames", arguments: %{}}],
           chunks_after_tool: ["Here is what is on your board."],
           finish_reason: "stop"
         })
@@ -59,8 +59,8 @@ defmodule MarketMySpecSpex.Story745.Criterion6597Spex do
         {:ok, context}
       end
 
-      then_ "the tool step reflects my account's real candidate", context do
-        assert has_element?(context.view, "[data-test='tool-call']", "alpha-candidate")
+      then_ "the tool step reflects my account's real frame", context do
+        assert has_element?(context.view, "[data-test='tool-call']", "alpha-frame")
         {:ok, context}
       end
     end
