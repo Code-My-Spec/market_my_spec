@@ -22,13 +22,14 @@ defmodule MarketMySpecWeb.ChatLive.Index do
             <summary class="btn btn-primary btn-sm list-none [&::-webkit-details-marker]:hidden">
               <.icon name="hero-plus" class="size-4" /> New chat
             </summary>
-            <ul class="menu absolute right-0 top-full z-30 mt-1 w-max rounded-box bg-base-200 p-2 shadow [&_li>button]:whitespace-nowrap">
+            <ul class="absolute right-0 top-full z-30 mt-1 w-max rounded-box bg-base-200 p-1 shadow">
               <li>
                 <button
                   type="button"
                   phx-click="new_chat"
                   phx-value-type="problem_discovery"
                   data-test="new-chat-problem_discovery"
+                  class="block w-full whitespace-nowrap rounded px-3 py-2 text-left hover:bg-base-300"
                 >
                   Problem Discovery
                 </button>
@@ -39,6 +40,7 @@ defmodule MarketMySpecWeb.ChatLive.Index do
                   phx-click="new_chat"
                   phx-value-type="marketing_strategy"
                   data-test="new-chat-marketing_strategy"
+                  class="block w-full whitespace-nowrap rounded px-3 py-2 text-left hover:bg-base-300"
                 >
                   Marketing Strategy
                 </button>
@@ -68,7 +70,9 @@ defmodule MarketMySpecWeb.ChatLive.Index do
             >
               <td data-test="chat-list-item">{Chat.conversation_label(c)}</td>
               <td>
-                <span :if={c.type} class="badge badge-outline badge-sm">{Chat.type_label(c.type)}</span>
+                <span :if={c.type} class="badge badge-outline badge-sm">
+                  {Chat.type_label(c.type)}
+                </span>
               </td>
               <td class="text-sm opacity-70">{Calendar.strftime(c.updated_at, "%Y-%m-%d %H:%M")}</td>
             </tr>
