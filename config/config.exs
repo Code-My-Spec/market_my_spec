@@ -33,6 +33,13 @@ config :nx, default_backend: EXLA.Backend
 # round-trips through Ecto. See lib/market_my_spec/postgrex_types.ex.
 config :market_my_spec, MarketMySpec.Repo, types: MarketMySpec.PostgrexTypes
 
+# LLM chat defaults for new conversations (operator-configurable, not exposed
+# to end users). Provider must be one of the Conversation provider enum
+# (:openai | :anthropic); model is the provider-native model id ReqLLM uses.
+config :market_my_spec, MarketMySpec.Chat,
+  default_provider: :openai,
+  default_model: "gpt-5-mini"
+
 config :market_my_spec, :integration_providers, [:google, :github, :codemyspec]
 
 config :market_my_spec, :oauth_providers, %{

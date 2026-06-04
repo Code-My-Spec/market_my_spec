@@ -20,17 +20,24 @@ defmodule MarketMySpec.Chat do
   alias MarketMySpec.Repo
   alias MarketMySpec.Users.Scope
 
-  @default_provider :anthropic
+  # Operator-configurable defaults for new conversations (not user-facing).
+  # Override per env in config:
+  #
+  #     config :market_my_spec, MarketMySpec.Chat,
+  #       default_provider: :openai,
+  #       default_model: "gpt-5-mini"
+  @fallback_provider :openai
+  @fallback_model "gpt-5-mini"
 
-  @doc "The default provider for a new conversation."
+  @doc "The configured default provider for a new conversation."
   @spec default_provider() :: Conversation.provider()
-  def default_provider, do: @default_provider
+  def default_provider, do: Keyword.get(config(), :default_provider, @fallback_provider)
 
-  @doc "The default model for a provider."
-  @spec default_model(Conversation.provider()) :: String.t()
-  def default_model(provider \\ @default_provider)
-  def default_model(:anthropic), do: "claude-sonnet-4-6"
-  def default_model(:openai), do: "gpt-5-mini"
+  @doc "The configured default model for a new conversation."
+  @spec default_model() :: String.t()
+  def default_model, do: Keyword.get(config(), :default_model, @fallback_model)
+
+  defp config, do: Application.get_env(:market_my_spec, __MODULE__, [])
 
   @doc """
   Creates a new typed conversation (story 745). The chats index navigates
@@ -43,8 +50,8 @@ defmodule MarketMySpec.Chat do
       %Conversation{}
       |> Conversation.changeset(%{
         account_id: account_id,
-        provider: @default_provider,
-        model: default_model(@default_provider),
+        provider: default_provider(),
+        model: default_model(),
         type: type
       })
       |> Repo.insert()
