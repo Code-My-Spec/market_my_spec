@@ -144,63 +144,88 @@ defmodule MarketMySpec.Chat.Runner do
   # message in the threaded history); `acc` is the cumulative reply text the
   # streaming bubble shows and that we persist on finalize.
   defp run_tool_rounds(conversation, assistant, history, tools, response, turn_text, acc, step) do
-    case response_tool_calls(response) do
-      [] ->
+    calls = response_tool_calls(response)
+
+    Logger.debug(fn ->
+      "[chat #{conversation.id}] turn #{step}: finish=#{inspect(safe_finish_reason(response))} " <>
+        "text=#{byte_size(turn_text)}b tool_calls=#{inspect(Enum.map(calls, &tool_call_name/1))}"
+    end)
+
+    cond do
+      calls == [] ->
+        Logger.debug(fn -> "[chat #{conversation.id}] done after #{step} round(s), #{byte_size(acc)}b reply" end)
         finalize(conversation, assistant, acc, real_metadata(conversation, response))
 
-      _calls when step >= @max_tool_steps ->
+      step >= @max_tool_steps ->
+        Logger.debug(fn -> "[chat #{conversation.id}] hit step cap (#{@max_tool_steps}); stopping" end)
         broadcast(conversation.id, {:stream_step_limit, conversation.id})
         finalize(conversation, assistant, acc, real_metadata(conversation, response))
 
-      calls ->
-        results =
-          Enum.map(calls, fn call ->
-            result = run_real_tool(conversation, tools, call)
-            persist_tool_step(conversation, tool_call_name(call), result, tool_call_id(call))
-            {call, result}
-          end)
-
-        next_history =
-          history ++
-            [%{role: :assistant, content: turn_text, tool_calls: calls}] ++
-            tool_result_messages(results)
-
-        model_spec = "#{conversation.provider}:#{conversation.model}"
-
-        case stream_text(model_spec, next_history, conversation, tools) do
-          {:ok, response2} ->
-            # Materialize once — response_tool_calls re-reads `.stream`.
-            chunks = Enum.to_list(response2.stream)
-            acc2 = consume(chunks, conversation, assistant)
-
-            run_tool_rounds(
-              conversation,
-              assistant,
-              next_history,
-              tools,
-              %{response2 | stream: chunks},
-              acc2,
-              acc <> acc2,
-              step + 1
-            )
-
-          {:error, reason} ->
-            fail(conversation, assistant, normalize_error(reason))
-        end
+      true ->
+        execute_round(conversation, assistant, history, tools, turn_text, acc, step, calls)
     end
   end
+
+  # Execute one round's tool calls, thread the results back, and stream the next
+  # turn (recursing into run_tool_rounds).
+  defp execute_round(conversation, assistant, history, tools, turn_text, acc, step, calls) do
+    results = Enum.map(calls, &run_and_persist_tool(conversation, tools, &1))
+
+    next_history =
+      history ++
+        [%{role: :assistant, content: turn_text, tool_calls: calls}] ++
+        tool_result_messages(results)
+
+    model_spec = "#{conversation.provider}:#{conversation.model}"
+
+    case stream_text(model_spec, next_history, conversation, tools) do
+      {:ok, response2} ->
+        # Materialize once — response_tool_calls re-reads `.stream`.
+        chunks = Enum.to_list(response2.stream)
+        acc2 = consume(chunks, conversation, assistant)
+        response = %{response2 | stream: chunks}
+        run_tool_rounds(conversation, assistant, next_history, tools, response, acc2, acc <> acc2, step + 1)
+
+      {:error, reason} ->
+        fail(conversation, assistant, normalize_error(reason))
+    end
+  end
+
+  defp run_and_persist_tool(conversation, tools, call) do
+    result = run_real_tool(conversation, tools, call)
+
+    Logger.debug(fn ->
+      "[chat #{conversation.id}]   tool #{tool_call_name(call)}(#{inspect(tool_call_args(call))}) " <>
+        "-> #{result_tag(result)} #{result_size(result)}b"
+    end)
+
+    persist_tool_step(conversation, tool_call_name(call), result, tool_call_id(call))
+    {call, result}
+  end
+
+  defp result_tag({:ok, _}), do: "ok"
+  defp result_tag({:error, _}), do: "error"
+
+  defp result_size({_, text}) when is_binary(text), do: byte_size(text)
+  defp result_size(_), do: 0
 
   # Wrap ReqLLM.stream_text so every turn (initial + tool continuation) carries
   # the conversation's system prompt.
   defp stream_text(model_spec, messages, conversation, tools) do
-    opts =
-      case system_prompt(conversation) do
-        nil -> [tools: tools]
-        prompt -> [tools: tools, system_prompt: prompt]
-      end
+    sys = system_prompt(conversation)
+    opts = if sys, do: [tools: tools, system_prompt: sys], else: [tools: tools]
+
+    Logger.debug(fn ->
+      "[chat #{conversation.id}] -> #{model_spec} | #{length(messages)} msg(s) " <>
+        "#{inspect(Enum.map(messages, &{&1.role, msg_size(&1)}))}" <>
+        "#{if sys, do: " +system(#{byte_size(sys)}b)", else: ""} | #{length(tools)} tool(s)"
+    end)
 
     ReqLLM.stream_text(model_spec, messages, opts)
   end
+
+  defp msg_size(%{content: c}) when is_binary(c), do: byte_size(c)
+  defp msg_size(_), do: 0
 
   @doc """
   The system prompt for a conversation, by chat type.

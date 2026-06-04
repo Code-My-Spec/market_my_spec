@@ -61,12 +61,24 @@ defmodule MarketMySpecWeb.ChatLive.Show do
           </div>
 
           <div class="flex shrink-0 items-center gap-2">
-            <span data-test="token-badge" class="badge badge-neutral badge-sm">{@token_total} tokens</span>
+            <span data-test="token-badge" class="badge badge-neutral badge-sm">
+              {@token_total} tokens
+            </span>
             <span :if={@cost_total} data-test="cost-badge" class="badge badge-ghost badge-sm">
               ${format_cost(@cost_total)}
             </span>
           </div>
         </header>
+
+        <div
+          :if={@debug}
+          data-test="debug-bar"
+          class="shrink-0 border-b border-warning/40 bg-warning/10 px-2 py-1 font-mono text-xs"
+        >
+          debug · {@conversation.provider}:{@conversation.model} · awaiting={to_string(@awaiting_reply)} · streaming={if @streaming,
+            do: to_string(@streaming.status),
+            else: "none"} · step_limit={to_string(@step_limit)}
+        </div>
 
         <div id="messages-scroll" phx-hook=".ChatScroll" class="min-h-0 flex-1 overflow-y-auto py-4">
           <div id="messages" phx-update="stream" class="space-y-1">
@@ -88,12 +100,32 @@ defmodule MarketMySpecWeb.ChatLive.Show do
                 data-test="streaming-indicator"
                 class="loading loading-dots loading-sm mt-1 opacity-70"
               />
-              <div :if={@streaming.status == :error} data-test="message-error" class="alert alert-error mt-2">
+              <div
+                :if={@streaming.status == :error}
+                data-test="message-error"
+                class="alert alert-error mt-2"
+              >
                 {@streaming.error_reason}
               </div>
-              <button :if={@streaming.status == :error} data-test="retry-button" phx-click="retry" class="btn btn-sm mt-2">
+              <button
+                :if={@streaming.status == :error}
+                data-test="retry-button"
+                phx-click="retry"
+                class="btn btn-sm mt-2"
+              >
                 Retry
               </button>
+            </div>
+          </div>
+
+          <div
+            :if={@awaiting_reply and is_nil(@streaming)}
+            data-test="working-indicator"
+            class="chat chat-start"
+          >
+            <div class="chat-bubble bg-base-200 text-base-content">
+              <span class="loading loading-dots loading-sm opacity-70" />
+              <span :if={@debug} class="ml-2 font-mono text-xs opacity-60">working…</span>
             </div>
           </div>
 
@@ -127,7 +159,7 @@ defmodule MarketMySpecWeb.ChatLive.Show do
   defp render_message(%{message: %Message{role: :user}} = assigns) do
     ~H"""
     <div class="chat chat-end">
-      <div data-test="user-message" class="chat-bubble chat-bubble-primary whitespace-pre-wrap">
+      <div data-test="user-message" class="chat-bubble chat-bubble-primary">
         {@message.content}
       </div>
     </div>
@@ -168,7 +200,12 @@ defmodule MarketMySpecWeb.ChatLive.Show do
         <div :if={@message.status == :error} data-test="message-error" class="alert alert-error mt-2">
           {@message.error_reason}
         </div>
-        <button :if={@message.status == :error} data-test="retry-button" phx-click="retry" class="btn btn-sm mt-2">
+        <button
+          :if={@message.status == :error}
+          data-test="retry-button"
+          phx-click="retry"
+          class="btn btn-sm mt-2"
+        >
           Retry
         </button>
       </div>
@@ -184,12 +221,14 @@ defmodule MarketMySpecWeb.ChatLive.Show do
   end
 
   @impl true
-  def mount(%{"id" => id}, _session, socket) do
+  def mount(%{"id" => id} = params, _session, socket) do
     case Chat.get_conversation(socket.assigns.current_scope, id) do
       nil ->
         {:ok, push_navigate(socket, to: ~p"/app/chats")}
 
       conversation ->
+        # `?debug=true` exposes live run-state instrumentation in the UI.
+        socket = assign(socket, :debug, params["debug"] == "true")
         {:ok, load_conversation(socket, conversation)}
     end
   end
@@ -209,6 +248,7 @@ defmodule MarketMySpecWeb.ChatLive.Show do
     |> assign(:conversation, conversation)
     |> assign(:message_form, to_form(%{"content" => ""}, as: :message))
     |> assign(:streaming, restore_streaming(conversation, List.last(streaming_messages)))
+    |> assign(:awaiting_reply, streaming_messages != [])
     |> assign(:step_limit, false)
     |> assign(:token_total, token_total)
     |> assign(:cost_total, cost_total)
@@ -223,6 +263,7 @@ defmodule MarketMySpecWeb.ChatLive.Show do
          socket
          |> stream_insert(:messages, message)
          |> assign(:step_limit, false)
+         |> assign(:awaiting_reply, true)
          |> assign(:message_form, to_form(%{"content" => ""}, as: :message))}
 
       {:error, _changeset} ->
@@ -232,7 +273,7 @@ defmodule MarketMySpecWeb.ChatLive.Show do
 
   def handle_event("retry", _params, socket) do
     Chat.regenerate(socket.assigns.conversation)
-    {:noreply, assign(socket, :streaming, nil)}
+    {:noreply, socket |> assign(:streaming, nil) |> assign(:awaiting_reply, true)}
   end
 
   @impl true
@@ -252,11 +293,15 @@ defmodule MarketMySpecWeb.ChatLive.Show do
      socket
      |> stream_insert(:messages, message)
      |> assign(:streaming, nil)
+     |> assign(:awaiting_reply, false)
      |> add_totals(metadata)}
   end
 
   def handle_info({:stream_error, _chat_id, message_id, reason}, socket) do
-    {:noreply, assign(socket, :streaming, error_streaming(socket, message_id, reason))}
+    {:noreply,
+     socket
+     |> assign(:streaming, error_streaming(socket, message_id, reason))
+     |> assign(:awaiting_reply, false)}
   end
 
   def handle_info({:stream_tool, _chat_id, message}, socket) do
@@ -377,6 +422,8 @@ defmodule MarketMySpecWeb.ChatLive.Show do
   defp to_decimal(value) when is_float(value), do: Decimal.from_float(value)
   defp to_decimal(value) when is_integer(value), do: Decimal.new(value)
 
-  defp format_cost(%Decimal{} = cost), do: :erlang.float_to_binary(Decimal.to_float(cost), decimals: 6)
+  defp format_cost(%Decimal{} = cost),
+    do: :erlang.float_to_binary(Decimal.to_float(cost), decimals: 6)
+
   defp format_cost(cost) when is_number(cost), do: :erlang.float_to_binary(cost / 1, decimals: 6)
 end
