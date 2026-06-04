@@ -46,10 +46,28 @@ defmodule MarketMySpecWeb.Layouts do
               <.icon name="hero-bars-3" class="size-5" />
             </label>
           </div>
-          <div class="flex-1 px-2 lg:px-6">
+          <div class="flex-1 px-2 lg:px-6 flex items-center gap-3">
             <span class="font-display text-base tracking-tight">
               marketmyspec<span class="text-primary">.</span>
             </span>
+            <div
+              :if={@current_scope && @current_scope.active_account}
+              class="breadcrumbs text-sm py-0"
+              data-test="account-breadcrumb"
+            >
+              <ul>
+                <li>
+                  <.link
+                    navigate={~p"/app/accounts/picker"}
+                    class="link link-hover inline-flex items-center gap-1"
+                    title="Switch account"
+                  >
+                    <.icon name="hero-building-office-2" class="size-4 opacity-70" />
+                    {@current_scope.active_account.name}
+                  </.link>
+                </li>
+              </ul>
+            </div>
           </div>
           <div class="flex-none px-2">
             <.theme_toggle />
