@@ -113,8 +113,12 @@ defmodule MarketMySpec.Chat.Runner do
 
     case ReqLLM.stream_text(model_spec, history, tools: tools) do
       {:ok, response} ->
-        acc = consume(response.stream, conversation, assistant)
-        after_turn(conversation, assistant, history, tools, response, acc)
+        # Materialize the stream once: a ReqLLM stream is single-use, so we
+        # broadcast content from the collected chunks AND reuse the same list
+        # to assemble tool calls (to_response re-reads `.stream`).
+        chunks = Enum.to_list(response.stream)
+        acc = consume(chunks, conversation, assistant)
+        after_turn(conversation, assistant, history, tools, %{response | stream: chunks}, acc)
 
       {:error, reason} ->
         fail(conversation, assistant, normalize_error(reason))
@@ -397,9 +401,22 @@ defmodule MarketMySpec.Chat.Runner do
   defp tool_call_name(%{name: name}), do: name
   defp tool_call_name(call) when is_map(call), do: call[:name]
 
-  defp tool_call_args(%{function: %{arguments: args}}), do: args
-  defp tool_call_args(%{arguments: args}), do: args
+  defp tool_call_args(%{function: %{arguments: args}}), do: decode_args(args)
+  defp tool_call_args(%{arguments: args}), do: decode_args(args)
   defp tool_call_args(_call), do: %{}
+
+  # Provider tool-call arguments arrive as a JSON string; fixture args are
+  # already maps.
+  defp decode_args(args) when is_map(args), do: args
+
+  defp decode_args(args) when is_binary(args) do
+    case Jason.decode(args) do
+      {:ok, map} when is_map(map) -> map
+      _ -> %{}
+    end
+  end
+
+  defp decode_args(_args), do: %{}
 
   defp tool_call_id(%{id: id}) when not is_nil(id), do: id
   defp tool_call_id(_call), do: generate_call_id()
