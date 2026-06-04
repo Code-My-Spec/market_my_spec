@@ -1,19 +1,21 @@
-defmodule MarketMySpecWeb.ChatLive do
+defmodule MarketMySpecWeb.ChatLive.Show do
   @moduledoc """
-  The conversational chat surface (lifted from livellm's ChatLive), rendered
-  with `stream/3`.
+  A single conversation, rendered with `stream/3` (lifted from livellm's
+  ChatLive). Mounted by conversation id under `/app/chats/:id`; the chats index
+  (`MarketMySpecWeb.ChatLive.Index`) owns listing and creation.
 
-  On mount it loads the active conversation's messages and checks `ActiveTasks`
-  for an in-flight reply to restore partial assistant text and the in-progress
-  indicator (R4), then subscribes to `"chat:\#{chat_id}"`. The header carries a
-  provider/model selector (R5) and token/cost badges derived from persisted
-  metadata (R6). Sending persists the user message immediately and the Runner
-  streams the reply in a supervised task — the LiveView issues no synchronous
-  provider call, so the input stays usable while a reply streams (R1/R3).
+  On mount it loads the conversation's messages and checks `ActiveTasks` for an
+  in-flight reply to restore partial assistant text and the in-progress
+  indicator (R4), then subscribes to `"chat:\#{chat_id}"`. The header carries
+  token/cost badges derived from persisted metadata (R6) and the chat type badge
+  (745). Sending persists the user message immediately and the Runner streams
+  the reply in a supervised task — the LiveView issues no synchronous provider
+  call, so the input stays usable while a reply streams (R1/R3).
 
   `handle_info/2` consumes the PubSub contract — `:stream_chunk`,
-  `:stream_reasoning`, `:stream_done`, `:stream_error` — updating the in-flight
-  reply, including the recoverable error state with a retry affordance (R8).
+  `:stream_reasoning`, `:stream_done`, `:stream_error`, `:stream_tool`,
+  `:stream_step_limit` — updating the in-flight reply, including the recoverable
+  error state with a retry affordance (R8).
   """
 
   use MarketMySpecWeb, :live_view
@@ -46,45 +48,19 @@ defmodule MarketMySpecWeb.ChatLive do
       >
         <header class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 pb-3">
           <div class="flex items-center gap-2">
-            <div class="dropdown" data-test="chats-menu">
-              <button tabindex="0" type="button" class="btn btn-ghost btn-xs">
-                <.icon name="hero-bars-3" class="size-4" /> Chats
-              </button>
-              <ul
-                tabindex="0"
-                class="dropdown-content menu bg-base-200 rounded-box z-20 mt-1 max-h-80 w-72 flex-nowrap overflow-y-auto p-2 shadow"
-              >
-                <li :for={c <- @conversations}>
-                  <button
-                    type="button"
-                    phx-click="open_chat"
-                    phx-value-id={c.id}
-                    data-test="chat-list-item"
-                    class={["block truncate", c.id == @conversation.id && "active"]}
-                  >
-                    {conversation_label(c)}
-                  </button>
-                </li>
-                <li :if={@conversations == []} class="px-2 py-1 text-xs opacity-60">No chats yet</li>
-              </ul>
-            </div>
+            <.link navigate={~p"/app/chats"} data-test="back-to-chats" class="btn btn-ghost btn-xs">
+              <.icon name="hero-arrow-left" class="size-4" /> Chats
+            </.link>
 
             <h1 class="text-lg font-semibold">
-              Chat
+              {Chat.conversation_label(@conversation)}
               <span :if={@conversation.type} class="badge badge-outline badge-sm ml-1">
-                {chat_type_label(@conversation.type)}
+                {Chat.type_label(@conversation.type)}
               </span>
             </h1>
           </div>
 
           <div class="flex shrink-0 items-center gap-2">
-            <.form for={%{}} phx-submit="new_chat" data-test="new-chat-form" class="flex items-center gap-1">
-              <select name="conversation[type]" class="select select-bordered select-xs">
-                <option value="problem_discovery">Problem Discovery</option>
-                <option value="marketing_strategy">Marketing Strategy</option>
-              </select>
-              <.button type="submit" class="btn-xs">New</.button>
-            </.form>
             <span data-test="token-badge" class="badge badge-neutral badge-sm">{@token_total} tokens</span>
             <span :if={@cost_total} data-test="cost-badge" class="badge badge-ghost badge-sm">
               ${format_cost(@cost_total)}
@@ -204,28 +180,20 @@ defmodule MarketMySpecWeb.ChatLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
-    conversation = Chat.get_or_create_active_conversation(scope)
+  def mount(%{"id" => id}, _session, socket) do
+    case Chat.get_conversation(socket.assigns.current_scope, id) do
+      nil ->
+        {:ok, push_navigate(socket, to: ~p"/app/chats")}
 
-    socket =
-      socket
-      |> assign(:conversations, Chat.list_conversations(scope))
-      |> load_conversation(conversation)
-
-    {:ok, socket}
+      conversation ->
+        {:ok, load_conversation(socket, conversation)}
+    end
   end
 
-  # Switch the active conversation: unsubscribe the previous topic, subscribe
-  # the new one, load its messages, and reset per-conversation assigns. Shared
-  # by mount, new_chat, and open_chat.
+  # Subscribe to the conversation topic, load its messages, and seed
+  # per-conversation assigns.
   defp load_conversation(socket, conversation) do
-    previous = socket.assigns[:conversation]
-
-    # Only (un)subscribe when the active conversation actually changes —
-    # re-subscribing to the same topic would deliver every broadcast twice.
-    if connected?(socket) and (is_nil(previous) or previous.id != conversation.id) do
-      if previous, do: Phoenix.PubSub.unsubscribe(MarketMySpec.PubSub, Runner.topic(previous.id))
+    if connected?(socket) do
       Phoenix.PubSub.subscribe(MarketMySpec.PubSub, Runner.topic(conversation.id))
     end
 
@@ -243,14 +211,6 @@ defmodule MarketMySpecWeb.ChatLive do
     |> stream(:messages, settled, reset: true)
   end
 
-  defp chat_type_label(:problem_discovery), do: "Problem Discovery"
-  defp chat_type_label(:marketing_strategy), do: "Marketing Strategy"
-  defp chat_type_label(_), do: nil
-
-  defp conversation_label(%{title: title}) when is_binary(title) and title != "", do: title
-  defp conversation_label(%{type: type}) when not is_nil(type), do: "New #{chat_type_label(type)} chat"
-  defp conversation_label(_), do: "New chat"
-
   @impl true
   def handle_event("send", %{"message" => %{"content" => content}}, socket) do
     case Chat.send_message(socket.assigns.conversation, content) do
@@ -259,30 +219,10 @@ defmodule MarketMySpecWeb.ChatLive do
          socket
          |> stream_insert(:messages, message)
          |> assign(:step_limit, false)
-         |> assign(:conversations, Chat.list_conversations(socket.assigns.current_scope))
          |> assign(:message_form, to_form(%{"content" => ""}, as: :message))}
 
       {:error, _changeset} ->
         {:noreply, socket}
-    end
-  end
-
-  def handle_event("new_chat", %{"conversation" => %{"type" => type}}, socket) do
-    scope = socket.assigns.current_scope
-
-    conversation =
-      Chat.start_typed_chat(scope, socket.assigns.conversation, String.to_existing_atom(type))
-
-    {:noreply,
-     socket
-     |> load_conversation(conversation)
-     |> assign(:conversations, Chat.list_conversations(scope))}
-  end
-
-  def handle_event("open_chat", %{"id" => id}, socket) do
-    case Chat.get_conversation(socket.assigns.current_scope, id) do
-      nil -> {:noreply, socket}
-      conversation -> {:noreply, load_conversation(socket, conversation)}
     end
   end
 

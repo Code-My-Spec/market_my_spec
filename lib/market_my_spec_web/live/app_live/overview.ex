@@ -151,10 +151,10 @@ defmodule MarketMySpecWeb.AppLive.Overview do
           </li>
           <li>
             <.link
-              navigate={~p"/app/chat"}
+              navigate={~p"/app/chats"}
               class="block rounded border border-base-300 p-4 hover:bg-base-200"
             >
-              <div class="font-medium">Chat</div>
+              <div class="font-medium">Chats</div>
               <div class="text-xs text-base-content/60 mt-1">
                 Streaming LLM chat with MCP tool access.
               </div>

@@ -10,7 +10,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6587Spex do
   the partial state is held outside the LiveView process (ActiveTasks), so the
   remount is the real test — not the original view.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -35,17 +35,17 @@ defmodule MarketMySpecSpex.Story744.Criterion6587Spex do
           hang: true
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
+        view = start_chat(conn, :problem_discovery)
 
         view
         |> form("[data-test='chat-form']", message: %{content: "draft the post"})
         |> render_submit()
 
-        {:ok, Map.merge(context, %{conn: conn})}
+        {:ok, Map.merge(context, %{conn: conn, chat_id: chat_id(view)})}
       end
 
       when_ "the founder reloads the page mid-stream", context do
-        {:ok, reloaded_view, _html} = live(context.conn, "/app/chat")
+        {:ok, reloaded_view, _html} = live(context.conn, "/app/chats/#{context.chat_id}")
         {:ok, Map.put(context, :reloaded_view, reloaded_view)}
       end
 

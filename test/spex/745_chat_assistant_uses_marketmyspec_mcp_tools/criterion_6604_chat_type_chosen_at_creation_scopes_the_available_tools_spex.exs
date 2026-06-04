@@ -8,7 +8,8 @@ defmodule MarketMySpecSpex.Story745.Criterion6604Spex do
   creation is reflected on the chat, and choosing the other type yields the
   other type's chat.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (chats index `MarketMySpecWeb.ChatLive.Index` at
+  "/app/chats" → `MarketMySpecWeb.ChatLive.Show` at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -22,21 +23,17 @@ defmodule MarketMySpecSpex.Story745.Criterion6604Spex do
 
   spex "the chat type chosen at creation is applied to the chat" do
     scenario "start a Problem Discovery chat" do
-      given_ "a signed-in founder starting a new chat", context do
+      given_ "a signed-in founder on the chats index", context do
         user = Fixtures.user_fixture()
         {token, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-        {:ok, Map.merge(context, %{conn: conn, view: view})}
+        {:ok, Map.merge(context, %{conn: conn})}
       end
 
-      when_ "the founder chooses the Problem Discovery chat type", context do
-        context.view
-        |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})
-        |> render_submit()
-
-        {:ok, context}
+      when_ "the founder starts a Problem Discovery chat", context do
+        view = start_chat(context.conn, :problem_discovery)
+        {:ok, Map.put(context, :view, view)}
       end
 
       then_ "the chat is a Problem Discovery chat", context do
@@ -46,21 +43,17 @@ defmodule MarketMySpecSpex.Story745.Criterion6604Spex do
     end
 
     scenario "start a Marketing Strategy chat" do
-      given_ "a signed-in founder starting a new chat", context do
+      given_ "a signed-in founder on the chats index", context do
         user = Fixtures.user_fixture()
         {token, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-        {:ok, Map.merge(context, %{conn: conn, view: view})}
+        {:ok, Map.merge(context, %{conn: conn})}
       end
 
-      when_ "the founder chooses the Marketing Strategy chat type", context do
-        context.view
-        |> form("[data-test='new-chat-form']", conversation: %{type: "marketing_strategy"})
-        |> render_submit()
-
-        {:ok, context}
+      when_ "the founder starts a Marketing Strategy chat", context do
+        view = start_chat(context.conn, :marketing_strategy)
+        {:ok, Map.put(context, :view, view)}
       end
 
       then_ "the chat is a Marketing Strategy chat", context do

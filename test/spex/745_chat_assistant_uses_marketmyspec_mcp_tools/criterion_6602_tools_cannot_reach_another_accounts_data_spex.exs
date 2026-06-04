@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6602Spex do
   Account A and account B each have a candidate; chatting in account A, the
   real list_candidates tool returns only A's candidate — B's is never reachable.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat"), real
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id"), real
   registry (`:chat_tool_registry_module`).
   """
 
@@ -44,11 +44,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6602Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-
-        view
-        |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})
-        |> render_submit()
+        view = start_chat(conn, :problem_discovery)
 
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end

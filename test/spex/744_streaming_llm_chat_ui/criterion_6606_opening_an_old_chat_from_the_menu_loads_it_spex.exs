@@ -1,14 +1,14 @@
 defmodule MarketMySpecSpex.Story744.Criterion6606Spex do
   @moduledoc """
   Story 744 — Streaming LLM Chat UI
-  Criterion 6606 — Opening an old chat from the menu loads it
+  Criterion 6606 — Opening an old chat from the index loads it
 
-  Rule: the chat header lists the account's chats and lets the founder open an
-  old one. With a newer chat active, clicking an older chat in the menu makes
-  it the active chat and loads its messages; the other chat's messages are no
-  longer shown.
+  Rule: the chats index lists the account's chats and lets the founder open an
+  old one. With a newer chat also present, clicking an older chat in the index
+  opens it and loads its messages; the other chat's messages are not shown.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (chats index `MarketMySpecWeb.ChatLive.Index` at
+  "/app/chats" → `MarketMySpecWeb.ChatLive.Show` at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -20,48 +20,49 @@ defmodule MarketMySpecSpex.Story744.Criterion6606Spex do
     :ok
   end
 
-  spex "opening an older chat from the menu loads it" do
-    scenario "click the older chat while a newer one is active" do
-      given_ "a signed-in founder with an older chat and a newer active chat", context do
+  spex "opening an older chat from the index loads it" do
+    scenario "click the older chat from the index" do
+      given_ "a signed-in founder with an older chat and a newer chat", context do
         user = Fixtures.user_fixture()
         {token, _} = Fixtures.generate_user_magic_link_token(user)
         conn = post(context.conn, "/users/log-in", %{"user" => %{"token" => token}})
 
         Application.put_env(:market_my_spec, :chat_llm, %{chunks: ["ok"], finish_reason: "stop"})
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-
         # Older chat.
-        view
+        older = start_chat(conn, :problem_discovery)
+
+        older
         |> form("[data-test='chat-form']", message: %{content: "alpha question"})
         |> render_submit()
 
-        # Newer chat — now the active one.
-        view
-        |> form("[data-test='new-chat-form']", conversation: %{type: "marketing_strategy"})
-        |> render_submit()
+        # Newer chat.
+        newer = start_chat(conn, :marketing_strategy)
 
-        view
+        newer
         |> form("[data-test='chat-form']", message: %{content: "beta question"})
         |> render_submit()
 
-        {:ok, Map.merge(context, %{conn: conn, view: view})}
+        {:ok, index, _html} = live(conn, "/app/chats")
+        {:ok, Map.merge(context, %{conn: conn, index: index})}
       end
 
-      when_ "the founder clicks the older chat in the menu", context do
-        context.view
-        |> element("[data-test='chat-list-item']", "alpha question")
-        |> render_click()
+      when_ "the founder clicks the older chat in the index", context do
+        {:error, {:live_redirect, %{to: path}}} =
+          context.index
+          |> element("[data-test='chat-row']", "alpha question")
+          |> render_click()
 
-        {:ok, context}
+        {:ok, show, _html} = live(context.conn, path)
+        {:ok, Map.put(context, :view, show)}
       end
 
-      then_ "the older chat becomes active and its messages load", context do
+      then_ "the older chat opens and its messages load", context do
         assert has_element?(context.view, "[data-test='user-message']", "alpha question")
         {:ok, context}
       end
 
-      then_ "the newer chat's messages are no longer shown", context do
+      then_ "the newer chat's messages are not shown", context do
         refute has_element?(context.view, "[data-test='user-message']", "beta question")
         {:ok, context}
       end

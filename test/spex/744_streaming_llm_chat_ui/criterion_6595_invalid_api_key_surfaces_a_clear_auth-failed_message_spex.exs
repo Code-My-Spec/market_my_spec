@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6595Spex do
   crash. The `:chat_llm` fixture fails with an auth error; the chat surface
   stays alive and explains what went wrong.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -30,7 +30,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6595Spex do
 
         Application.put_env(:market_my_spec, :chat_llm, %{error: :invalid_api_key})
 
-        {:ok, view, _html} = live(conn, "/app/chat")
+        view = start_chat(conn, :problem_discovery)
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 

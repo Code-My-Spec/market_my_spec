@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6589Spex do
   same streamed assistant text — the reply fans out over PubSub on
   "chat:<chat_id>", it is not local to the tab that sent the message.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat"), two
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id"), two
   concurrent mounts sharing one authenticated session.
   """
 
@@ -34,8 +34,8 @@ defmodule MarketMySpecSpex.Story744.Criterion6589Spex do
           finish_reason: "stop"
         })
 
-        {:ok, tab_one, _} = live(conn, "/app/chat")
-        {:ok, tab_two, _} = live(conn, "/app/chat")
+        tab_one = start_chat(conn, :problem_discovery)
+        {:ok, tab_two, _} = live(conn, "/app/chats/#{chat_id(tab_one)}")
 
         {:ok, Map.merge(context, %{conn: conn, tab_one: tab_one, tab_two: tab_two})}
       end

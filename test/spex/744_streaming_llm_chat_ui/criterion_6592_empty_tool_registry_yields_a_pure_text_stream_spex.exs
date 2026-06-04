@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6592Spex do
   sent message yields a text-only assistant reply and no tool-call affordance
   ever appears in the thread.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat"). The
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id"). The
   "called with no tools" half of the rule is exercised at the runner unit
   level; the surface-observable half is "a pure text reply, no tool-call UI",
   asserted here.
@@ -37,7 +37,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6592Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
+        view = start_chat(conn, :problem_discovery)
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 

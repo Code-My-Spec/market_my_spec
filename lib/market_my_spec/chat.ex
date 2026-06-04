@@ -8,8 +8,10 @@ defmodule MarketMySpec.Chat do
   over PubSub on `"chat:\#{conversation_id}"` (R2/R3). Provider and model are
   selectable per conversation and apply to the next message (R5).
 
-  Surface for `MarketMySpecWeb.ChatLive`. Streaming, persistence, and the
-  ReqLLM call live in `Runner`; reconnect state lives in `ActiveTasks`.
+  Surface for `MarketMySpecWeb.ChatLive.Index` (listing/creation) and
+  `MarketMySpecWeb.ChatLive.Show` (a single conversation). Streaming,
+  persistence, and the ReqLLM call live in `Runner`; reconnect state lives in
+  `ActiveTasks`.
   """
 
   import Ecto.Query
@@ -31,45 +33,9 @@ defmodule MarketMySpec.Chat do
   def default_model(:openai), do: "gpt-5-mini"
 
   @doc """
-  Returns the account's most recent conversation, creating a default one when
-  none exists. This is the "active chat" the `/chat` surface mounts.
-  """
-  @spec get_or_create_active_conversation(Scope.t()) :: Conversation.t()
-  def get_or_create_active_conversation(%Scope{active_account_id: account_id}) do
-    case latest_conversation(account_id) do
-      nil -> create_default_conversation(account_id)
-      conversation -> conversation
-    end
-  end
-
-  @doc """
-  Starts a typed chat (story 745). If the current conversation has no messages
-  yet, its type is set in place (avoids leaving an empty untyped conversation
-  behind, which also makes "the active chat" deterministic); otherwise a fresh
-  typed conversation is created.
-  """
-  @spec start_typed_chat(Scope.t(), Conversation.t(), Conversation.chat_type()) ::
-          Conversation.t()
-  def start_typed_chat(%Scope{} = scope, %Conversation{} = conversation, type) do
-    case list_messages(conversation) do
-      [] -> retype_conversation(conversation, type)
-      _ -> create_conversation(scope, type)
-    end
-  end
-
-  defp retype_conversation(conversation, type) do
-    {:ok, updated} =
-      conversation
-      |> Conversation.changeset(%{type: type})
-      |> Repo.update()
-
-    updated
-  end
-
-  @doc """
-  Creates a new typed conversation (story 745) and makes it the active chat.
-  The `type` (problem_discovery | marketing_strategy) determines which tools the
-  assistant may use.
+  Creates a new typed conversation (story 745). The chats index navigates
+  straight into it. The `type` (problem_discovery | marketing_strategy)
+  determines which tools the assistant may use.
   """
   @spec create_conversation(Scope.t(), Conversation.chat_type()) :: Conversation.t()
   def create_conversation(%Scope{active_account_id: account_id}, type) do
@@ -97,6 +63,22 @@ defmodule MarketMySpec.Chat do
     |> order_by([c], desc: c.updated_at)
     |> Repo.all()
   end
+
+  @doc "Human label for a chat type."
+  @spec type_label(Conversation.chat_type() | nil) :: String.t() | nil
+  def type_label(:problem_discovery), do: "Problem Discovery"
+  def type_label(:marketing_strategy), do: "Marketing Strategy"
+  def type_label(_), do: nil
+
+  @doc "Display label for a conversation in the chats index/menu."
+  @spec conversation_label(Conversation.t()) :: String.t()
+  def conversation_label(%Conversation{title: title}) when is_binary(title) and title != "",
+    do: title
+
+  def conversation_label(%Conversation{type: type}) when not is_nil(type),
+    do: "New #{type_label(type)} chat"
+
+  def conversation_label(_conversation), do: "New chat"
 
   @doc "Fetches a conversation by id within the caller's account scope."
   @spec get_conversation(Scope.t(), Ecto.UUID.t()) :: Conversation.t() | nil
@@ -167,27 +149,6 @@ defmodule MarketMySpec.Chat do
   end
 
   # --- internals ---
-
-  defp latest_conversation(account_id) do
-    Conversation
-    |> where([c], c.account_id == ^account_id)
-    |> order_by([c], desc: c.inserted_at)
-    |> limit(1)
-    |> Repo.one()
-  end
-
-  defp create_default_conversation(account_id) do
-    {:ok, conversation} =
-      %Conversation{}
-      |> Conversation.changeset(%{
-        account_id: account_id,
-        provider: @default_provider,
-        model: default_model(@default_provider)
-      })
-      |> Repo.insert()
-
-    conversation
-  end
 
   defp persist_user_message(conversation, content) do
     %Message{}

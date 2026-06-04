@@ -16,7 +16,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6593Spex do
   that the assistant message ends with the continuation text — which can only
   appear if the tool was dispatched, returned, and the stream resumed.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -53,7 +53,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6593Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
+        view = start_chat(conn, :problem_discovery)
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end
 

@@ -78,8 +78,8 @@ defmodule MarketMySpecWeb.Layouts do
           </div>
           <ul class="menu p-4 text-base-content flex-1">
             <li>
-              <.link navigate={~p"/app/chat"} data-test="nav-chat">
-                <.icon name="hero-chat-bubble-oval-left" class="size-4" /> Chat
+              <.link navigate={~p"/app/chats"} data-test="nav-chat">
+                <.icon name="hero-chat-bubble-oval-left" class="size-4" /> Chats
               </.link>
             </li>
             <li>

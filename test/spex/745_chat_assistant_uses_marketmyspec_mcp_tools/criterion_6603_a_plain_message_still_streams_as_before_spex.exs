@@ -7,7 +7,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6603Spex do
   contract — a message that needs no tool streams a plain text reply with no
   tool call, exactly as in story 744.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -31,11 +31,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6603Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-
-        view
-        |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})
-        |> render_submit()
+        view = start_chat(conn, :problem_discovery)
 
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end

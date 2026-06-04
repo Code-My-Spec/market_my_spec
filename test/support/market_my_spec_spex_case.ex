@@ -20,6 +20,31 @@ defmodule MarketMySpecSpex.Case do
       import Phoenix.ConnTest
       import Phoenix.LiveViewTest
       import MarketMySpecSpex.Case
+
+      @doc """
+      Drives the chats index→show flow: opens `/app/chats`, clicks the "New
+      chat" button for `type` (`:problem_discovery` | `:marketing_strategy`),
+      follows the navigation, and returns the mounted `ChatLive.Show` view.
+      """
+      def start_chat(conn, type) do
+        {:ok, index, _html} = live(conn, "/app/chats")
+
+        {:error, {:live_redirect, %{to: path}}} =
+          index
+          |> element("[data-test='new-chat-#{type}']")
+          |> render_click()
+
+        {:ok, show, _html} = live(conn, path)
+        show
+      end
+
+      @doc "Extracts the conversation id from a mounted `ChatLive.Show` view."
+      def chat_id(view) do
+        [id] =
+          Regex.run(~r/data-chat-id="([^"]+)"/, render(view), capture: :all_but_first)
+
+        id
+      end
     end
   end
 

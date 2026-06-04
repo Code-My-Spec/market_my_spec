@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6583Spex do
   `:chat_llm` fixture hangs (streams indefinitely) so the first reply is still
   in flight when the second message is sent.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -30,8 +30,8 @@ defmodule MarketMySpecSpex.Story744.Criterion6583Spex do
 
         Application.put_env(:market_my_spec, :chat_llm, %{chunks: ["thinking"], hang: true})
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-        {:ok, Map.merge(context, %{conn: conn, view: view})}
+        view = start_chat(conn, :problem_discovery)
+        {:ok, Map.merge(context, %{conn: conn, view: view, chat_id: chat_id(view)})}
       end
 
       when_ "the founder sends 'first' and then 'second' before the reply finishes", context do
@@ -60,7 +60,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6583Spex do
       end
 
       then_ "both survive a reload in the same order", context do
-        {:ok, _fresh, fresh_html} = live(context.conn, "/app/chat")
+        {:ok, _fresh, fresh_html} = live(context.conn, "/app/chats/#{context.chat_id}")
 
         first_at = :binary.match(fresh_html, "first question") |> elem(0)
         second_at = :binary.match(fresh_html, "second question") |> elem(0)

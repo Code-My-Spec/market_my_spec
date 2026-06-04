@@ -120,7 +120,8 @@ defmodule MarketMySpecWeb.Router do
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
       live "/integrations", IntegrationLive.Index, :index
 
-      live "/chat", ChatLive, :show
+      live "/chats", ChatLive.Index, :index
+      live "/chats/:id", ChatLive.Show, :show
 
       live "/accounts", AccountLive.Index, :index
       live "/accounts/picker", AccountLive.Picker, :index

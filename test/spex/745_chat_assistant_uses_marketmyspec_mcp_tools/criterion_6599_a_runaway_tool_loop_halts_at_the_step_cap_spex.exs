@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6599Spex do
   turn forever; the runner stops calling tools at the configured cap and returns
   a final message instead of looping indefinitely.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -33,11 +33,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6599Spex do
           tool_calls_every_turn: %{name: "list_candidates", arguments: %{}}
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-
-        view
-        |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})
-        |> render_submit()
+        view = start_chat(conn, :problem_discovery)
 
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end

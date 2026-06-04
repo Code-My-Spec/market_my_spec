@@ -8,7 +8,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6597Spex do
   fixture scripts the model to call list_candidates; the real tool executes with
   the account's scope and the account's own data shows in the tool step.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat"), real
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id"), real
   registry (`:chat_tool_registry_module`).
   """
 
@@ -42,11 +42,7 @@ defmodule MarketMySpecSpex.Story745.Criterion6597Spex do
           finish_reason: "stop"
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
-
-        view
-        |> form("[data-test='new-chat-form']", conversation: %{type: "problem_discovery"})
-        |> render_submit()
+        view = start_chat(conn, :problem_discovery)
 
         {:ok, Map.merge(context, %{conn: conn, view: view})}
       end

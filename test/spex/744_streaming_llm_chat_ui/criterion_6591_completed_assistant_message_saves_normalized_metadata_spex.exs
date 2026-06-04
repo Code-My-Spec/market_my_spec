@@ -9,7 +9,7 @@ defmodule MarketMySpecSpex.Story744.Criterion6591Spex do
   fixture completes with a full usage payload; the badges are asserted on a
   fresh mount so the metadata is proven persisted, not just held in memory.
 
-  Interaction surface: LiveView (MarketMySpecWeb.ChatLive at "/app/chat").
+  Interaction surface: LiveView (MarketMySpecWeb.ChatLive.Show at "/app/chats/:id").
   """
 
   use MarketMySpecSpex.Case
@@ -38,17 +38,17 @@ defmodule MarketMySpecSpex.Story744.Criterion6591Spex do
           model: "claude-sonnet-4-6"
         })
 
-        {:ok, view, _html} = live(conn, "/app/chat")
+        view = start_chat(conn, :problem_discovery)
 
         view
         |> form("[data-test='chat-form']", message: %{content: "give me a costed reply"})
         |> render_submit()
 
-        {:ok, Map.merge(context, %{conn: conn})}
+        {:ok, Map.merge(context, %{conn: conn, chat_id: chat_id(view)})}
       end
 
       when_ "the founder reloads after the reply completes", context do
-        {:ok, reloaded_view, html} = live(context.conn, "/app/chat")
+        {:ok, reloaded_view, html} = live(context.conn, "/app/chats/#{context.chat_id}")
         {:ok, Map.merge(context, %{reloaded_view: reloaded_view, html: html})}
       end
 
