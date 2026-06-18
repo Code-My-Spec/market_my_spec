@@ -71,6 +71,12 @@ config :phoenix,
 # Use in-memory ETS backend for file storage in tests (avoids real S3 calls)
 config :market_my_spec, :files_backend, MarketMySpec.Files.Memory
 
+# No source rate-limit buckets in test — every source is unthrottled, so the
+# engagement-search spex run at full speed and don't depend on token timing.
+# RateLimiter timing is covered directly in its own unit test, which starts a
+# dedicated instance with an explicit bucket. See RateLimiter moduledoc.
+config :market_my_spec, :engagement_rate_limiter, %{}
+
 # Use the deterministic TestStub for prose linting in tests — avoids shelling
 # out to the real Vale binary (which may not be installed in CI).
 config :market_my_spec, :linter_impl, MarketMySpec.Linter.TestStub

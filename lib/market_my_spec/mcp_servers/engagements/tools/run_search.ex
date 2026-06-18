@@ -26,8 +26,13 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.RunSearch do
     search_id = Map.fetch!(params, :search_id)
 
     case Engagements.run_saved_search(scope, search_id) do
-      {:ok, %{candidates: candidates, failures: failures}} ->
-        payload = %{candidates: candidates, failures: encode_failures(failures)}
+      {:ok, %{candidates: candidates, failures: failures} = result} ->
+        payload = %{
+          candidates: candidates,
+          failures: encode_failures(failures),
+          notices: Map.get(result, :notices, [])
+        }
+
         {:reply, Response.tool() |> Response.text(Jason.encode!(payload)), frame}
 
       {:error, :not_found} ->

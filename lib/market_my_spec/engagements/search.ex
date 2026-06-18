@@ -82,8 +82,44 @@ defmodule MarketMySpec.Engagements.Search do
       |> interleave_by_weight()
       |> persist_and_enrich(scope)
 
-    %{candidates: ranked, failures: failures, notices: notices, next_cursor: next_cursor}
+    %{
+      candidates: ranked,
+      failures: failures,
+      notices: notices ++ rate_limit_notices(failures),
+      next_cursor: next_cursor
+    }
   end
+
+  @doc """
+  Builds operator-facing notices from a `failures` list.
+
+  When one or more venues were throttled (Reddit rate limit), returns a single
+  notice telling the operator the empty/partial result is a throttle, not an
+  absence of fresh threads — so a zero-candidate run isn't misread as "nothing
+  to engage." Returns `[]` when no failures were rate-limit related.
+
+  Public so the saved-search fan-out (which aggregates failures across several
+  single-venue searches) can emit the same notice from its combined list.
+  """
+  @spec rate_limit_notices([failure()]) :: [String.t()]
+  def rate_limit_notices(failures) do
+    case Enum.count(failures, &rate_limited?/1) do
+      0 ->
+        []
+
+      count ->
+        [
+          "#{count} #{venue_word(count)} throttled (Reddit rate limit). " <>
+            "Wait ~2-3 minutes and re-run, or run fewer searches in parallel."
+        ]
+    end
+  end
+
+  defp rate_limited?(%{reason: "Rate limited" <> _}), do: true
+  defp rate_limited?(_), do: false
+
+  defp venue_word(1), do: "venue was"
+  defp venue_word(_), do: "venues were"
 
   # Fan out to each venue in parallel via Task.async_stream.
   # Each adapter returns either `{:ok, %{candidates: [...], next_cursor: ...}}`
@@ -136,6 +172,9 @@ defmodule MarketMySpec.Engagements.Search do
   # Format a failure reason into a human-readable string.
   defp format_reason(_source, {:http_status, 429}),
     do: "Rate limited (HTTP 429 Too Many Requests)"
+
+  defp format_reason(_source, :rate_limit_timeout),
+    do: "Rate limited (throttled locally to stay under the source's limit; try again shortly)"
 
   defp format_reason(_source, {:http_status, status}),
     do: "HTTP error #{status}"

@@ -19,6 +19,14 @@ defmodule MarketMySpecWeb.Application do
         # so the LiveView never blocks, plus the ETS-backed in-flight registry.
         {Task.Supervisor, name: MarketMySpec.Chat.TaskSupervisor},
         MarketMySpec.Chat.ActiveTasks,
+        # Session cookie jar for the anonymous Reddit RSS client — replays
+        # Reddit's Set-Cookie across requests so we read as one returning
+        # session rather than a cookieless client per call. See moduledoc.
+        MarketMySpec.Engagements.Source.RedditCookieJar,
+        # Per-source token bucket in front of the Engagement Source adapters.
+        # Smooths bursts from concurrent saved-search fan-outs so Reddit's
+        # anonymous RSS pool never trips HTTP 429. See RateLimiter moduledoc.
+        MarketMySpec.Engagements.RateLimiter,
         # ProblemDiscovery Gather — long-running live scrapes against Apify +
         # OpenAI embedding batches blow the MCP gateway timeout when run
         # synchronously. RunGather spawns a Task here and returns immediately;

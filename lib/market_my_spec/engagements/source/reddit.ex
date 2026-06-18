@@ -38,9 +38,16 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   import SweetXml, only: [sigil_x: 2]
 
   alias MarketMySpec.Engagements.HTTP
+  alias MarketMySpec.Engagements.RateLimiter
 
   @snippet_length 280
   @page_limit 25
+
+  # How long an adapter call will wait for a rate-limit token before giving
+  # up with `{:error, :rate_limit_timeout}`. Kept under the orchestrator's
+  # per-venue task timeout (Search.fan_out is 15s) so a throttled request
+  # surfaces a clean "Rate limited" reason instead of being killed mid-flight.
+  @rate_limit_timeout 10_000
 
   @doc """
   Validates subreddit name format.
@@ -71,18 +78,17 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @spec search(map(), String.t(), keyword()) ::
           {:ok, %{candidates: [map()], next_cursor: nil | String.t()}} | {:error, term()}
   def search(venue, query, opts \\ []) when is_binary(query) do
-    case Req.get(HTTP.reddit_client(),
-           url: "/r/#{venue.identifier}/search.rss",
-           params: search_params(query, Keyword.get(opts, :cursor))
-         ) do
-      {:ok, %Req.Response{status: 200, body: body}} ->
-        {:ok, normalize_feed(to_xml(body))}
-
-      {:ok, %Req.Response{status: status}} ->
-        {:error, {:http_status, status}}
-
-      {:error, reason} ->
-        {:error, reason}
+    with :ok <- RateLimiter.acquire(:reddit, @rate_limit_timeout),
+         {:ok, %Req.Response{status: 200, body: body}} <-
+           Req.get(HTTP.reddit_client(),
+             url: "/r/#{venue.identifier}/search.rss",
+             params: search_params(query, Keyword.get(opts, :cursor))
+           ) do
+      {:ok, normalize_feed(to_xml(body))}
+    else
+      {:error, :rate_limit_timeout} -> {:error, :rate_limit_timeout}
+      {:ok, %Req.Response{status: status}} -> {:error, {:http_status, status}}
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -164,18 +170,17 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @spec get_thread(map() | nil, String.t(), keyword()) ::
           {:ok, map()} | {:error, term()}
   def get_thread(_venue, source_thread_id, opts \\ []) do
-    case Req.get(HTTP.reddit_client(),
-           url: "/comments/#{source_thread_id}.rss",
-           params: thread_params(opts)
-         ) do
-      {:ok, %Req.Response{status: 200, body: body}} ->
-        {:ok, normalize_thread_feed(source_thread_id, to_xml(body))}
-
-      {:ok, %Req.Response{status: status}} ->
-        {:error, {:http_status, status}}
-
-      {:error, reason} ->
-        {:error, reason}
+    with :ok <- RateLimiter.acquire(:reddit, @rate_limit_timeout),
+         {:ok, %Req.Response{status: 200, body: body}} <-
+           Req.get(HTTP.reddit_client(),
+             url: "/comments/#{source_thread_id}.rss",
+             params: thread_params(opts)
+           ) do
+      {:ok, normalize_thread_feed(source_thread_id, to_xml(body))}
+    else
+      {:error, :rate_limit_timeout} -> {:error, :rate_limit_timeout}
+      {:ok, %Req.Response{status: status}} -> {:error, {:http_status, status}}
+      {:error, reason} -> {:error, reason}
     end
   end
 

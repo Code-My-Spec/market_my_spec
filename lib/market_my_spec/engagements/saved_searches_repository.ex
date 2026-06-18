@@ -22,7 +22,10 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
 
   @type search_result :: %{
           candidates: [map()],
-          failures: [%{source: atom() | nil, venue_identifier: String.t() | nil, reason: String.t()}]
+          failures: [
+            %{source: atom() | nil, venue_identifier: String.t() | nil, reason: String.t()}
+          ],
+          notices: [String.t()]
         }
 
   @doc """
@@ -170,7 +173,7 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
   `Engagements.Search.search/3` with the saved query string.
 
   A saved search with zero resolved venues returns
-  `%{candidates: [], failures: []}` — empty, not an error.
+  `%{candidates: [], failures: [], notices: []}` — empty, not an error.
   """
   @spec run_saved_search(Scope.t(), integer()) ::
           {:ok, search_result()} | {:error, :not_found}
@@ -270,11 +273,11 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
     |> Enum.uniq_by(& &1.id)
   end
 
-  defp fan_out_search(_scope, _query, []), do: %{candidates: [], failures: []}
+  defp fan_out_search(_scope, _query, []), do: %{candidates: [], failures: [], notices: []}
 
-  defp fan_out_search(_scope, nil, _venues), do: %{candidates: [], failures: []}
+  defp fan_out_search(_scope, nil, _venues), do: %{candidates: [], failures: [], notices: []}
 
-  defp fan_out_search(_scope, "", _venues), do: %{candidates: [], failures: []}
+  defp fan_out_search(_scope, "", _venues), do: %{candidates: [], failures: [], notices: []}
 
   defp fan_out_search(scope, query, venues) when is_binary(query) do
     # Timeout is intentionally above the Dispatcher's 30s ceiling so a
@@ -308,7 +311,7 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
         |> Enum.uniq_by(fn c -> Map.get(c, "url") || Map.get(c, :url) end)
         |> Enum.sort_by(fn c -> Map.get(c, "rank", 0) end, :desc)
 
-      %{candidates: ranked, failures: failures}
+      %{candidates: ranked, failures: failures, notices: Search.rate_limit_notices(failures)}
     end)
   end
 end
