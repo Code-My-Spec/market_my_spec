@@ -1,8 +1,42 @@
 # `run_search` returns `-32603 Server unavailable` consistently for one specific query string
 
+**Status:** ✅ RESOLVED 2026-06-18 — root-caused, fixed, regression-tested, deployed to prod (commit `49b901c`).
 **Reporter:** Marketing operator via MMS MCP, 2026-06-08
 **Severity:** Medium — single search recipe unusable; other recipes work
 **Touchpoint area:** `lib/market_my_spec/mcp_servers/engagements/tools/run_search.ex` + `lib/market_my_spec/engagements/saved_searches_repository.ex` (`fan_out_search/3`) + `lib/market_my_spec/engagements/search.ex` (`search/3`)
+
+## Resolution (2026-06-18)
+
+**Root cause:** `threads.url` and `threads.title` were created as `:string` (Postgres
+`varchar(255)`), but the `Thread` changeset allows `url` ≤ 2048 and `title` ≤ 500.
+Reddit search.rss URLs embed the post-title slug, so the `lovable bolt cursor replit …`
+query produced result rows whose url exceeded 255 chars. Those rows **passed the
+changeset** and then raised Postgrex `22001 string_data_right_truncation` at
+`Repo.insert` time inside `persist_and_enrich/2`. A raw raise (not a changeset
+`{:error, _}`) propagated up through the search fan-out — `Task.async_stream`'s
+`{:exit, reason}` clause only catches *timeouts*, so a task that *raises* killed the
+caller — and surfaced at the MCP transport as `-32603 Server unavailable`. The query
+was deterministic per-venue, which is why it failed 4/4 while shorter-slug queries
+succeeded.
+
+**Why hypothesis #2 (Jason.encode!) was wrong:** reproduction proved every candidate
+JSON-encodes fine. The raise is at the DB layer, upstream of encoding.
+
+**Fix:** migration `20260608000000_widen_threads_url_and_title.exs` switches both
+columns to `:text`. The changeset's `validate_length` (2048 / 500) is now the real
+gate; an over-length candidate degrades to `{:error, changeset}` (dropped by
+`persist_and_enrich/2`) instead of raising. **No rescue/catch-all was added** — the
+failure mode is eliminated at the source, not masked.
+
+**Verification:** the failing query (saved search 18) now returns
+`{:ok, candidates: 118, failures: 0}`. Regression test:
+`test/market_my_spec/engagements/threads_repository_test.exs` (over-length url/title
+persist; > 2048 url returns `{:error, changeset}` not a raise) — fails against the old
+schema with the exact 22001, passes after the migration. Migration ran against prod
+before the traffic swap; `marketmyspec.com → HTTP 200`.
+
+**Side note fixed too:** `add_venue` now accepts an integer `weight` —
+`field :weight, {:either, {:float, :integer}}`; Ecto's `:float` cast coerces int→float.
 
 ## Summary
 

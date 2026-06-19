@@ -18,7 +18,9 @@ defmodule MarketMySpec.McpServers.Engagements.Tools.AddVenue do
   schema do
     field :source, :string, required: true, doc: "Source platform: \"reddit\" or \"elixirforum\""
     field :identifier, :string, required: true, doc: "Subreddit name or forum category slug"
-    field :weight, :float, required: false, doc: "Ranking weight; defaults to 1.0"
+    field :weight, {:either, {:float, :integer}},
+      required: false,
+      doc: "Ranking weight; defaults to 1.0. Accepts integer or float."
     field :enabled, :boolean, required: false, doc: "Defaults to true"
   end
 
