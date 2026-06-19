@@ -37,6 +37,8 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
 
   import SweetXml, only: [sigil_x: 2]
 
+  require Logger
+
   alias MarketMySpec.Engagements.HTTP
   alias MarketMySpec.Engagements.RateLimiter
 
@@ -78,7 +80,7 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @spec search(map(), String.t(), keyword()) ::
           {:ok, %{candidates: [map()], next_cursor: nil | String.t()}} | {:error, term()}
   def search(venue, query, opts \\ []) when is_binary(query) do
-    with :ok <- RateLimiter.acquire(:reddit, @rate_limit_timeout),
+    with :ok <- acquire_token("r/#{venue.identifier}"),
          {:ok, %Req.Response{status: 200, body: body}} <-
            Req.get(HTTP.reddit_client(),
              url: "/r/#{venue.identifier}/search.rss",
@@ -86,9 +88,45 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
            ) do
       {:ok, normalize_feed(to_xml(body))}
     else
-      {:error, :rate_limit_timeout} -> {:error, :rate_limit_timeout}
-      {:ok, %Req.Response{status: status}} -> {:error, {:http_status, status}}
-      {:error, reason} -> {:error, reason}
+      {:error, :rate_limit_timeout} ->
+        {:error, :rate_limit_timeout}
+
+      {:ok, %Req.Response{status: 429}} ->
+        Logger.warning("reddit rate-limit: REAL Reddit 429 for r/#{venue.identifier}")
+        {:error, {:http_status, 429}}
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, {:http_status, status}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Acquire a Reddit rate-limit token, logging how long we waited and whether
+  # we gave up. This instrumentation is how we tell self-inflicted local
+  # throttling (acquire timeout) apart from real Reddit 429s, and how we size
+  # the bucket — the "waited Nms" lines reveal real contention under a fan-out.
+  defp acquire_token(label) do
+    start = System.monotonic_time(:millisecond)
+    result = RateLimiter.acquire(:reddit, @rate_limit_timeout)
+    waited = System.monotonic_time(:millisecond) - start
+
+    case result do
+      :ok ->
+        if waited >= 250 do
+          Logger.info("reddit rate-limit: waited #{waited}ms for token (#{label})")
+        end
+
+        :ok
+
+      {:error, :rate_limit_timeout} = err ->
+        Logger.warning(
+          "reddit rate-limit: LOCAL acquire timeout after #{waited}ms for #{label} " <>
+            "(our limiter gave up, not a Reddit 429)"
+        )
+
+        err
     end
   end
 
@@ -170,7 +208,7 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @spec get_thread(map() | nil, String.t(), keyword()) ::
           {:ok, map()} | {:error, term()}
   def get_thread(_venue, source_thread_id, opts \\ []) do
-    with :ok <- RateLimiter.acquire(:reddit, @rate_limit_timeout),
+    with :ok <- acquire_token("comments/#{source_thread_id}"),
          {:ok, %Req.Response{status: 200, body: body}} <-
            Req.get(HTTP.reddit_client(),
              url: "/comments/#{source_thread_id}.rss",
@@ -178,9 +216,18 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
            ) do
       {:ok, normalize_thread_feed(source_thread_id, to_xml(body))}
     else
-      {:error, :rate_limit_timeout} -> {:error, :rate_limit_timeout}
-      {:ok, %Req.Response{status: status}} -> {:error, {:http_status, status}}
-      {:error, reason} -> {:error, reason}
+      {:error, :rate_limit_timeout} ->
+        {:error, :rate_limit_timeout}
+
+      {:ok, %Req.Response{status: 429}} ->
+        Logger.warning("reddit rate-limit: REAL Reddit 429 for comments/#{source_thread_id}")
+        {:error, {:http_status, 429}}
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, {:http_status, status}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

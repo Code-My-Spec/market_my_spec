@@ -110,7 +110,7 @@ defmodule MarketMySpec.Engagements.RateLimiter do
         bucket =
           bucket
           |> enqueue(from, deadline)
-          |> drain()
+          |> drain(source)
           |> schedule(source)
 
         {:noreply, put_bucket(state, source, bucket)}
@@ -126,7 +126,7 @@ defmodule MarketMySpec.Engagements.RateLimiter do
       {:ok, bucket} ->
         bucket =
           %{bucket | timer: nil}
-          |> drain()
+          |> drain(source)
           |> schedule(source)
 
         {:noreply, put_bucket(state, source, bucket)}
@@ -142,7 +142,7 @@ defmodule MarketMySpec.Engagements.RateLimiter do
   # Reply to as many head-of-line waiters as we have tokens for. Expired
   # waiters are dropped (replied with the timeout error) without consuming a
   # token. Stops at the first waiter that is neither expired nor fundable.
-  defp drain(bucket) do
+  defp drain(bucket, source) do
     bucket = refill(bucket)
 
     case :queue.out(bucket.waiters) do
@@ -152,12 +152,17 @@ defmodule MarketMySpec.Engagements.RateLimiter do
       {{:value, {from, deadline}}, rest} ->
         cond do
           now_ms() >= deadline ->
+            Logger.warning(
+              "RateLimiter[#{source}]: dropped a waiter (acquire timeout); " <>
+                "tokens=#{Float.round(bucket.tokens, 2)} remaining_queue=#{:queue.len(rest)}"
+            )
+
             GenServer.reply(from, {:error, :rate_limit_timeout})
-            drain(%{bucket | waiters: rest})
+            drain(%{bucket | waiters: rest}, source)
 
           bucket.tokens >= 1 ->
             GenServer.reply(from, :ok)
-            drain(%{bucket | tokens: bucket.tokens - 1, waiters: rest})
+            drain(%{bucket | tokens: bucket.tokens - 1, waiters: rest}, source)
 
           true ->
             bucket
