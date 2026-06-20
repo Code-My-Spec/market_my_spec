@@ -37,14 +37,23 @@ defmodule MarketMySpec.Engagements.RateLimiter do
   require Logger
 
   # Reddit's anonymous RSS endpoint 429s at even ~3 concurrent requests from a
-  # single datacenter IP (measured live, 2026-06-12). So the burst capacity is
-  # deliberately tiny and the refill conservative: at most 2 Reddit requests
-  # in flight at once, then one fresh request every 1.5s. A typical saved
-  # search (4-8 venues) paces out over a few seconds rather than bursting; the
-  # tail of a heavy parallel fan-out hits the acquire timeout and degrades to a
-  # clean "Rate limited" notice instead of a 429 cascade. Tune via app env.
+  # single datacenter IP (measured live, 2026-06-12). The failure mode is
+  # *concurrency*, not sustained rate — so `capacity` (the instantaneous burst
+  # ceiling) stays at 2, safely under that threshold, and we tune throughput
+  # via `refill_ms` instead.
+  #
+  # `refill_ms` was 1_500 (one token/1.5s). At a 10s acquire timeout that let
+  # only ~2 + 10000/1500 ≈ 8-9 requests clear per burst, so a single saved
+  # search of 10-13 venues self-throttled a third-to-half of its venues
+  # locally (reproduced 2026-06-20 with a network-free burst sim; see git
+  # history). Dropping to 700ms (one token/0.7s) clears a 13-venue search at
+  # 100% and an 18-venue burst at ~90%, all while peak concurrency stays at 2
+  # — same simultaneity as before, just a faster queue drain. The new
+  # rate-limit logging (adapter `acquire_token/1` + `drain/2`) is what we'll
+  # read to decide whether heavy concurrent fan-outs warrant a further bump to
+  # capacity 3. Tune via app env.
   @default_buckets %{
-    reddit: %{capacity: 2, refill_ms: 1_500}
+    reddit: %{capacity: 2, refill_ms: 700}
   }
 
   @default_timeout 5_000
