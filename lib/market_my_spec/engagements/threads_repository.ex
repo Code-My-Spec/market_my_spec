@@ -65,6 +65,13 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
   updates title + url on conflict. Does NOT overwrite op_body, comment_tree,
   raw_payload, or fetched_at — those are owned by get_thread (deep-read).
 
+  The candidate's `recency` (the source's published timestamp — a real post
+  date, not our crawl time) is parsed and written to `last_activity_at` as a
+  best-known lower bound on activity. It is set **on insert only** — left out
+  of the conflict-replace list — so a later deep read (which writes the true
+  max(post, newest comment) via `upsert_thread/4`) is never downgraded back to
+  the post date by a subsequent search re-run.
+
   Returns `{:ok, thread}` on success, `{:error, changeset}` on failure.
   """
   @spec upsert_from_search(Scope.t(), atom(), map()) :: {:ok, Thread.t()} | {:error, term()}
@@ -73,13 +80,15 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
     source_thread_id = Map.get(candidate, "source_thread_id") || Map.get(candidate, :source_thread_id)
     url = Map.get(candidate, "url") || Map.get(candidate, :url, "")
     title = Map.get(candidate, "title") || Map.get(candidate, :title, "")
+    posted_at = parse_recency(Map.get(candidate, "recency") || Map.get(candidate, :recency))
 
     attrs = %{
       account_id: account_id,
       source: source,
       source_thread_id: source_thread_id,
       url: url,
-      title: title
+      title: title,
+      last_activity_at: posted_at
     }
 
     changeset = Thread.changeset(%Thread{}, attrs)
@@ -90,6 +99,18 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
       returning: true
     )
   end
+
+  # The source's published timestamp arrives as an ISO8601 string (Reddit's
+  # Atom `<published>`/`<updated>`). Parse leniently — an unparseable or empty
+  # value yields nil, and `persist_and_enrich/2` falls back to `inserted_at`.
+  defp parse_recency(value) when is_binary(value) and value != "" do
+    case DateTime.from_iso8601(value) do
+      {:ok, dt, _offset} -> DateTime.truncate(dt, :second)
+      _ -> nil
+    end
+  end
+
+  defp parse_recency(_), do: nil
 
   @doc """
   Writes `synopsis` to the thread, overwriting any prior value.
@@ -204,7 +225,13 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
       op_body: Map.get(raw_map, :op_body, Map.get(raw_map, :body, "")),
       comment_tree: Map.get(raw_map, :comment_tree, %{}),
       raw_payload: raw_map,
-      fetched_at: fetched_at
+      fetched_at: fetched_at,
+      # Newest activity (max of post + comment timestamps) — computed by the
+      # adapter's parse_thread_feed/2. Previously dropped here, leaving the
+      # column nil even after a deep read. upsert_thread/4 uses
+      # replace_all_except, so this overwrites the search-time post-date
+      # lower bound with the true value.
+      last_activity_at: Map.get(raw_map, :last_activity_at)
     }
   end
 

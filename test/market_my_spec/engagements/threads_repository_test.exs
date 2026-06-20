@@ -62,4 +62,68 @@ defmodule MarketMySpec.Engagements.ThreadsRepositoryTest do
                ThreadsRepository.upsert_from_search(scope, :reddit, candidate)
     end
   end
+
+  describe "upsert_from_search/3 recency (last_activity_at)" do
+    # The candidate's `recency` is the source's real published timestamp. It
+    # must land in last_activity_at so callers can tell a fresh post from an
+    # old one — previously it was dropped and recency reflected our crawl time.
+    test "persists the candidate's published timestamp to last_activity_at" do
+      scope = scope_fixture()
+
+      candidate = %{
+        "source_thread_id" => "t3_recent",
+        "url" => "https://www.reddit.com/r/vibecoding/comments/abc/x/",
+        "title" => "A recent post",
+        "recency" => "2026-06-15T12:34:56+00:00"
+      }
+
+      assert {:ok, thread} = ThreadsRepository.upsert_from_search(scope, :reddit, candidate)
+      assert thread.last_activity_at == ~U[2026-06-15 12:34:56Z]
+    end
+
+    test "leaves last_activity_at nil when recency is missing or unparseable" do
+      scope = scope_fixture()
+
+      candidate = %{
+        "source_thread_id" => "t3_norecency",
+        "url" => "https://www.reddit.com/r/vibecoding/comments/abc/y/",
+        "title" => "No date"
+      }
+
+      assert {:ok, thread} = ThreadsRepository.upsert_from_search(scope, :reddit, candidate)
+      assert is_nil(thread.last_activity_at)
+    end
+
+    # A search re-run must not clobber a deep-read's true last_activity_at
+    # (newest comment) by writing back the older post date. last_activity_at is
+    # set on insert only, so a conflicting upsert leaves it untouched.
+    test "a re-run does not downgrade an existing last_activity_at" do
+      scope = scope_fixture()
+
+      candidate = %{
+        "source_thread_id" => "t3_deepread",
+        "url" => "https://www.reddit.com/r/vibecoding/comments/abc/z/",
+        "title" => "Has activity",
+        "recency" => "2026-06-10T00:00:00+00:00"
+      }
+
+      assert {:ok, thread} = ThreadsRepository.upsert_from_search(scope, :reddit, candidate)
+
+      # Simulate a deep read advancing last_activity_at to a newer comment time.
+      {:ok, _} =
+        thread
+        |> Ecto.Changeset.change(last_activity_at: ~U[2026-06-17 09:00:00Z])
+        |> MarketMySpec.Repo.update()
+
+      # A later search sees an older post date; it must not overwrite the newer
+      # deep-read value.
+      assert {:ok, rerun} =
+               ThreadsRepository.upsert_from_search(scope, :reddit, %{
+                 candidate
+                 | "recency" => "2026-06-10T00:00:00+00:00"
+               })
+
+      assert rerun.last_activity_at == ~U[2026-06-17 09:00:00Z]
+    end
+  end
 end
