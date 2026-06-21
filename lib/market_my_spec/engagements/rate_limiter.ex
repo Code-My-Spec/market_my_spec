@@ -28,32 +28,39 @@ defmodule MarketMySpec.Engagements.RateLimiter do
   every source unthrottled):
 
       config :market_my_spec, :engagement_rate_limiter, %{
-        reddit: %{capacity: 6, refill_ms: 1_500}
+        reddit: %{capacity: 1, refill_ms: 5_000}
       }
+
+  ## Respecting the source's own limit (`report/3`)
+
+  Measured live (2026-06-21), Reddit's anonymous RSS endpoint enforces a
+  fixed ~60s window allowing ~1 request per window from a single IP. It
+  signals state via `x-ratelimit-remaining` and `x-ratelimit-reset` (seconds
+  until the window rolls over) — there is no `Retry-After`. So blind
+  token-bucket pacing can't keep up: it either under-uses the budget or trips
+  429s that poison the next window.
+
+  After each response, the HTTP layer calls `report/3` with the observed
+  `remaining`/`reset`. When `remaining <= 0` the bucket is blocked until
+  `now + reset`, so the next `acquire/3` waits out Reddit's actual window
+  rather than guessing. The token bucket (capacity 1) still serializes
+  requests one-at-a-time; the reported window is the real gate.
   """
 
   use GenServer
 
   require Logger
 
-  # Reddit's anonymous RSS endpoint 429s at even ~3 concurrent requests from a
-  # single datacenter IP (measured live, 2026-06-12). The failure mode is
-  # *concurrency*, not sustained rate — so `capacity` (the instantaneous burst
-  # ceiling) stays at 2, safely under that threshold, and we tune throughput
-  # via `refill_ms` instead.
-  #
-  # `refill_ms` was 1_500 (one token/1.5s). At a 10s acquire timeout that let
-  # only ~2 + 10000/1500 ≈ 8-9 requests clear per burst, so a single saved
-  # search of 10-13 venues self-throttled a third-to-half of its venues
-  # locally (reproduced 2026-06-20 with a network-free burst sim; see git
-  # history). Dropping to 700ms (one token/0.7s) clears a 13-venue search at
-  # 100% and an 18-venue burst at ~90%, all while peak concurrency stays at 2
-  # — same simultaneity as before, just a faster queue drain. The new
-  # rate-limit logging (adapter `acquire_token/1` + `drain/2`) is what we'll
-  # read to decide whether heavy concurrent fan-outs warrant a further bump to
-  # capacity 3. Tune via app env.
+  # Reddit's anonymous RSS endpoint enforces a fixed ~60s window of ~1 request
+  # from a single IP (measured live 2026-06-21 via x-ratelimit-* headers — see
+  # report/3 and the moduledoc). Earlier params (cap=2/refill=700ms) assumed
+  # the limiter itself was the bottleneck; live testing proved otherwise — the
+  # wall is Reddit-side, so we serialize (capacity 1) and let report/3 block
+  # the bucket for the window Reddit actually reports. `refill_ms` is just a
+  # floor that paces requests before/without any header signal (cassette tests,
+  # the first request of a window); the reported reset is the real gate.
   @default_buckets %{
-    reddit: %{capacity: 2, refill_ms: 700}
+    reddit: %{capacity: 1, refill_ms: 5_000}
   }
 
   @default_timeout 5_000
@@ -82,6 +89,23 @@ defmodule MarketMySpec.Engagements.RateLimiter do
       :ok
   end
 
+  @doc """
+  Reports the source's own rate-limit state, observed from a response.
+
+  `remaining` and `reset_seconds` come straight from the source's headers
+  (Reddit's `x-ratelimit-remaining` / `x-ratelimit-reset`). When `remaining`
+  is at or below zero the bucket is blocked until `now + reset_seconds`, so the
+  next `acquire/3` waits out the source's actual window instead of the local
+  refill guess. Fire-and-forget: a no-op for unconfigured sources, and never
+  blocks the caller (cast).
+  """
+  @spec report(atom(), number(), number(), GenServer.server()) :: :ok
+  def report(source, remaining, reset_seconds, server \\ __MODULE__) do
+    GenServer.cast(server, {:report, source, remaining, reset_seconds})
+  catch
+    :exit, _reason -> :ok
+  end
+
   # ── GenServer callbacks ────────────────────────────────────────────────
 
   @impl true
@@ -99,7 +123,11 @@ defmodule MarketMySpec.Engagements.RateLimiter do
            refill_ms: refill_ms,
            last: now_ms(),
            waiters: :queue.new(),
-           timer: nil
+           timer: nil,
+           # A monotonic-time instant before which grants are held. Defaults to
+           # "now" (not 0 — monotonic time can be negative, which would read as
+           # permanently blocked). report/3 pushes it into the future.
+           blocked_until: now_ms()
          }}
       end)
 
@@ -119,6 +147,23 @@ defmodule MarketMySpec.Engagements.RateLimiter do
         bucket =
           bucket
           |> enqueue(from, deadline)
+          |> drain(source)
+          |> schedule(source)
+
+        {:noreply, put_bucket(state, source, bucket)}
+    end
+  end
+
+  @impl true
+  def handle_cast({:report, source, remaining, reset_seconds}, state) do
+    case Map.fetch(state.buckets, source) do
+      :error ->
+        {:noreply, state}
+
+      {:ok, bucket} ->
+        bucket =
+          bucket
+          |> apply_report(remaining, reset_seconds)
           |> drain(source)
           |> schedule(source)
 
@@ -169,6 +214,11 @@ defmodule MarketMySpec.Engagements.RateLimiter do
             GenServer.reply(from, {:error, :rate_limit_timeout})
             drain(%{bucket | waiters: rest}, source)
 
+          now_ms() < bucket.blocked_until ->
+            # The source reported its window is exhausted; hold every waiter
+            # until it resets (schedule/2 wakes us at blocked_until).
+            bucket
+
           bucket.tokens >= 1 ->
             GenServer.reply(from, :ok)
             drain(%{bucket | tokens: bucket.tokens - 1, waiters: rest}, source)
@@ -178,6 +228,16 @@ defmodule MarketMySpec.Engagements.RateLimiter do
         end
     end
   end
+
+  # Fold a reported rate-limit state into the bucket. When the source says it
+  # has no budget left, block until its window resets and zero out tokens so a
+  # stale local token can't sneak a request through during the block.
+  defp apply_report(bucket, remaining, reset_seconds) when remaining <= 0 do
+    blocked_until = now_ms() + round(reset_seconds * 1000)
+    %{bucket | tokens: 0.0, blocked_until: max(bucket.blocked_until, blocked_until)}
+  end
+
+  defp apply_report(bucket, _remaining, _reset_seconds), do: bucket
 
   defp refill(bucket) do
     now = now_ms()
@@ -196,7 +256,10 @@ defmodule MarketMySpec.Engagements.RateLimiter do
 
       {:value, {_from, deadline}} ->
         ms_to_token = ceil(max(0.0, 1 - bucket.tokens) * bucket.refill_ms)
-        wait = max(1, min(deadline - now_ms(), ms_to_token))
+        ms_to_unblock = max(0, bucket.blocked_until - now_ms())
+        # Wake when BOTH a token is available AND the reported window has
+        # reset — but never past the head waiter's deadline.
+        wait = max(1, min(deadline - now_ms(), max(ms_to_token, ms_to_unblock)))
 
         bucket = cancel_timer(bucket)
         ref = Process.send_after(self(), {:drain, source}, wait)

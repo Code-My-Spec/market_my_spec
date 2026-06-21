@@ -18,6 +18,7 @@ defmodule MarketMySpec.Engagements.HTTP do
   Per knowledge/req-and-cassette-stack.md.
   """
 
+  alias MarketMySpec.Engagements.RateLimiter
   alias MarketMySpec.Engagements.Source.RedditCookieJar
 
   @reddit_user_agent "market_my_spec/0.1 by /u/johns10davenport"
@@ -45,7 +46,10 @@ defmodule MarketMySpec.Engagements.HTTP do
       connect_options: [transport_opts: tls_transport_opts()]
     )
     |> Req.Request.append_request_steps(reddit_send_cookie: &send_stored_cookie/1)
-    |> Req.Request.append_response_steps(reddit_store_cookie: &capture_set_cookie/1)
+    |> Req.Request.append_response_steps(
+      reddit_store_cookie: &capture_set_cookie/1,
+      reddit_report_ratelimit: &report_ratelimit/1
+    )
     |> Req.merge(Application.get_env(:market_my_spec, :reddit_req_options, []))
   end
 
@@ -68,6 +72,21 @@ defmodule MarketMySpec.Engagements.HTTP do
     case Req.Response.get_header(response, "set-cookie") do
       [] -> :noop
       values -> RedditCookieJar.store(values)
+    end
+
+    {request, response}
+  end
+
+  # Feed Reddit's own rate-limit headers back to the RateLimiter so it can
+  # block the bucket for the window Reddit actually reports (x-ratelimit-reset)
+  # instead of guessing. Present on every response (200 and 429); absent on
+  # cassette replays, in which case this is a no-op. See RateLimiter.report/3.
+  defp report_ratelimit({request, response}) do
+    with [remaining | _] <- Req.Response.get_header(response, "x-ratelimit-remaining"),
+         [reset | _] <- Req.Response.get_header(response, "x-ratelimit-reset"),
+         {remaining, _} <- Float.parse(to_string(remaining)),
+         {reset, _} <- Float.parse(to_string(reset)) do
+      RateLimiter.report(:reddit, remaining, reset)
     end
 
     {request, response}
