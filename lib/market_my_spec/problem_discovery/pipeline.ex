@@ -95,14 +95,26 @@ defmodule MarketMySpec.ProblemDiscovery.Pipeline do
   # in `gather_one/4` for the `zero_results: true` marker the agent
   # sees in the payload.
   defp mark_if_attempted(%{error: _}, _frame, _index), do: :noop
-  defp mark_if_attempted(%{zero_results: true}, _frame, _index), do: :noop
+
+  # A zero-result search must NOT get `gathered_at` — that mark is what makes
+  # re-Gather skip a search, and a search that found nothing deserves another
+  # run against a later corpus (criterion 6566). But it did run, and the Frame
+  # page needs to distinguish "gather found nothing" from "gather never ran"
+  # to show the empty-Gather notice at all. So record the attempt under a
+  # separate key that the skip logic ignores.
+  defp mark_if_attempted(%{zero_results: true}, frame, index),
+    do: mark_saved_search(frame, index, "attempted_at")
+
   defp mark_if_attempted(_result, frame, index), do: mark_saved_search_gathered(frame, index)
 
   defp already_gathered?(%{"gathered_at" => ts}) when is_binary(ts), do: true
   defp already_gathered?(%{gathered_at: ts}) when is_binary(ts), do: true
   defp already_gathered?(_), do: false
 
-  defp mark_saved_search_gathered(%Frame{id: frame_id}, index) do
+  defp mark_saved_search_gathered(frame, index),
+    do: mark_saved_search(frame, index, "gathered_at")
+
+  defp mark_saved_search(%Frame{id: frame_id}, index, key) do
     now = DateTime.utc_now() |> DateTime.to_iso8601()
     fresh = Repo.get!(Frame, frame_id)
 
@@ -111,7 +123,7 @@ defmodule MarketMySpec.ProblemDiscovery.Pipeline do
       |> List.update_at(index, fn entry ->
         entry
         |> stringify_keys()
-        |> Map.put("gathered_at", now)
+        |> Map.put(key, now)
       end)
 
     fresh

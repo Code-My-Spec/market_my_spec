@@ -68,7 +68,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6580Spex do
           ProblemDiscoveryHelpers.with_problem_discovery_cassette("criterion_6580_when", fn ->
             {:reply, probe_resp, _} =
               RunGather.execute(
-                %{frame: draft_frame, mode: "probe", limit: 20},
+                Map.merge(draft_frame, %{mode: "probe", limit: 20}),
                 context.agent_frame
               )
 

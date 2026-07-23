@@ -8,10 +8,12 @@ defmodule MarketMySpecSpex.Story678.Criterion5767Spex do
   attempting any protected route is redirected to the account creation
   page; the dashboard is not rendered.
 
-  Note: this scenario relies on a "user with zero accounts" fixture path
-  that does not currently exist — the default user_fixture/1 auto-creates
-  a default account. The scenario will fail until that fixture (or an
-  account-less sign-up flow) is in place.
+  The account-creation entry point is `/app`, not `/app/accounts/new`:
+  since the onboarding change (`40d3c1d`) a user with no account lands on
+  the `/app` overview, which forces workspace creation inline.
+  `/app/accounts/new` is the bare CRUD form kept for the "create another
+  workspace" flow. What this criterion pins is that a protected route
+  cannot render for an account-less user — not which URL does the asking.
   """
 
   use MarketMySpecSpex.Case
@@ -32,8 +34,12 @@ defmodule MarketMySpecSpex.Story678.Criterion5767Spex do
       end
 
       then_ "visiting /users/settings redirects to the account-creation entry point", context do
-        assert {:error, {:live_redirect, %{to: "/app/accounts/new"}}} =
+        assert {:error, {:live_redirect, %{to: "/app", flash: flash}}} =
                  live(context.conn, "/app/users/settings")
+
+        assert flash["info"] =~ ~r/workspace/i,
+               "expected the redirect to explain that a workspace is required; got: " <>
+                 inspect(flash)
 
         {:ok, context}
       end

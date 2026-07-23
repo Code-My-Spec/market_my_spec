@@ -280,11 +280,9 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
   defp fan_out_search(_scope, "", _venues), do: %{candidates: [], failures: [], notices: []}
 
   defp fan_out_search(scope, query, venues) when is_binary(query) do
-    # Timeout is intentionally above the Dispatcher's 30s ceiling so a
-    # slow agent-routed Reddit call surfaces a precise reason
-    # (`:agent_disconnected` / `:timeout`) instead of getting clipped by
-    # the outer Task and showing up as the catch-all `{:task_exit,
-    # :timeout}`.
+    # Reddit venues resolve from the fetch queue rather than the network, so
+    # this is fast now regardless of venue count. The generous timeout still
+    # covers ElixirForum, which is fetched live.
     venues
     |> Task.async_stream(
       fn venue ->
@@ -293,25 +291,33 @@ defmodule MarketMySpec.Engagements.SavedSearchesRepository do
       on_timeout: :kill_task,
       timeout: 35_000
     )
-    |> Enum.reduce({[], []}, fn
-      {:ok, {_venue, %{candidates: candidates, failures: failures}}},
-      {acc_candidates, acc_failures} ->
-        {acc_candidates ++ candidates, acc_failures ++ failures}
+    |> Enum.reduce({[], [], []}, fn
+      {:ok, {_venue, %{candidates: candidates, failures: failures} = result}},
+      {acc_candidates, acc_failures, acc_notices} ->
+        {acc_candidates ++ candidates, acc_failures ++ failures,
+         acc_notices ++ Map.get(result, :notices, [])}
 
-      {:exit, reason}, {acc_candidates, acc_failures} ->
+      {:exit, reason}, {acc_candidates, acc_failures, acc_notices} ->
         # Match the failure shape that `Search.fan_out/4` emits so the
         # LiveView template can use one set of keys for everything.
         {acc_candidates,
          acc_failures ++
-           [%{source: nil, venue_identifier: nil, reason: "Task exited: #{inspect(reason)}"}]}
+           [%{source: nil, venue_identifier: nil, reason: "Task exited: #{inspect(reason)}"}],
+         acc_notices}
     end)
-    |> then(fn {candidates, failures} ->
+    |> then(fn {candidates, failures, notices} ->
       ranked =
         candidates
         |> Enum.uniq_by(fn c -> Map.get(c, "url") || Map.get(c, :url) end)
         |> Enum.sort_by(fn c -> Map.get(c, "rank", 0) end, :desc)
 
-      %{candidates: ranked, failures: failures, notices: Search.rate_limit_notices(failures)}
+      # Each per-venue Search.search/3 appends the same account-wide queue
+      # summary, so uniq is what keeps that line from repeating once per venue.
+      %{
+        candidates: ranked,
+        failures: failures,
+        notices: Enum.uniq(notices ++ Search.rate_limit_notices(failures))
+      }
     end)
   end
 end

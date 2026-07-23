@@ -3,13 +3,15 @@ defmodule MarketMySpecSpex.Story678.Criterion5779Spex do
   Story 678 — Multi-Tenant Accounts
   Criterion 5779 — New user is sent to explicit account creation before reaching the dashboard
 
-  Story rule: a new user with no account memberships is redirected to
-  /accounts/new before any other authenticated route renders. The
-  account creation page asks only for a name (no type selector).
+  Story rule: a new user with no account memberships is sent to account
+  creation before any other authenticated route renders. The account
+  creation page asks only for a name (no type selector).
 
-  Note: this depends on a "skip default account" fixture path or a
-  sign-up flow that does not auto-create the default individual
-  account. Until that exists, this scenario fails.
+  Since `40d3c1d` that entry point is `/app` (which forces workspace
+  creation inline) rather than `/app/accounts/new` — the latter is the
+  bare CRUD form for creating an *additional* workspace. Both are checked
+  here: the redirect goes to onboarding, and the form itself is
+  name-only.
   """
 
   use MarketMySpecSpex.Case
@@ -29,9 +31,13 @@ defmodule MarketMySpecSpex.Story678.Criterion5779Spex do
         {:ok, Map.put(context, :conn, authed_conn)}
       end
 
-      then_ "visiting /users/settings redirects to /accounts/new", context do
-        assert {:error, {:live_redirect, %{to: "/app/accounts/new"}}} =
+      then_ "visiting /users/settings redirects to onboarding", context do
+        assert {:error, {:live_redirect, %{to: "/app", flash: flash}}} =
                  live(context.conn, "/app/users/settings")
+
+        assert flash["info"] =~ ~r/workspace/i,
+               "expected the redirect to explain that a workspace is required; got: " <>
+                 inspect(flash)
 
         {:ok, context}
       end

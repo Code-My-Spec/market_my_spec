@@ -57,6 +57,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6578Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Single-pass KMeans persistence",
                   description: "Single-pass KMeans persistence",
                   saved_searches: [
                     "upwork|vendor onboarding",

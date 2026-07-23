@@ -61,6 +61,7 @@ defmodule MarketMySpecSpex.Story742.Criterion6556Spex do
         context.view
         |> form("[data-test='frame-form']",
           frame: %{
+            title: "Hypothesis — vendor onboarding pain among acquired agencies",
             description: "Hypothesis — vendor onboarding pain among acquired agencies",
             saved_searches_text: "upwork: vendor onboarding\nupwork: supplier consolidation\nupwork: intake automation",
             total_spent_min: "7500",

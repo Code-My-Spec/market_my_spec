@@ -53,6 +53,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6528Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Mixed-verdict pipeline",
                   description: "Mixed-verdict pipeline",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1,

@@ -13,8 +13,10 @@ defmodule MarketMySpecWeb.Application do
         MarketMySpec.Repo,
         MarketMySpec.Vault,
         MarketMySpec.Integrations.OAuthStateStore,
+        MarketMySpec.Agents.Pairing.StateStore,
         {DNSCluster, query: Application.get_env(:market_my_spec, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: MarketMySpec.PubSub},
+        MarketMySpec.Agents.Presence,
         # Chat (streaming LLM chat UI) — supervised task runner for LLM calls
         # so the LiveView never blocks, plus the ETS-backed in-flight registry.
         {Task.Supervisor, name: MarketMySpec.Chat.TaskSupervisor},
@@ -27,6 +29,10 @@ defmodule MarketMySpecWeb.Application do
         # Smooths bursts from concurrent saved-search fan-outs so Reddit's
         # anonymous RSS pool never trips HTTP 429. See RateLimiter moduledoc.
         MarketMySpec.Engagements.RateLimiter,
+        # Feeds queued Reddit fetches to the paired agent, one at a time.
+        # Reddit's ~1/60s per-IP budget makes inline fetching impossible, so
+        # searches enqueue and read back. See RedditFetchQueue moduledoc.
+        MarketMySpec.Engagements.RedditFetchQueue.Drain,
         # ProblemDiscovery Gather — long-running live scrapes against Apify +
         # OpenAI embedding batches blow the MCP gateway timeout when run
         # synchronously. RunGather spawns a Task here and returns immediately;

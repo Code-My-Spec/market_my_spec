@@ -57,6 +57,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6535Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Single-pass cluster validation",
                   description: "Single-pass cluster validation",
                   saved_searches: [
                     "upwork|vendor onboarding",

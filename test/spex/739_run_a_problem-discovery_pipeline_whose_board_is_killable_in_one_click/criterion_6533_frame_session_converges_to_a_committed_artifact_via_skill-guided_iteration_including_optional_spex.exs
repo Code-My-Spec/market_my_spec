@@ -57,6 +57,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6533Spex do
       when_ "the agent runs two probe-mode Gather rounds against draft saved searches and then commits the Frame",
             context do
         draft_v1 = %{
+          title: "Vendor onboarding pain (draft v1)",
           description: "Vendor onboarding pain (draft v1)",
           saved_searches: [
             "upwork|vendor onboarding",
@@ -69,6 +70,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6533Spex do
         }
 
         draft_v2 = %{
+          title: "Vendor onboarding pain (draft v2 — vocabulary refined)",
           description: "Vendor onboarding pain (draft v2 — vocabulary refined)",
           saved_searches: [
             "upwork|vendor onboarding migration",
@@ -84,7 +86,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6533Spex do
           ProblemDiscoveryHelpers.with_problem_discovery_cassette("criterion_6533_when", fn ->
             {:reply, probe_v1_resp, _} =
               RunGather.execute(
-                %{frame: draft_v1, mode: "probe", limit: 20},
+                Map.merge(draft_v1, %{mode: "probe", limit: 20}),
                 context.agent_frame
               )
 
@@ -97,7 +99,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6533Spex do
 
             {:reply, _probe_v2_resp, _} =
               RunGather.execute(
-                %{frame: draft_v2, mode: "probe", limit: 20},
+                Map.merge(draft_v2, %{mode: "probe", limit: 20}),
                 context.agent_frame
               )
 

@@ -40,6 +40,14 @@ config :market_my_spec, MarketMySpec.Chat,
   default_provider: :openai,
   default_model: "gpt-5-mini"
 
+# MMS Agent version surfaced by GET /api/agent/version. Bumped by the
+# release workflow on every tag push (see .github/workflows/release.yml).
+# The binary phones home on every CLI run and prints a "brew upgrade
+# mms-agent" notice when this is newer than its compiled-in version.
+config :market_my_spec,
+  agent_latest_version: "0.3.0",
+  agent_min_supported_version: "0.1.0"
+
 config :market_my_spec, :integration_providers, [:google, :github, :codemyspec]
 
 config :market_my_spec, :oauth_providers, %{

@@ -73,8 +73,13 @@ defmodule MarketMySpec.Engagements.RateLimiterTest do
       assert {:error, :rate_limit_timeout} = RateLimiter.acquire(:reddit, 150, name)
 
       # One with a timeout past the reset succeeds, and only after the window.
+      # The ~150ms consumed by the failed acquire above leaves ~250ms of the
+      # 0.4s window still to wait; floor it at 200ms so scheduler jitter (the
+      # short acquire returning a hair early, refill-poll granularity) can't
+      # flake the run while still proving the acquire blocked out the window
+      # rather than returning immediately.
       {micros, :ok} = :timer.tc(fn -> RateLimiter.acquire(:reddit, 2_000, name) end)
-      assert micros >= 250_000, "expected acquire to wait out the window, waited #{micros}us"
+      assert micros >= 200_000, "expected acquire to wait out the window, waited #{micros}us"
     end
 
     test "remaining>0 does not block" do

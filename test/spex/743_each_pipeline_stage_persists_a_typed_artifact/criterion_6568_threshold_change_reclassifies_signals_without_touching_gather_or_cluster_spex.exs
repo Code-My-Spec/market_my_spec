@@ -62,6 +62,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6568Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Threshold-change reclassification",
                   description: "Threshold-change reclassification",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

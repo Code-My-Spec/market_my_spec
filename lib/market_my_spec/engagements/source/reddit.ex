@@ -8,11 +8,29 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   and — confirmed empirically — are reachable from datacenter IPs that get
   403 on the JSON endpoints. So every read funnels through `.rss`.
 
-  ## Transport
+  ## Transport: request/fetch/normalize
 
-  All reads hit Reddit directly from the server via `Req` — RSS is served
-  anonymously and reachable from datacenter IPs (verified on prod's Hetzner
-  host), so no residential-IP proxy/agent is needed. No OAuth involved.
+  Reads are split into three composable steps so the *same* RSS logic runs
+  on the server and inside the MMS Agent binary (both compile from this
+  tree — see `MarketMySpecAgent.Channel.Client`):
+
+    1. `build_search_request/3` / `build_thread_request/2` — pure. Produce a
+       JSON-safe request map (`path` + ordered `params`) that can ride the
+       agent channel unchanged.
+    2. `fetch/2` — the transport. Acquires a rate-limit token, issues the
+       `Req` call, returns `{:ok, %{"status" => …, "body" => …}}`. This is
+       what the agent runs on its residential IP.
+    3. `normalize_search/1` / `normalize_thread/2` — pure parsing, always
+       server-side so there is one parser to keep in sync.
+
+  `search/3` and `get_thread/3` compose all three for the direct path.
+  The queued path (see `Engagements.FetchQueue`) builds the request on the
+  server, ships it to the agent for step 2, and normalizes the response
+  when it comes back.
+
+  Reddit meters ~1 request per ~60s window per IP, so whichever side owns
+  the socket also owns the rate limiter — the server throttles its own
+  direct calls, the agent throttles its own. Never both for one request.
 
   ## What RSS gives up vs JSON
 
@@ -80,26 +98,117 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @spec search(map(), String.t(), keyword()) ::
           {:ok, %{candidates: [map()], next_cursor: nil | String.t()}} | {:error, term()}
   def search(venue, query, opts \\ []) when is_binary(query) do
-    with :ok <- acquire_token("r/#{venue.identifier}"),
-         {:ok, %Req.Response{status: 200, body: body}} <-
-           Req.get(HTTP.reddit_client(),
-             url: "/r/#{venue.identifier}/search.rss",
-             params: search_params(query, Keyword.get(opts, :cursor))
-           ) do
-      {:ok, normalize_feed(to_xml(body))}
+    venue
+    |> build_search_request(query, opts)
+    |> fetch(opts)
+    |> case do
+      {:ok, %{"status" => 200, "body" => body}} -> {:ok, normalize_search(body)}
+      {:ok, %{"status" => status}} -> {:error, {:http_status, status}}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  # ── Request construction ─────────────────────────────────────────────
+  #
+  # Pure and JSON-safe: `params` is an ordered list of ["key", "value"]
+  # pairs, not a map, because the encoded query string must be byte-stable
+  # across the server and the agent (test cassettes match on full URL, and
+  # a map would reorder). `label` is for logging only.
+
+  @doc """
+  Builds the JSON-safe request map for a subreddit search feed.
+
+  The map is the unit of work handed to the agent: it fully determines the
+  URL, so the agent never constructs Reddit URLs itself.
+  """
+  @spec build_search_request(map(), String.t(), keyword()) :: map()
+  def build_search_request(venue, query, opts \\ []) when is_binary(query) do
+    %{
+      "kind" => "search",
+      "path" => "/r/#{venue.identifier}/search.rss",
+      "params" => search_params(query, Keyword.get(opts, :cursor)),
+      "label" => "r/#{venue.identifier}"
+    }
+  end
+
+  @doc """
+  Builds the JSON-safe request map for a thread's flat comment feed.
+  """
+  @spec build_thread_request(String.t(), keyword()) :: map()
+  def build_thread_request(source_thread_id, opts \\ []) do
+    %{
+      "kind" => "thread",
+      "path" => "/comments/#{source_thread_id}.rss",
+      "params" => thread_params(opts),
+      "source_thread_id" => source_thread_id,
+      "label" => "comments/#{source_thread_id}"
+    }
+  end
+
+  @doc """
+  Executes a request map against Reddit and returns the raw response.
+
+  This is the only function that touches the network, and it is what the
+  MMS Agent runs on its residential IP — the agent calls it with
+  `rate_limit_timeout:` sized to Reddit's window, having first acquired
+  from its own limiter instance.
+
+  Opts:
+
+    * `:rate_limit` — acquire a token before the call (default `true`).
+      Pass `false` when the caller already paced the request (the agent's
+      serial worker does its own acquire, so the server must not
+      double-throttle a dispatched fetch).
+    * `:rate_limit_timeout` — how long to wait for a token
+      (default `#{@rate_limit_timeout}` ms).
+    * `:rate_limit_server` — which `RateLimiter` instance to acquire from
+      (default the registered one). The agent and the server each run their
+      own, since they meter different IPs.
+
+  Returns `{:ok, %{"status" => integer, "body" => binary}}` for any HTTP
+  response including 429 — status interpretation is the caller's job, so
+  the agent can ship a 429 back untouched. Returns `{:error, reason}` for
+  transport failures and `{:error, :rate_limit_timeout}` when no token
+  frees up in time.
+  """
+  @spec fetch(map(), keyword()) :: {:ok, %{String.t() => term()}} | {:error, term()}
+  def fetch(%{"path" => path} = request, opts \\ []) do
+    label = Map.get(request, "label", path)
+
+    with :ok <- maybe_acquire_token(label, opts) do
+      case Req.get(HTTP.reddit_client(), url: path, params: req_params(request)) do
+        {:ok, %Req.Response{status: 429}} ->
+          Logger.warning("reddit rate-limit: REAL Reddit 429 for #{label}")
+          {:ok, %{"status" => 429, "body" => ""}}
+
+        {:ok, %Req.Response{status: status, body: body}} ->
+          {:ok, %{"status" => status, "body" => to_xml(body)}}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+    end
+  end
+
+  # Params ride the wire as ["k", "v"] pairs; Req wants tuples.
+  defp req_params(%{"params" => params}) when is_list(params) do
+    Enum.map(params, fn
+      [k, v] -> {k, v}
+      {k, v} -> {k, v}
+    end)
+  end
+
+  defp req_params(_), do: []
+
+  defp maybe_acquire_token(label, opts) do
+    if Keyword.get(opts, :rate_limit, true) do
+      acquire_token(
+        label,
+        Keyword.get(opts, :rate_limit_timeout, @rate_limit_timeout),
+        Keyword.get(opts, :rate_limit_server, RateLimiter)
+      )
     else
-      {:error, :rate_limit_timeout} ->
-        {:error, :rate_limit_timeout}
-
-      {:ok, %Req.Response{status: 429}} ->
-        Logger.warning("reddit rate-limit: REAL Reddit 429 for r/#{venue.identifier}")
-        {:error, {:http_status, 429}}
-
-      {:ok, %Req.Response{status: status}} ->
-        {:error, {:http_status, status}}
-
-      {:error, reason} ->
-        {:error, reason}
+      :ok
     end
   end
 
@@ -107,9 +216,9 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   # we gave up. This instrumentation is how we tell self-inflicted local
   # throttling (acquire timeout) apart from real Reddit 429s, and how we size
   # the bucket — the "waited Nms" lines reveal real contention under a fan-out.
-  defp acquire_token(label) do
+  defp acquire_token(label, timeout, server) do
     start = System.monotonic_time(:millisecond)
-    result = RateLimiter.acquire(:reddit, @rate_limit_timeout)
+    result = RateLimiter.acquire(:reddit, timeout, server)
     waited = System.monotonic_time(:millisecond) - start
 
     case result do
@@ -131,10 +240,15 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   end
 
   defp search_params(query, cursor) do
-    base = [q: query, restrict_sr: 1, sort: "new", limit: @page_limit]
+    base = [
+      ["q", to_string(query)],
+      ["restrict_sr", "1"],
+      ["sort", "new"],
+      ["limit", to_string(@page_limit)]
+    ]
 
     if is_binary(cursor) and cursor != "",
-      do: base ++ [after: cursor],
+      do: base ++ [["after", cursor]],
       else: base
   end
 
@@ -208,22 +322,14 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
   @spec get_thread(map() | nil, String.t(), keyword()) ::
           {:ok, map()} | {:error, term()}
   def get_thread(_venue, source_thread_id, opts \\ []) do
-    with :ok <- acquire_token("comments/#{source_thread_id}"),
-         {:ok, %Req.Response{status: 200, body: body}} <-
-           Req.get(HTTP.reddit_client(),
-             url: "/comments/#{source_thread_id}.rss",
-             params: thread_params(opts)
-           ) do
-      {:ok, normalize_thread_feed(source_thread_id, to_xml(body))}
-    else
-      {:error, :rate_limit_timeout} ->
-        {:error, :rate_limit_timeout}
+    source_thread_id
+    |> build_thread_request(opts)
+    |> fetch(opts)
+    |> case do
+      {:ok, %{"status" => 200, "body" => body}} ->
+        {:ok, normalize_thread(source_thread_id, body)}
 
-      {:ok, %Req.Response{status: 429}} ->
-        Logger.warning("reddit rate-limit: REAL Reddit 429 for comments/#{source_thread_id}")
-        {:error, {:http_status, 429}}
-
-      {:ok, %Req.Response{status: status}} ->
+      {:ok, %{"status" => status}} ->
         {:error, {:http_status, status}}
 
       {:error, reason} ->
@@ -231,15 +337,32 @@ defmodule MarketMySpec.Engagements.Source.Reddit do
     end
   end
 
+  @doc """
+  Parses a search feed body into the `%{candidates:, next_cursor:}` envelope.
+
+  Always runs server-side (the agent ships raw XML back), so there is a
+  single parser regardless of which IP fetched the bytes.
+  """
+  @spec normalize_search(binary()) :: %{candidates: [map()], next_cursor: nil | String.t()}
+  def normalize_search(body), do: normalize_feed(to_xml(body))
+
+  @doc """
+  Parses a comment feed body into a Thread-compatible map. See `get_thread/3`
+  for the shape and the `normalization_error` degradation path.
+  """
+  @spec normalize_thread(String.t(), binary()) :: map()
+  def normalize_thread(source_thread_id, body),
+    do: normalize_thread_feed(source_thread_id, to_xml(body))
+
   defp thread_params(opts) do
     sort = Keyword.get(opts, :sort, "confidence")
     limit = Keyword.get(opts, :limit, @page_limit)
     after_param = Keyword.get(opts, :after)
 
-    base = [sort: sort, limit: limit]
+    base = [["sort", to_string(sort)], ["limit", to_string(limit)]]
 
     if is_binary(after_param) and after_param != "",
-      do: base ++ [after: after_param],
+      do: base ++ [["after", after_param]],
       else: base
   end
 

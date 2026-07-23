@@ -144,6 +144,11 @@ defmodule MarketMySpecWeb.Layouts do
               </.link>
             </li>
             <li>
+              <.link navigate={~p"/app/agents"} data-test="nav-agents">
+                <.icon name="hero-cpu-chip" class="size-4" /> Agents
+              </.link>
+            </li>
+            <li>
               <.link navigate={~p"/app/integrations"}>
                 <.icon name="hero-puzzle-piece" class="size-4" /> Integrations
               </.link>

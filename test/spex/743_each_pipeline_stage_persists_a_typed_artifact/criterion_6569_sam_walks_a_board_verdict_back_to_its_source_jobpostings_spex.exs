@@ -54,6 +54,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6569Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Provenance walkback",
                   description: "Provenance walkback",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1,

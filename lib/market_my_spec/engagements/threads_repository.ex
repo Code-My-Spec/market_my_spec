@@ -196,6 +196,21 @@ defmodule MarketMySpec.Engagements.ThreadsRepository do
     end
   end
 
+  @doc """
+  Upserts a Thread from an already-fetched deep-read map.
+
+  Same write `get_or_fetch_thread/3` performs after calling the adapter,
+  but for callers that obtained the payload some other way — notably
+  `RedditFetchQueue.Drain`, where the bytes came back over the agent
+  channel and were normalized separately.
+  """
+  @spec upsert_from_fetch(Scope.t(), atom(), String.t(), map()) ::
+          {:ok, Thread.t()} | {:error, term()}
+  def upsert_from_fetch(%Scope{active_account_id: account_id}, source, thread_id, raw_map)
+      when is_atom(source) and is_binary(thread_id) do
+    upsert_thread(account_id, source, thread_id, raw_map)
+  end
+
   defp adapter_for(:reddit), do: Reddit
   defp adapter_for(:elixirforum), do: ElixirForum
 

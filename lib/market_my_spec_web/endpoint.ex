@@ -15,6 +15,10 @@ defmodule MarketMySpecWeb.Endpoint do
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
+  socket "/agent", MarketMySpecWeb.AgentSocket,
+    websocket: true,
+    longpoll: false
+
   # Plain HTTP healthcheck for kamal-proxy (excluded from force_ssl in
   # config/prod.exs). Short-circuits before Plug.Static so it never
   # touches the rest of the pipeline.

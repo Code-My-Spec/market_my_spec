@@ -59,6 +59,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6526Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Vendor migration pain",
                   description: "Vendor migration pain",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1,

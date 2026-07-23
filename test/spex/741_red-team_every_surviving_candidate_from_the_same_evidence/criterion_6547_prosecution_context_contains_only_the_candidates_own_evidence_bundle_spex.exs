@@ -55,6 +55,7 @@ defmodule MarketMySpecSpex.Story741.Criterion6547Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Prosecution evidence disjointness",
                   description: "Prosecution evidence disjointness",
                   saved_searches: [
                     "upwork|vendor onboarding migration",

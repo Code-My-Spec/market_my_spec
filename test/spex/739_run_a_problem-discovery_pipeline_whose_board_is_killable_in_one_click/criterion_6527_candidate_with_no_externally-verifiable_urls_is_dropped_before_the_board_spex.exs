@@ -111,6 +111,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6527Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Mixed corpus including URL-less postings",
                   description: "Mixed corpus including URL-less postings",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1,

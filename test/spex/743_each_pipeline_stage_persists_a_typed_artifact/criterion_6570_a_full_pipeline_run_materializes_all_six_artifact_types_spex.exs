@@ -56,6 +56,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6570Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Full pipeline run",
                   description: "Full pipeline run",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

@@ -84,6 +84,52 @@ defmodule MarketMySpecSpex.RedditHelpers do
     _ -> []
   end
 
+  @doc """
+  Runs `fun` with the Reddit fetch queue in deferred mode — `Search` will
+  enqueue but nothing drains until the caller says so.
+
+  `config/test.exs` sets `drain: :inline` so the bulk of the engagement spex
+  can keep asserting on candidates from a single `Search.search/3` call.
+  Spex that are *about* the queued semantics (a first search returning zero
+  candidates plus a "queued" notice, a second search serving the drained
+  result) need the two halves separated, and this is that seam.
+
+  Drain the queue inside `fun` with
+  `MarketMySpec.Engagements.RedditFetchQueue.Drain.drain_to_empty/0`.
+  """
+  @spec with_deferred_drain((-> any())) :: any()
+  def with_deferred_drain(fun) do
+    previous = Application.get_env(:market_my_spec, :reddit_fetch, [])
+    Application.put_env(:market_my_spec, :reddit_fetch, drain: :off, transport: :direct)
+
+    try do
+      fun.()
+    after
+      Application.put_env(:market_my_spec, :reddit_fetch, previous)
+    end
+  end
+
+  @doc """
+  Runs `fun` with the production Reddit transport — fetches dispatch to a
+  paired agent over the channel rather than running on this node.
+
+  `config/test.exs` uses `transport: :direct` so most spex can drive the
+  pipeline against cassettes. Spex that are about the *agent hop* (envelope
+  shape, offline handling, mid-flight disconnect) need the real dispatch,
+  and this is that seam. Drain is left off so the caller controls timing.
+  """
+  @spec with_agent_transport((-> any())) :: any()
+  def with_agent_transport(fun) do
+    previous = Application.get_env(:market_my_spec, :reddit_fetch, [])
+    Application.put_env(:market_my_spec, :reddit_fetch, drain: :off, transport: :agent)
+
+    try do
+      fun.()
+    after
+      Application.put_env(:market_my_spec, :reddit_fetch, previous)
+    end
+  end
+
   defp with_reddit_plug(plug, fun) do
     previous = Application.get_env(:market_my_spec, :reddit_req_options, [])
     # Disable retries in tests so 429/5xx cassettes don't sleep for 60s.

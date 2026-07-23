@@ -108,11 +108,15 @@ defmodule MarketMySpecWeb.ProblemDiscoveryLive.Frame do
     end
   end
 
+  # `gathered_at` marks a search that produced rows; `attempted_at` marks one
+  # that ran and found nothing (Pipeline keeps them separate so zero-result
+  # searches still re-run). Either means Gather has been through this search,
+  # and the all-zero case is precisely when the empty-Gather notice matters.
   defp gather_attempted?(%{frame: %{saved_searches: searches}}) when is_list(searches) do
-    Enum.any?(searches, fn
-      %{"gathered_at" => ts} when is_binary(ts) -> true
-      %{gathered_at: ts} when is_binary(ts) -> true
-      _ -> false
+    Enum.any?(searches, fn entry ->
+      Enum.any?([:gathered_at, "gathered_at", :attempted_at, "attempted_at"], fn key ->
+        is_binary(Map.get(entry, key))
+      end)
     end)
   end
 

@@ -50,6 +50,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6536Spex do
         {:reply, create_resp, _} =
           CreateFrame.execute(
             %{
+              title: "Empty-Gather edge case",
               description: "Empty-Gather edge case",
               saved_searches: [
                 "upwork|definitively_unmatched_query_string_xyzzy_42",

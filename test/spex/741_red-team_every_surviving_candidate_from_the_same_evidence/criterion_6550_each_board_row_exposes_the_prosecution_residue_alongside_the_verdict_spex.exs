@@ -58,6 +58,7 @@ defmodule MarketMySpecSpex.Story741.Criterion6550Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Prosecution residue on Board",
                   description: "Prosecution residue on Board",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

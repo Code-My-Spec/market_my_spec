@@ -5,7 +5,9 @@
       "request": {
         "body_json": {
           "includeKeywords.keywords": [
-            "vendor onboarding migration"
+            "vendor",
+            "onboarding",
+            "migration"
           ],
           "includeKeywords.matchDescription": true,
           "includeKeywords.matchSkills": false,
@@ -104,7 +106,8 @@
       "request": {
         "body_json": {
           "includeKeywords.keywords": [
-            "supplier consolidation"
+            "supplier",
+            "consolidation"
           ],
           "includeKeywords.matchDescription": true,
           "includeKeywords.matchSkills": false,
@@ -203,7 +206,9 @@
       "request": {
         "body_json": {
           "includeKeywords.keywords": [
-            "intake workflow rebuild"
+            "intake",
+            "workflow",
+            "rebuild"
           ],
           "includeKeywords.matchDescription": true,
           "includeKeywords.matchSkills": false,

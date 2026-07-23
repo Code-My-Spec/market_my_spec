@@ -45,6 +45,7 @@ defmodule MarketMySpecSpex.Story742.Criterion6559Spex do
         {:reply, create_resp, _} =
           CreateFrame.execute(
             %{
+              title: "Threshold values on Board",
               description: "Threshold values on Board",
               saved_searches: ["upwork|vendor onboarding"],
               total_spent_min: 5_000,

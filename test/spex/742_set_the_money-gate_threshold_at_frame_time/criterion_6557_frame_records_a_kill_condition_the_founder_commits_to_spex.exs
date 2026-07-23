@@ -55,6 +55,7 @@ defmodule MarketMySpecSpex.Story742.Criterion6557Spex do
         context.view
         |> form("[data-test='frame-form']",
           frame: %{
+            title: "kill_condition pre-commitment",
             description: "kill_condition pre-commitment",
             saved_searches_text: "upwork: vendor onboarding\nupwork: supplier consolidation\nupwork: intake automation",
             total_spent_min: "5000",

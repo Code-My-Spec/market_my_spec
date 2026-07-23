@@ -56,6 +56,7 @@ defmodule MarketMySpecSpex.Story741.Criterion6555Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Red-team KILL overwrites Score KEEP",
                   description: "Red-team KILL overwrites Score KEEP",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

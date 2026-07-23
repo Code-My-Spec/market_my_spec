@@ -54,6 +54,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6529Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Score-only pipeline state",
                   description: "Score-only pipeline state",
                   saved_searches: [
                     "upwork|vendor onboarding migration",

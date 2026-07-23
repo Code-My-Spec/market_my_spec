@@ -77,6 +77,18 @@ config :market_my_spec, :files_backend, MarketMySpec.Files.Memory
 # dedicated instance with an explicit bucket. See RateLimiter moduledoc.
 config :market_my_spec, :engagement_rate_limiter, %{}
 
+# Reddit fetches drain synchronously in test, straight from this node.
+#
+# `drain: :inline` means a search runs its own queued fetch before reading
+# results back, so spex see the full enqueue → fetch → normalize → persist →
+# read chain in one call instead of racing a timer. `transport: :direct`
+# skips the agent socket — but runs the same `Reddit.fetch/2` on the same
+# request map, so cassette URL matching still proves request construction.
+#
+# Spex that assert on the *queued* semantics (stale reads, pending notices)
+# override this per-scenario via `RedditSpexHelpers.with_deferred_drain/1`.
+config :market_my_spec, :reddit_fetch, drain: :inline, transport: :direct
+
 # Use the deterministic TestStub for prose linting in tests — avoids shelling
 # out to the real Vale binary (which may not be installed in CI).
 config :market_my_spec, :linter_impl, MarketMySpec.Linter.TestStub

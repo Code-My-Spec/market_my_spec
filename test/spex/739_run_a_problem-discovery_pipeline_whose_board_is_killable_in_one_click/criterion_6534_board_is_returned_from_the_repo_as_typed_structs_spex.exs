@@ -61,6 +61,7 @@ defmodule MarketMySpecSpex.Story739.Criterion6534Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Typed-struct Board",
                   description: "Typed-struct Board",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1,

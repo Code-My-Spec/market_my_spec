@@ -57,6 +57,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6577Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "PJS count under threshold change",
                   description: "PJS count under threshold change",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1,

@@ -5,7 +5,9 @@
       "request": {
         "body_json": {
           "includeKeywords.keywords": [
-            "vendor onboarding migration"
+            "vendor",
+            "onboarding",
+            "migration"
           ],
           "includeKeywords.matchDescription": true,
           "includeKeywords.matchSkills": false,
@@ -104,7 +106,9 @@
       "request": {
         "body_json": {
           "includeKeywords.keywords": [
-            "supplier portal consolidation"
+            "supplier",
+            "portal",
+            "consolidation"
           ],
           "includeKeywords.matchDescription": true,
           "includeKeywords.matchSkills": false,

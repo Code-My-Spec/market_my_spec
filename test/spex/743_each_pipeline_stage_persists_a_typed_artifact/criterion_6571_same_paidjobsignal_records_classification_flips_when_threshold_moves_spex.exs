@@ -56,6 +56,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6571Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "ID stability across threshold change",
                   description: "ID stability across threshold change",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 100,

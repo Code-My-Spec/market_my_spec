@@ -53,6 +53,7 @@ defmodule MarketMySpecSpex.Story741.Criterion6546Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Survivor must be Red-teamed",
                   description: "Survivor must be Red-teamed",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

@@ -12,9 +12,22 @@ defmodule MarketMySpec.Engagements.Search do
   of the result envelope so callers (LLM or UI) can surface which venues
   errored without crashing the whole call.
 
-  Reddit is read anonymously via its public RSS feeds, served directly from
-  the server (no OAuth, no proxy). The `notices` field (distinct from
-  `failures`) remains available for any future informational messages.
+  ## Two execution models, by source
+
+  ElixirForum is fetched live — its API has no meaningful per-IP budget, so
+  a search hits it and returns.
+
+  Reddit is **queued**. Reddit meters anonymous RSS at roughly one request
+  per 60s per IP (measured live; see `Engagements.RateLimiter`), which is
+  far too slow to fan out across venues inside a tool call. So a Reddit
+  venue is served from the last completed fetch in
+  `Engagements.RedditFetchQueue` while a refresh is enqueued for the paired
+  agent to run in the background. Callers get results immediately; those
+  results are as fresh as the last drain, and `notices` says so.
+
+  This means a first-ever search on a venue legitimately returns zero
+  candidates with a "queued" notice rather than an error — the data will be
+  there on the next call.
 
   ## Failure envelope shape
 
@@ -24,6 +37,8 @@ defmodule MarketMySpec.Engagements.Search do
   - `reason` — a human-readable string describing the failure
   """
 
+  alias MarketMySpec.Engagements.RedditFetchQueue
+  alias MarketMySpec.Engagements.RedditFetchQueue.Drain
   alias MarketMySpec.Engagements.Source.ElixirForum
   alias MarketMySpec.Engagements.Source.Reddit
   alias MarketMySpec.Engagements.ThreadsRepository
@@ -85,10 +100,29 @@ defmodule MarketMySpec.Engagements.Search do
     %{
       candidates: ranked,
       failures: failures,
-      notices: notices ++ rate_limit_notices(failures),
+      notices: notices ++ rate_limit_notices(failures) ++ queue_notices(scope),
       next_cursor: next_cursor
     }
   end
+
+  # One line summarizing outstanding Reddit work, so a caller looking at a
+  # thin result set can tell the difference between "Reddit is quiet" and
+  # "six fetches are still waiting their turn".
+  defp queue_notices(scope) do
+    case RedditFetchQueue.pending_count(scope) do
+      0 ->
+        []
+
+      count ->
+        [
+          "#{count} Reddit #{fetch_word(count)} queued (~1/minute via the MMS Agent). " <>
+            "Re-run in a few minutes for fresher results."
+        ]
+    end
+  end
+
+  defp fetch_word(1), do: "fetch"
+  defp fetch_word(_), do: "fetches"
 
   @doc """
   Builds operator-facing notices from a `failures` list.
@@ -122,10 +156,11 @@ defmodule MarketMySpec.Engagements.Search do
   defp venue_word(_), do: "venues were"
 
   # Fan out to each venue in parallel via Task.async_stream.
-  # Each adapter returns either `{:ok, %{candidates: [...], next_cursor: ...}}`
-  # or `{:error, reason}`. We collect per-venue candidate lists (keeping venue
-  # metadata attached for interleaving), failures, informational notices, and
-  # the first non-nil cursor.
+  # Each venue returns `{:ok, %{candidates: [...], next_cursor: ...}}`,
+  # `{:error, reason}`, or `{:pending, message}` (Reddit venue whose first
+  # fetch hasn't drained yet). We collect per-venue candidate lists (keeping
+  # venue metadata attached for interleaving), failures, informational
+  # notices, and the first non-nil cursor.
   defp fan_out(venues, query, cursor, scope) do
     venues
     |> Task.async_stream(
@@ -134,10 +169,17 @@ defmodule MarketMySpec.Engagements.Search do
       timeout: 15_000
     )
     |> Enum.reduce({[], [], [], nil}, fn
-      {:ok, {venue, {:ok, %{candidates: raw_candidates, next_cursor: nc}}}},
+      {:ok, {venue, {:ok, %{candidates: raw_candidates, next_cursor: nc} = result}}},
       {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
         venue_entry = {venue, raw_candidates}
-        {acc_venue_lists ++ [venue_entry], acc_failures, acc_notices, acc_cursor || nc}
+        notices = acc_notices ++ staleness_notice(venue, result)
+        {acc_venue_lists ++ [venue_entry], acc_failures, notices, acc_cursor || nc}
+
+      {:ok, {venue, {:pending, message}}},
+      {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
+        # Not a failure: the work is queued and will land. Still contribute
+        # an (empty) venue entry so weighting/interleaving see the venue.
+        {acc_venue_lists ++ [{venue, []}], acc_failures, acc_notices ++ [message], acc_cursor}
 
       {:ok, {venue, {:error, reason}}}, {acc_venue_lists, acc_failures, acc_notices, acc_cursor} ->
         failure = %{
@@ -159,9 +201,10 @@ defmodule MarketMySpec.Engagements.Search do
     end)
   end
 
-  # Every source hits its adapter directly. Reddit's RSS feeds are served
-  # anonymously and reachable from datacenter IPs (verified on prod), so no
-  # residential-IP proxy is needed.
+  # Reddit goes through the queue; every other source is fetched live.
+  defp search_venue(%{source: :reddit} = venue, query, cursor, scope),
+    do: search_reddit_venue(venue, query, cursor, scope)
+
   defp search_venue(venue, query, cursor, _scope) do
     adapter = adapter_for(venue.source)
     adapter.search(venue, query, cursor: cursor)
@@ -169,7 +212,70 @@ defmodule MarketMySpec.Engagements.Search do
     error -> {:error, error}
   end
 
+  # Enqueue a refresh, then serve whatever the last completed fetch found.
+  # Enqueue-then-read (not read-then-enqueue) so a caller who sees stale
+  # data knows a refresh is already in flight for it.
+  defp search_reddit_venue(venue, query, cursor, scope) do
+    RedditFetchQueue.enqueue_search(scope, venue, query, cursor: cursor)
+    Drain.kick()
+
+    case RedditFetchQueue.latest_completed_search(scope, venue, query) do
+      %{candidates: candidates} = job when is_list(candidates) ->
+        {:ok,
+         %{
+           candidates: candidates,
+           next_cursor: job.next_cursor,
+           fetched_at: job.completed_at
+         }}
+
+      _ ->
+        pending_or_failed(scope, venue, query)
+    end
+  rescue
+    error -> {:error, error}
+  end
+
+  # No completed fetch yet. If the most recent attempt failed, that's a real
+  # failure the caller should see; otherwise it's simply still queued.
+  defp pending_or_failed(scope, venue, query) do
+    case RedditFetchQueue.latest_failure(scope, venue, query) do
+      nil ->
+        {:pending,
+         "r/#{venue.identifier}: first fetch queued — results appear once the agent runs it " <>
+           "(Reddit allows ~1 request/minute)."}
+
+      job ->
+        {:error, {:last_fetch_failed, job.last_error}}
+    end
+  end
+
+  # Tell the caller how old the served results are, so zero-or-few candidates
+  # is never silently misread as "nothing out there right now".
+  defp staleness_notice(%{source: :reddit} = venue, %{fetched_at: %DateTime{} = fetched_at}) do
+    ["r/#{venue.identifier}: results from #{format_age(fetched_at)}; refresh queued."]
+  end
+
+  defp staleness_notice(_venue, _result), do: []
+
+  defp format_age(%DateTime{} = at) do
+    case DateTime.diff(DateTime.utc_now(), at, :second) do
+      s when s < 90 -> "just now"
+      s when s < 3_600 -> "#{div(s, 60)}m ago"
+      s when s < 86_400 -> "#{div(s, 3_600)}h ago"
+      s -> "#{div(s, 86_400)}d ago"
+    end
+  end
+
   # Format a failure reason into a human-readable string.
+  defp format_reason(:reddit, {:last_fetch_failed, reason}),
+    do: "Last queued fetch failed: #{reason || "unknown error"}"
+
+  defp format_reason(_source, {:agent_error, reason}),
+    do: "MMS Agent could not complete the fetch: #{reason}"
+
+  defp format_reason(_source, :agent_offline),
+    do: "No online MMS Agent. Pair or start an agent at /app/agents."
+
   defp format_reason(_source, {:http_status, 429}),
     do: "Rate limited (HTTP 429 Too Many Requests)"
 

@@ -34,6 +34,13 @@ defmodule MarketMySpecSpex.Story743.Criterion6564Spex do
     |> Jason.decode!()
   end
 
+  # CreateFrame takes "source|query" strings and stores parsed pairs, so the
+  # round-trip assertion has to compare against the parsed form of the input.
+  defp parse_saved_search(entry) do
+    [source, query] = String.split(entry, "|", parts: 2)
+    %{source: String.trim(source), query: String.trim(query)}
+  end
+
   spex "Frame round-trips a description and exactly three saved searches" do
     scenario "Commit a Frame with description + 3 saved searches; GetFrame returns all 4 attributes intact" do
       given_ "an account-scoped agent frame", context do
@@ -54,6 +61,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6564Spex do
         {:reply, create_resp, _} =
           CreateFrame.execute(
             %{
+              title: description,
               description: description,
               saved_searches: searches,
               total_spent_min: 5_000,
@@ -71,7 +79,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6564Spex do
         {:ok,
          Map.merge(context, %{
            expected_description: description,
-           expected_searches: searches,
+           expected_searches: Enum.map(searches, &parse_saved_search/1),
            persisted: decode_payload(get_resp)
          })}
       end

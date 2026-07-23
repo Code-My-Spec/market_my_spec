@@ -49,6 +49,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6574Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Cluster overwrite",
                   description: "Cluster overwrite",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

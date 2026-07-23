@@ -52,6 +52,7 @@ defmodule MarketMySpecSpex.Story740.Criterion6539Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "One PaidJobSignal per posting",
                   description: "One PaidJobSignal per posting",
                   saved_searches: [
                     "upwork|vendor onboarding migration"

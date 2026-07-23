@@ -55,6 +55,7 @@ defmodule MarketMySpecSpex.Story741.Criterion6552Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Verdict-candidate cardinality",
                   description: "Verdict-candidate cardinality",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

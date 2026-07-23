@@ -54,6 +54,7 @@ defmodule MarketMySpecSpex.Story741.Criterion6553Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Awaiting Red-team integrity diagnostic",
                   description: "Awaiting Red-team integrity diagnostic",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1_000,

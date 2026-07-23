@@ -52,6 +52,7 @@ defmodule MarketMySpecSpex.Story740.Criterion6540Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "PaidJobSignal-to-JobPosting cardinality",
                   description: "PaidJobSignal-to-JobPosting cardinality",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 1,

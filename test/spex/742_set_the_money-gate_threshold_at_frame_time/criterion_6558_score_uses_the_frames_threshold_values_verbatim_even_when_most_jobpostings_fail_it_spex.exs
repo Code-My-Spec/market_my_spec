@@ -55,6 +55,7 @@ defmodule MarketMySpecSpex.Story742.Criterion6558Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "High-bar money gate",
                   description: "High-bar money gate",
                   saved_searches: ["upwork|vendor onboarding"],
                   total_spent_min: 50_000,

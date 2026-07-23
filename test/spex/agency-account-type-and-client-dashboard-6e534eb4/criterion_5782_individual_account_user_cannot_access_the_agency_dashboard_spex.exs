@@ -31,11 +31,13 @@ defmodule MarketMySpecSpex.Story679.Criterion5782Spex do
         case result do
           {:error, {:live_redirect, %{to: to}}} ->
             refute to == "/app/agency"
-            assert to =~ ~r/^\/(accounts|$)/, "expected redirect to /accounts or /, got #{to}"
+            assert to =~ ~r{^/(app(/accounts.*)?|accounts.*)?$},
+                   "expected redirect to the app/accounts surface or /, got #{to}"
 
           {:error, {:redirect, %{to: to}}} ->
             refute to == "/app/agency"
-            assert to =~ ~r/^\/(accounts|$)/, "expected redirect to /accounts or /, got #{to}"
+            assert to =~ ~r{^/(app(/accounts.*)?|accounts.*)?$},
+                   "expected redirect to the app/accounts surface or /, got #{to}"
 
           {:ok, _view, _html} ->
             flunk("expected /agency to redirect for an individual-account user, got a render")

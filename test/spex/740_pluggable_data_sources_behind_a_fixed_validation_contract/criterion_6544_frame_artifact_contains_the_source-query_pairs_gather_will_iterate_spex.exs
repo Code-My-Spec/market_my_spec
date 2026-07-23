@@ -38,6 +38,13 @@ defmodule MarketMySpecSpex.Story740.Criterion6544Spex do
     |> Jason.decode!()
   end
 
+  # CreateFrame takes "source|query" strings and stores parsed pairs, so the
+  # round-trip assertion has to compare against the parsed form of the input.
+  defp parse_saved_search(entry) do
+    [source, query] = String.split(entry, "|", parts: 2)
+    %{source: String.trim(source), query: String.trim(query)}
+  end
+
   spex "Frame artifact carries its committed (source, query) pairs verbatim" do
     scenario "Committing a Frame with three saved searches surfaces those exact three pairs on GetFrame" do
       given_ "the founder is composing a Frame with three saved searches", context do
@@ -61,6 +68,7 @@ defmodule MarketMySpecSpex.Story740.Criterion6544Spex do
         {:reply, create_resp, _} =
           CreateFrame.execute(
             %{
+              title: "Source-query pair round-trip",
               description: "Source-query pair round-trip",
               saved_searches: context.saved_searches,
               total_spent_min: 5_000,
@@ -90,7 +98,7 @@ defmodule MarketMySpecSpex.Story740.Criterion6544Spex do
             }
           end)
 
-        assert normalized == context.saved_searches,
+        assert normalized == Enum.map(context.saved_searches, &parse_saved_search/1),
                "expected GetFrame to return the committed saved_searches verbatim; got: #{inspect(normalized)}"
         {:ok, context}
       end

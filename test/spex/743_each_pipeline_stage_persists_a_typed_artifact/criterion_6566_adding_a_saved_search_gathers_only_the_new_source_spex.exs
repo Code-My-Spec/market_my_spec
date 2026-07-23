@@ -56,6 +56,7 @@ defmodule MarketMySpecSpex.Story743.Criterion6566Spex do
             {:reply, create_resp, _} =
               CreateFrame.execute(
                 %{
+                  title: "Additive Gather",
                   description: "Additive Gather",
                   saved_searches: [
                     "upwork|vendor onboarding",
