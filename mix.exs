@@ -164,7 +164,14 @@ defmodule MarketMySpec.MixProject do
       {:cloak_ecto, "~> 1.3"},
       {:dotenvy, "~> 1.1.0"},
       {:ex_oauth2_provider, "~> 0.5.7"},
-      {:anubis_mcp, github: "zoedsoupe/anubis-mcp"},
+      # Pinned to a TAG, not a bare branch. The previous lock (f77a844) became
+      # unreachable from every upstream branch and tag after a force-push, so
+      # `git clone` could no longer see it and every clean fetch died with
+      # "fatal: unable to read tree". An existing deps/ dir masked it, so it
+      # only ever surfaced in CI or on a new machine. v1.3.0 is the tag for the
+      # same version that unreachable commit built (1.3.0), so this is a
+      # like-for-like repin, not an upgrade.
+      {:anubis_mcp, github: "zoedsoupe/anubis-mcp", tag: "v1.3.0"},
       {:google_api_analytics_admin, "~> 0.26.0"},
       {:tesla, "~> 1.4"},
       {:mdex, "~> 0.5"},
