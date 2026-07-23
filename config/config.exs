@@ -45,7 +45,7 @@ config :market_my_spec, MarketMySpec.Chat,
 # The binary phones home on every CLI run and prints a "brew upgrade
 # mms-agent" notice when this is newer than its compiled-in version.
 config :market_my_spec,
-  agent_latest_version: "0.3.0",
+  agent_latest_version: "0.4.0",
   # 0.4.0 replaced the generic `http_request` proxy protocol with
   # `reddit_fetch`. A 0.3.0 binary still joins the channel cleanly but never
   # receives a message it understands, so it looks online and silently does
