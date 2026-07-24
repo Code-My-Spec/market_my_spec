@@ -102,6 +102,26 @@ defmodule MarketMySpecAgent.Channel.Client do
     {:ok, socket}
   end
 
+  # Slipstream only calls handle_join/3 on SUCCESS, and its default
+  # handle_topic_close/3 swallows the failure. Without this the binary logs
+  # "connected — joining …", then silently retries a refused join every few
+  # seconds forever — it looks hung, with nothing pointing at the cause.
+  #
+  # A refusal is almost always recoverable by the operator, so say what to do.
+  # The server refuses a join when the token has no matching active agent row
+  # (revoked, or paired against a different server/database) or when the
+  # binary is below `agent_min_supported_version`.
+  @impl Slipstream
+  def handle_topic_close(topic, reason, socket) do
+    Logger.warning(
+      "[Agent.Channel.Client] #{topic} refused/closed: #{inspect(reason)} — " <>
+        "this binary is not authorized for that account. Run `mms-agent pair` " <>
+        "to re-pair, and `brew upgrade mms-agent` if the server requires a newer version."
+    )
+
+    {:ok, socket}
+  end
+
   @impl Slipstream
   def handle_message(topic, "reddit_fetch", payload, socket) do
     if payload["agent_id"] == socket.assigns.agent_id do

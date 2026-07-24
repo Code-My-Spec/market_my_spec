@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Point the Homebrew tap at a published release.
+#
+# Usage: ./scripts/bump-tap 0.4.0
+#
+# Why this exists as a local script rather than only in CI: the release
+# workflow's `update_formula` job needs write access to a *second* repo
+# (Code-My-Spec/homebrew-mms-agent). The PAT it used (HOMEBREW_TAP_TOKEN)
+# expired, and the obvious replacement — a deploy key — is refused because
+# deploy keys are disabled org-wide on the free plan. So the reliable path
+# is to bump from a machine that already has push rights: yours.
+#
+# The failure mode this guards against is nasty and quiet: the build and
+# GitHub Release jobs succeed independently of the formula bump, so a
+# release looks entirely green while `brew install` keeps serving the
+# PREVIOUS version. v0.3.0 stayed installable for the whole of v0.4.0's
+# release for exactly this reason.
+#
+# Safe to re-run; it is a plain content update keyed on the current file sha.
+
+set -euo pipefail
+
+VERSION="${1:-}"
+[[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+  echo "Usage: $0 <version>   e.g. $0 0.4.0" >&2
+  exit 64
+}
+
+APP_REPO=Code-My-Spec/market_my_spec
+TAP_REPO=Code-My-Spec/homebrew-mms-agent
+ASSET=market_my_spec_agent_macos_m1
+TAG="v$VERSION"
+
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+echo "==> checking release $TAG exists with assets"
+gh release view "$TAG" -R "$APP_REPO" --json assets \
+  --jq 'if ([.assets[].name] | index("'"$ASSET"'")) then "    ok" else error("release '"$TAG"' has no '"$ASSET"' asset") end'
+
+echo "==> downloading $ASSET + SHA256SUMS.txt"
+gh release download "$TAG" -R "$APP_REPO" -p "$ASSET" -p SHA256SUMS.txt -D "$WORK" >/dev/null
+
+# Trust but verify: the manifest is what the formula will assert, so confirm
+# it actually describes the binary that was published.
+MANIFEST_SHA=$(awk -v a="$ASSET" '$2 == a { print $1 }' "$WORK/SHA256SUMS.txt")
+ACTUAL_SHA=$(shasum -a 256 "$WORK/$ASSET" | awk '{print $1}')
+
+[[ -n "$MANIFEST_SHA" ]] || { echo "ERROR: $ASSET not listed in SHA256SUMS.txt" >&2; exit 1; }
+if [[ "$MANIFEST_SHA" != "$ACTUAL_SHA" ]]; then
+  echo "ERROR: published manifest does not match the published binary." >&2
+  echo "       manifest: $MANIFEST_SHA" >&2
+  echo "       actual:   $ACTUAL_SHA" >&2
+  exit 1
+fi
+echo "    sha256 verified: $ACTUAL_SHA"
+
+cat > "$WORK/mms-agent.rb" <<EOF
+class MmsAgent < Formula
+  desc "MMS Agent — local pairing companion for Market My Spec"
+  homepage "https://marketmyspec.com"
+  version "$VERSION"
+  license "Proprietary"
+
+  depends_on :macos
+  depends_on arch: :arm64
+
+  url "https://github.com/$APP_REPO/releases/download/$TAG/$ASSET"
+  sha256 "$ACTUAL_SHA"
+
+  def install
+    src = stable.url.split("/").last
+    bin.install src => "mms-agent"
+  end
+
+  test do
+    assert_match "mms-agent", shell_output("#{bin}/mms-agent help")
+  end
+end
+EOF
+
+echo "==> updating Formula/mms-agent.rb on $TAP_REPO"
+CURRENT_SHA=$(gh api "repos/$TAP_REPO/contents/Formula/mms-agent.rb" --jq '.sha')
+gh api -X PUT "repos/$TAP_REPO/contents/Formula/mms-agent.rb" \
+  -f message="Bump mms-agent to $TAG" \
+  -f content="$(base64 -i "$WORK/mms-agent.rb" | tr -d '\n')" \
+  -f sha="$CURRENT_SHA" --jq '"    committed \(.commit.sha[0:7])"'
+
+echo "==> verifying tap now serves $VERSION"
+gh api "repos/$TAP_REPO/contents/Formula/mms-agent.rb" --jq '.content' \
+  | base64 -d | grep -E '^\s+(version|sha256)' | sed 's/^/    /'
+
+echo
+echo "Done. Verify end-to-end with:"
+echo "  brew update && brew upgrade mms-agent && mms-agent status"
