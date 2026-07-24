@@ -18,6 +18,7 @@ defmodule MarketMySpecSpex.RedditQueue.DispatchesThroughAgentSpex do
   alias MarketMySpec.Engagements.RedditFetchJob
   alias MarketMySpec.Engagements.RedditFetchQueue
   alias MarketMySpec.Engagements.RedditFetchQueue.Drain
+  alias MarketMySpec.Engagements.Search
   alias MarketMySpec.Repo
   alias MarketMySpecSpex.Fixtures
   alias MarketMySpecSpex.RedditHelpers
@@ -143,7 +144,7 @@ defmodule MarketMySpecSpex.RedditQueue.DispatchesThroughAgentSpex do
       then_ "a search now serves those candidates from the queue", context do
         result =
           RedditHelpers.with_deferred_drain(fn ->
-            MarketMySpec.Engagements.Search.search(context.scope, "phoenix")
+            Search.search(context.scope, "phoenix")
           end)
 
         titles = Enum.map(result.candidates, &Map.get(&1, "title"))

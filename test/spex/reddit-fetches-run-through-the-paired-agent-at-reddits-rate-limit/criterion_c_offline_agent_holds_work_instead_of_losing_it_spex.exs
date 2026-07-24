@@ -20,6 +20,7 @@ defmodule MarketMySpecSpex.RedditQueue.OfflineAgentHoldsWorkSpex do
   alias MarketMySpec.Engagements.RedditFetchJob
   alias MarketMySpec.Engagements.RedditFetchQueue
   alias MarketMySpec.Engagements.RedditFetchQueue.Drain
+  alias MarketMySpec.Engagements.Search
   alias MarketMySpec.Repo
   alias MarketMySpecSpex.Fixtures
   alias MarketMySpecSpex.RedditHelpers
@@ -81,7 +82,7 @@ defmodule MarketMySpecSpex.RedditQueue.OfflineAgentHoldsWorkSpex do
       then_ "a search still answers, reporting the work as queued", context do
         result =
           RedditHelpers.with_deferred_drain(fn ->
-            MarketMySpec.Engagements.Search.search(context.scope, "phoenix")
+            Search.search(context.scope, "phoenix")
           end)
 
         assert result.failures == [],
@@ -104,7 +105,7 @@ defmodule MarketMySpecSpex.RedditQueue.OfflineAgentHoldsWorkSpex do
       when_ "the same search is run three times without draining", context do
         RedditHelpers.with_deferred_drain(fn ->
           Enum.each(1..3, fn _ ->
-            MarketMySpec.Engagements.Search.search(context.scope, "phoenix")
+            Search.search(context.scope, "phoenix")
           end)
         end)
 

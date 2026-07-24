@@ -118,15 +118,25 @@ defmodule MarketMySpec.Agents.Dispatcher do
   # string. Surface those as errors rather than letting a 0/"" response
   # normalize into an empty (but successful-looking) feed.
   defp decode_result(payload) do
-    status = payload["status"] || payload[:status] || 0
-    body = payload["body"] || payload[:body] || ""
-    error = payload["error"] || payload[:error]
+    case field(payload, "error", :error, nil) do
+      error when is_binary(error) and error != "" ->
+        {:error, {:agent_error, error}}
 
-    cond do
-      is_binary(error) and error != "" -> {:error, {:agent_error, error}}
-      status == 0 -> {:error, {:agent_error, "no status"}}
-      true -> {:ok, %{"status" => status, "body" => body}}
+      _ ->
+        decode_status(
+          field(payload, "status", :status, 0),
+          field(payload, "body", :body, "")
+        )
     end
+  end
+
+  defp decode_status(0, _body), do: {:error, {:agent_error, "no status"}}
+  defp decode_status(status, body), do: {:ok, %{"status" => status, "body" => body}}
+
+  # The binary's payload arrives JSON-decoded with string keys; spex that
+  # broadcast a response directly use atom keys. Accept either.
+  defp field(payload, string_key, atom_key, default) do
+    Map.get(payload, string_key) || Map.get(payload, atom_key) || default
   end
 
   defp generate_request_id, do: :crypto.strong_rand_bytes(12) |> Base.url_encode64(padding: false)
