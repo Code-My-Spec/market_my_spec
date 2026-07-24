@@ -79,14 +79,21 @@ defmodule MarketMySpec.Engagements.RedditFetchQueue do
     })
   end
 
-  # ON CONFLICT against the partial unique index: an identical pending job
-  # gets its enqueued_at bumped (so the drain treats a re-requested search
-  # as fresh demand) instead of raising or duplicating.
+  # ON CONFLICT against the partial unique index: an identical pending job is
+  # left in place rather than raising or duplicating.
+  #
+  # Crucially this does NOT touch `enqueued_at`. `claim_next/0` orders by it,
+  # so bumping it on every re-request moved the job to the BACK of the queue —
+  # and since "check whether my results arrived" means re-running the search,
+  # a job could be starved indefinitely by the very act of waiting for it.
+  # Observed live: a queue drained 8 → 4 while one job sat at position last the
+  # whole time. The request's place in line is set by when it was FIRST asked
+  # for.
   defp upsert_pending(attrs) do
     %RedditFetchJob{}
     |> RedditFetchJob.changeset(attrs)
     |> Repo.insert(
-      on_conflict: [set: [enqueued_at: attrs.enqueued_at, updated_at: now()]],
+      on_conflict: [set: [updated_at: now()]],
       conflict_target: {:unsafe_fragment, ~s<(account_id, venue_id, query, cursor, source_thread_id) WHERE status = 'pending'>},
       returning: true
     )
