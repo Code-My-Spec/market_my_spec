@@ -141,11 +141,18 @@ jobs:
     if: github.event_name == 'push' || github.event.inputs.tag != ''
 
     steps:
+      # Deploy key, not a PAT. The previous HOMEBREW_TAP_TOKEN expired and
+      # took the formula bump down with it — silently, because the build and
+      # release jobs succeed independently, so a release looks green while
+      # `brew install` keeps serving the previous version. A deploy key is
+      # scoped to this one repo, grants write access nowhere else, and does
+      # not expire. Registered on Code-My-Spec/homebrew-mms-agent; private
+      # half lives in the HOMEBREW_TAP_SSH_KEY secret.
       - name: Check out tap repo
         uses: actions/checkout@v4
         with:
           repository: Code-My-Spec/homebrew-mms-agent
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          ssh-key: ${{ secrets.HOMEBREW_TAP_SSH_KEY }}
           path: tap
 
       - name: Update formula
