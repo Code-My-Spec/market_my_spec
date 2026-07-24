@@ -71,15 +71,30 @@ defmodule MarketMySpec.Engagements.RateLimiterTest do
 
       # A short-timeout acquire can't get through during the block.
       assert {:error, :rate_limit_timeout} = RateLimiter.acquire(:reddit, 150, name)
+    end
 
-      # One with a timeout past the reset succeeds, and only after the window.
-      # The ~150ms consumed by the failed acquire above leaves ~250ms of the
-      # 0.4s window still to wait; floor it at 200ms so scheduler jitter (the
-      # short acquire returning a hair early, refill-poll granularity) can't
-      # flake the run while still proving the acquire blocked out the window
-      # rather than returning immediately.
-      {micros, :ok} = :timer.tc(fn -> RateLimiter.acquire(:reddit, 2_000, name) end)
-      assert micros >= 200_000, "expected acquire to wait out the window, waited #{micros}us"
+    test "acquire blocks for the reported window before being granted" do
+      {_pid, name} = start_limiter(%{reddit: %{capacity: 1, refill_ms: 50}})
+
+      # Measured immediately after report/4 with nothing in between, on
+      # purpose. An earlier version timed this acquire *after* a short
+      # acquire that was expected to eat ~150ms of the 400ms window — but
+      # under load that short acquire's timeout can consume the whole
+      # window, leaving nothing left to wait for and failing with
+      # "waited 12us". The assertion has to depend only on the window, not
+      # on how long an unrelated call happened to take.
+      #
+      # `report/4` is a cast and `acquire/3` a call from this same process,
+      # so ordering is guaranteed — the block is in place before we ask.
+      window_ms = 400
+      RateLimiter.report(:reddit, 0.0, window_ms / 1_000, name)
+
+      {micros, :ok} = :timer.tc(fn -> RateLimiter.acquire(:reddit, 5_000, name) end)
+
+      # Floor well under the window (timer granularity can fire a touch
+      # early) but far above the "returned immediately" failure it guards.
+      assert micros >= 300_000,
+             "expected acquire to wait out the ~#{window_ms}ms window, waited #{micros}us"
     end
 
     test "remaining>0 does not block" do
