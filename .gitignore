@@ -35,9 +35,11 @@ market_my_spec-*.tar
 npm-debug.log
 /assets/node_modules/
 
-# Dotenvy environment files (real secrets) — keep .example templates trackable
+# Dotenvy environment files (real secrets) — keep .example templates and
+# sops-encrypted ciphertext trackable
 /envs/*.env
 !/envs/*.env.example
+!/envs/*.enc.env
 
 # Diagnostics compiler output
 diagnostics.jsonl
