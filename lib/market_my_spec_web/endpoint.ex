@@ -24,7 +24,7 @@ defmodule MarketMySpecWeb.Endpoint do
   # touches the rest of the pipeline.
   plug :health_check
 
-  defp health_check(%{request_path: "/up"} = conn, _opts) do
+  defp health_check(%{request_path: path} = conn, _opts) when path in ["/up", "/health"] do
     conn
     |> Plug.Conn.send_resp(200, "OK")
     |> Plug.Conn.halt()
