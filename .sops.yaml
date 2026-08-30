@@ -7,7 +7,7 @@
 # committed.
 creation_rules:
   - path_regex: envs/prod\.enc\.env$
-    age: "age1y8kwey6vltsgz2zs4gfte6dp3y2el60g044wv7d6wnunhyuj95gs5u68tc"
+    age: "age1j8c7wplyd4k0ps6hgdlyt0uj9nx8t4fzdv2lt5rda5es2z0zvdsqxksam0"
 
   - path_regex: envs/uat\.enc\.env$
     age: "age1pgwjtvrk5uc458zhfrytmfkl8vyhz74jd9v39npqasprvmwp7f8skwj8mc"
