@@ -1,0 +1,299 @@
+#!/usr/bin/env bash
+# Database backups: dump to your own bucket, restore from it, and install the
+# nightly schedule.
+#
+#   bin/backup dump prod                    # dump now, upload, print the key
+#   bin/backup restore dumps/... scratch    # restore that key into a scratch DB
+#   bin/backup schedule prod                # install the nightly timer
+#   bin/backup list prod                    # what is actually in the bucket
+#
+# The dump goes straight from this host to the bucket and never passes through
+# the control plane — a production dump is exactly the kind of thing that is a
+# megabyte in staging and eighty gigabytes in production.
+#
+# Every subcommand prints `name=value` lines for the values a caller needs
+# (`key=`, `rows=`). One line-oriented convention keeps the contract small
+# enough to hold in your head and greppable from a shell when a run goes wrong.
+set -euo pipefail
+
+REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$REPO_ROOT"
+
+# Global, not a function-local: the EXIT trap runs after the function has
+# returned, so a `local tmp` is out of scope by then and `set -u` turns a
+# successful dump into a non-zero exit. That failure is worse than it looks —
+# the caller reads the exit code, so a backup that worked reports as broken.
+TMPFILE=""
+cleanup() { [ -n "$TMPFILE" ] && rm -f "$TMPFILE"; return 0; }
+trap cleanup EXIT
+
+# The bucket, its credentials and the database URL come from the environment's
+# own encrypted env file — the same one the app boots with, so a backup cannot
+# silently target a different database than the one that is running.
+load_env() {
+  local env_name="$1"
+  local key_file="envs/${env_name}.age.key"
+  local enc_file="envs/${env_name}.enc.env"
+
+  # Already in the environment? Then there is nothing to decrypt.
+  #
+  # The caller that knows the bucket, the credentials and the connection string
+  # hands them over (`Backups.script_env/1`), and it runs this on the
+  # environment's own server — a box that has docker and curl and deliberately
+  # nothing else. Insisting on decrypting anyway meant `sops: command not found`
+  # on a host where sops was never going to be, for values that had already
+  # arrived. The sibling generator's `load_secrets` has always worked this way.
+  #
+  # A person or a cron run supplies none of them and takes the path below.
+  if [ -n "${DATABASE_URL:-}" ] && [ -n "${BACKUP_BUCKET:-}" ] && \
+     [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+    : "${BACKUP_ENDPOINT:=https://fsn1.your-objectstorage.com}"
+    : "${BACKUP_REGION:=fsn1}"
+    return 0
+  fi
+
+  # SOPS_AGE_KEY first, the key file second — the same order bin/deploy uses,
+  # and for the same reason.
+  #
+  # Setup holds the private half in its own secret store and deliberately never
+  # writes it into the repository, so it hands it over in the environment
+  # (`Backups.script_env/1` sets SOPS_AGE_KEY, and says so). This script only
+  # ever looked for the file, so every setup-run backup died on "missing
+  # envs/<env>.age.key" — a key that was present, passed correctly, and never
+  # read. The message named a file nobody had promised to write, which reads
+  # like the secrets step failed rather than like the two halves disagreeing.
+  #
+  # The file stays the fallback: a person running this by hand keeps it in
+  # envs/<env>.age.key, and cron on the server has neither a caller nor a
+  # terminal, so it needs a source of its own.
+  if [ -z "${SOPS_AGE_KEY:-}" ]; then
+    if [ ! -f "$key_file" ]; then
+      echo "missing $key_file, and SOPS_AGE_KEY is not set — the backup needs this environment's age key" >&2
+      exit 1
+    fi
+
+    export SOPS_AGE_KEY
+    SOPS_AGE_KEY=$(cat "$key_file")
+  fi
+
+  if [ -z "${SOPS_AGE_KEY:-}" ]; then
+    echo "ERROR: SOPS_AGE_KEY is empty; refusing to back up" >&2
+    exit 1
+  fi
+
+  if [ ! -f "$enc_file" ]; then
+    echo "missing $enc_file" >&2
+    exit 1
+  fi
+
+  set -a
+  # shellcheck disable=SC1090
+  source <(sops --decrypt "$enc_file")
+  set +a
+
+  for var in DATABASE_URL BACKUP_BUCKET AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+    if [ -z "${!var:-}" ]; then
+      echo "ERROR: $var is not set in $enc_file; refusing to continue" >&2
+      exit 1
+    fi
+  done
+
+  : "${BACKUP_ENDPOINT:=https://fsn1.your-objectstorage.com}"
+  : "${BACKUP_REGION:=fsn1}"
+}
+
+# aws-cli is not assumed. Signing a single PUT/GET by hand is a dozen lines and
+# removes a dependency from every host that has to be able to restore — which,
+# on the day it matters, is a host you are building in a hurry.
+s3() {
+  local method="$1" object="$2" file="$3"
+  local url="${BACKUP_ENDPOINT}/${BACKUP_BUCKET}/${object}"
+
+  if [ "$method" = "PUT" ]; then
+    curl -sSf -X PUT --aws-sigv4 "aws:amz:${BACKUP_REGION}:s3" \
+      --user "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}" \
+      --data-binary "@${file}" "$url" >/dev/null
+  else
+    curl -sSf --aws-sigv4 "aws:amz:${BACKUP_REGION}:s3" \
+      --user "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}" \
+      -o "$file" "$url"
+  fi
+}
+
+# Postgres tooling, from wherever it actually is.
+#
+# The environment's server runs docker and curl and nothing else — that is what
+# its image is for, and adding a postgres client by apt would put the one job
+# that has to work on the worst day behind a package mirror. The database
+# container already carries pg_dump and psql and already sits on the network
+# where cms-postgres resolves, so this borrows them.
+#
+# A host that does have the binaries uses them directly, so a laptop restore
+# still works with no docker at all.
+pg() {
+  local bin="$1"; shift
+
+  if command -v "$bin" >/dev/null 2>&1; then
+    "$bin" "$@"
+  else
+    docker run --rm -i --network "${PG_NETWORK:-db_net}" "${PG_IMAGE:-postgres:17}" "$bin" "$@"
+  fi
+}
+
+# ecto:// is the app's scheme, not libpq's.
+#
+# Ecto reads DATABASE_URL as ecto://user:pass@host/db and Phoenix apps write it
+# that way, so that is what setup puts in the encrypted env. pg_dump does not
+# know the scheme, and rather than refusing it falls back to reading the whole
+# string as a *database name* over a local socket:
+#
+#   pg_dump: error: connection to server on socket "/tmp/.s.PGSQL.5432"
+#   failed: FATAL: database "ecto://app:...@cms-post" does not exist
+#
+# Which names a socket nobody configured and a database nobody asked for, and
+# says nothing about the one character that is wrong. Translated here rather
+# than by changing what setup writes: the app's variable stays canonical and
+# the tool that needs libpq's spelling gets it.
+#
+# At the top level, because restoring needs the same translation as dumping and
+# a function defined inside cmd_dump would not exist until cmd_dump had run.
+libpq_url() {
+  case "$1" in
+    ecto://*) echo "postgresql://${1#ecto://}" ;;
+    *) echo "$1" ;;
+  esac
+}
+
+# Exact row count across every user table.
+#
+# `SUM(n_live_tup)` was the old answer and it is an estimate: pg_stat_user_tables
+# is populated by ANALYZE, so a table restored a second ago reports zero while
+# holding every row. A proof built on it says "that is a file, not a backup"
+# about a backup that is fine.
+#
+# COUNT(*) per table via query_to_xml, because the tables are not known ahead of
+# time and this is the one way to fold a dynamic count into a single scalar
+# without a procedural language.
+count_rows() {
+  pg psql -tA "$1" -c "SELECT COALESCE(SUM(cnt), 0) FROM (
+      SELECT (xpath('/row/c/text()',
+                query_to_xml(format('SELECT count(*) AS c FROM %I.%I', schemaname, tablename),
+                             false, true, '')))[1]::text::bigint AS cnt
+      FROM pg_tables
+      WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+    ) counts;" | tr -d "[:space:]"
+}
+
+cmd_dump() {
+  local env_name="${1:-prod}"
+  load_env "$env_name"
+
+  local stamp key
+  stamp=$(date -u +%Y%m%dT%H%M%SZ)
+  key="dumps/${env_name}-${stamp}.sql.gz"
+  TMPFILE=$(mktemp)
+
+  pg pg_dump --no-owner --no-acl "$(libpq_url "$DATABASE_URL")" | gzip -9 > "$TMPFILE"
+
+  # A zero-byte dump uploads perfectly happily and restores into nothing.
+  if [ ! -s "$TMPFILE" ]; then
+    echo "pg_dump produced an empty file — refusing to upload it as a backup" >&2
+    exit 1
+  fi
+
+  s3 PUT "$key" "$TMPFILE"
+
+  echo "key=$key"
+  echo "bytes=$(wc -c < "$TMPFILE" | tr -d ' ')"
+  # What went in, so the restore has something to be equal to. A backup of an
+  # empty database that restores empty is a correct backup; only a comparison
+  # can say so.
+  echo "rows=$(count_rows "$(libpq_url "$DATABASE_URL")")"
+}
+
+cmd_restore() {
+  local key="${1:?usage: bin/backup restore <key> [target] [env]}"
+  local target="${2:-scratch}"
+  local env_name="${3:-prod}"
+  load_env "$env_name"
+
+  TMPFILE=$(mktemp)
+
+  s3 GET "$key" "$TMPFILE"
+
+  # The target is dropped and recreated: restoring into a database that
+  # already has rows would count someone else's data as proof.
+  local admin_url
+  admin_url="$(libpq_url "${DATABASE_URL%/*}/postgres")"
+  pg psql -v ON_ERROR_STOP=1 -q "$admin_url" -c "DROP DATABASE IF EXISTS \"$target\";"
+  pg psql -v ON_ERROR_STOP=1 -q "$admin_url" -c "CREATE DATABASE \"$target\";"
+
+  local target_url
+  target_url="$(libpq_url "${DATABASE_URL%/*}/${target}")"
+  gunzip -c "$TMPFILE" | pg psql -v ON_ERROR_STOP=1 -q "$target_url" >/dev/null
+
+  # Row count across every user table. The question this answers is "did the
+  # data come back", and a restore that recreates empty tables answers it with
+  # a zero — which is the failure worth catching.
+  local rows
+  rows=$(count_rows "$target_url")
+
+  echo "rows=${rows:-0}"
+  echo "target=$target"
+}
+
+cmd_schedule() {
+  local env_name="${1:-prod}"
+
+  # A systemd timer rather than cron: it survives reboots, records its own
+  # last run, and `systemctl list-timers` answers "did it fire" without
+  # anyone having to parse a log.
+  local unit="cms-backup-${env_name}"
+
+  sudo tee "/etc/systemd/system/${unit}.service" >/dev/null <<UNIT
+[Unit]
+Description=Nightly database backup (${env_name})
+
+[Service]
+Type=oneshot
+WorkingDirectory=${REPO_ROOT}
+ExecStart=${REPO_ROOT}/bin/backup dump ${env_name}
+UNIT
+
+  sudo tee "/etc/systemd/system/${unit}.timer" >/dev/null <<UNIT
+[Unit]
+Description=Nightly database backup (${env_name})
+
+[Timer]
+OnCalendar=*-*-* 03:17:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+UNIT
+
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now "${unit}.timer"
+
+  echo "unit=${unit}.timer"
+}
+
+cmd_list() {
+  local env_name="${1:-prod}"
+  load_env "$env_name"
+
+  curl -sSf --aws-sigv4 "aws:amz:${BACKUP_REGION}:s3" \
+    --user "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}" \
+    "${BACKUP_ENDPOINT}/${BACKUP_BUCKET}?list-type=2&prefix=dumps/"
+}
+
+case "${1:-}" in
+  dump)     shift; cmd_dump "$@" ;;
+  restore)  shift; cmd_restore "$@" ;;
+  schedule) shift; cmd_schedule "$@" ;;
+  list)     shift; cmd_list "$@" ;;
+  *)
+    echo "usage: bin/backup {dump|restore|schedule|list} ..." >&2
+    exit 1
+    ;;
+esac

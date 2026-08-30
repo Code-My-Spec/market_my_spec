@@ -2,4 +2,19 @@
 set -eu
 
 cd -P -- "$(dirname -- "$(readlink -f -- "$0")")/.." || exit
+
+# SOPS_AGE_KEY present means the sops-based deploy path (CodeMySpec-managed)
+# launched this — decrypt its env file first. Absent (the existing
+# AWS-SSM boot path) means unchanged behavior: MarketMySpec.Secrets.load!/1
+# in runtime.exs handles secrets itself, same as it always has.
+if [ -n "${SOPS_AGE_KEY:-}" ]; then
+  ENV_NAME="${APP_ENV:-prod}"
+  ENV_FILE="envs/${ENV_NAME}.enc.env"
+  if [ ! -f "$ENV_FILE" ]; then
+    echo "$0: no $ENV_FILE in this image — setup encrypts one per environment" >&2
+    exit 1
+  fi
+  exec sops exec-env "$ENV_FILE" "./bin/market_my_spec eval MarketMySpec.Release.migrate"
+fi
+
 exec ./bin/market_my_spec eval MarketMySpec.Release.migrate

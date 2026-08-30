@@ -1,0 +1,24 @@
+#!/bin/sh
+# Release overlay for the sops-based deploy path (CodeMySpec-managed).
+# Not used by the existing bin/server (AWS-SSM boot) — a separate,
+# parallel entry point per CodeMySpec's own convention.
+set -eu
+
+cd -P -- "$(dirname -- "$0")/.."
+
+ENV_NAME="${APP_ENV:-prod}"
+ENV_FILE="envs/${ENV_NAME}.enc.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+  echo "$0: no $ENV_FILE in this image — setup encrypts one per environment" >&2
+  echo "$0: APP_ENV=$ENV_NAME; the image holds: $(ls envs 2>/dev/null | tr '\n' ' ')" >&2
+  exit 1
+fi
+
+if [ -z "${SOPS_AGE_KEY:-}" ]; then
+  echo "$0: SOPS_AGE_KEY is not set, so $ENV_FILE cannot be decrypted" >&2
+  echo "$0: the deploy carries it to the host — see config/deploy*.yml env.secret" >&2
+  exit 1
+fi
+
+exec sops exec-env "$ENV_FILE" "./bin/market_my_spec start"

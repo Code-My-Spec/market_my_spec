@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+#
+#   bin/deploy [uat|prod]              — for a human: push, wait for CI,
+#                                         migrate, then swap.
+#   bin/deploy migrate|swap <uat|prod> — what CodeMySpec's own setup
+#                                         calls. It already built and
+#                                         pushed a specific image and
+#                                         drives health checking itself
+#                                         between the two phases, so
+#                                         neither is meant to run alone
+#                                         by hand.
+set -euo pipefail
+
+case "${1:-}" in
+  migrate|swap)
+    PHASE="$1"
+    ENVIRONMENT="${2:?usage: bin/deploy $1 <uat|prod>}"
+    ;;
+  *)
+    PHASE="all"
+    ENVIRONMENT="${1:-uat}"
+    ;;
+esac
+
+CONFIG="config/deploy.yml"
+[ "$ENVIRONMENT" = "uat" ] && CONFIG="config/deploy.uat.yml"
+
+# CMS_IMAGE names the exact image (registry/repo:tag) setup already built
+# and pushed. Building or pulling another one here would deploy a
+# different commit than the one setup verified. Without it — a human
+# running this by hand — the version is whatever HEAD names once CI has
+# published it.
+if [ -n "${CMS_IMAGE:-}" ]; then
+  VERSION="${CMS_IMAGE##*:}"
+else
+  VERSION="$(git rev-parse HEAD)"
+fi
+
+migrate() {
+  # `-e`, so the migration carries the key instead of reading the host's
+  # copy. `kamal app exec` loads env/roles/<role>.env from the host, and
+  # kamal writes that only when it boots a container — so the migration
+  # ran against the environment of the last successful boot. A rotated
+  # SOPS_AGE_KEY deadlocked on it: the deploy re-encrypts to the new key,
+  # the migration reads the old one off the host, and the deploy that
+  # would replace the host's copy is the one that cannot finish.
+  kamal app exec --config "$CONFIG" --version "$VERSION" -e "SOPS_AGE_KEY:${SOPS_AGE_KEY:-}" "bin/migrate"
+}
+
+swap() {
+  kamal deploy --config "$CONFIG" --version "$VERSION"
+}
+
+case "$PHASE" in
+  migrate)
+    migrate
+    ;;
+  swap)
+    swap
+    ;;
+  all)
+    echo "deploying $VERSION to $ENVIRONMENT"
+
+    git push origin HEAD
+
+    echo "waiting for CI to publish the image for $VERSION"
+    gh run watch --exit-status "$(gh run list --commit "$VERSION" --limit 1 --json databaseId --jq '.[0].databaseId')"
+
+    migrate
+    swap
+
+    echo "deployed $VERSION to $ENVIRONMENT"
+    ;;
+esac
