@@ -40,7 +40,15 @@ cond do
 
   true ->
     app_env = System.get_env("APP_ENV") || raise "APP_ENV must be set (prod|uat)"
-    MarketMySpec.Secrets.load!(app_env)
+
+    # DATABASE_URL already present means secrets arrived some other way
+    # (e.g. a sops-decrypted env file), so the SSM fetch is skipped rather
+    # than overwriting what's already there. Existing SSM-sourced boots are
+    # unaffected — nothing sets DATABASE_URL before this runs for them.
+    unless System.get_env("DATABASE_URL") do
+      MarketMySpec.Secrets.load!(app_env)
+    end
+
     source!([System.get_env()])
 end
 
