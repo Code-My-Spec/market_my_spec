@@ -76,6 +76,7 @@ FROM ${RUNNER_IMAGE}
 # Vale CLI version pinned. Updates are a one-line diff. See
 # .code_my_spec/knowledge/vale-cli.md.
 ARG VALE_VERSION=3.14.2
+ARG SOPS_VERSION=3.9.4
 
 # TARGETARCH is set by buildx for multi-arch builds (amd64 | arm64).
 # Vale releases name the amd64 asset "64-bit" and the arm64 asset "arm64".
@@ -98,6 +99,13 @@ RUN case "${TARGETARCH:-amd64}" in \
     && rm /tmp/vale.tar.gz \
     && vale --version
 
+# sops, to decrypt envs/*.enc.env at boot. `dpkg --print-architecture`
+# prints amd64/arm64, matching how sops names its release assets.
+RUN curl -fsSL -o /usr/local/bin/sops \
+      "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.$(dpkg --print-architecture)" && \
+    chmod +x /usr/local/bin/sops && \
+    sops --version --disable-version-check
+
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 
 ENV LANG=en_US.UTF-8
@@ -111,6 +119,11 @@ ENV MIX_ENV="prod"
 
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/market_my_spec ./
 
+# The encrypted environments travel inside the image; the key does not —
+# it arrives as SOPS_AGE_KEY at run time. bin/boot (rel/overlays/bin/boot)
+# decrypts the one matching APP_ENV and execs the release.
+COPY --chown=nobody:root envs/prod.enc.env envs/uat.enc.env /app/envs/
+
 USER nobody
 
-CMD ["/app/bin/server"]
+CMD ["/app/bin/boot"]
