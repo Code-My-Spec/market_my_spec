@@ -6,10 +6,13 @@
 #   automatically on `kamal deploy`.
 # - db_net is pre-attached so the container can reach infra-postgres-1
 #   at start time.
-# - SSM-bootstrap secrets pattern: Kamal carries only AWS bootstrap
-#   creds + APP_ENV/AWS_REGION; the container fetches all app secrets
-#   from /market_my_spec/<APP_ENV>/* at boot via
-#   MarketMySpec.Secrets.load!/1 (see lib/market_my_spec/secrets.ex).
+# - The image boots via bin/boot (rel/overlays/bin/boot), which decrypts
+#   envs/prod.enc.env with SOPS_AGE_KEY and gets every app secret from
+#   there — that's why SOPS_AGE_KEY has to reach the container's own
+#   runtime env, not just migrate's ephemeral one. AWS_ACCESS_KEY_ID/
+#   SECRET stay listed for scripts/deploy's old SSM-bootstrap path;
+#   the sops-managed path doesn't need them (they're already inside
+#   envs/prod.enc.env) but passing them again is harmless.
 
 service: market-my-spec
 image: market-my-spec
@@ -46,6 +49,7 @@ env:
   secret:
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
+    - SOPS_AGE_KEY
 
 ssh:
   user: root

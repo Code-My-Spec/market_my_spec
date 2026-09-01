@@ -1,7 +1,10 @@
 # Kamal config for market_my_spec UAT. Same shape as deploy.yml, with
-# different network alias and SSM env path.
+# different network alias.
 #
 # Run with: kamal deploy -d uat
+#
+# SOPS_AGE_KEY reaches bin/boot the same way it does in prod — see the
+# note in deploy.yml.
 
 service: market-my-spec
 image: market-my-spec
@@ -36,6 +39,7 @@ env:
   secret:
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
+    - SOPS_AGE_KEY
 
 ssh:
   user: root
