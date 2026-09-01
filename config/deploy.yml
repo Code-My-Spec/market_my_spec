@@ -12,7 +12,7 @@
 #   MarketMySpec.Secrets.load!/1 (see lib/market_my_spec/secrets.ex).
 
 service: market-my-spec
-image: code-my-spec/market_my_spec
+image: market-my-spec
 
 servers:
   web:
@@ -27,10 +27,13 @@ proxy:
   app_port: 4000
 
 registry:
-  server: ghcr.io
-  username: johns10
-  password:
-    - KAMAL_REGISTRY_PASSWORD
+  # cms-registry, colocated on this box. Bound to the box's private IP only
+  # (not loopback), so this is 10.0.0.2:5000 rather than localhost:5000 even
+  # when kamal itself runs on this same host — confirmed directly, since
+  # port-publish here is `-p 10.0.0.2:5000:5000`.
+  server: 10.0.0.2:5000
+  username: [KAMAL_REGISTRY_USERNAME]
+  password: [KAMAL_REGISTRY_PASSWORD]
 
 builder:
   arch: amd64

@@ -4,7 +4,7 @@
 # Run with: kamal deploy -d uat
 
 service: market-my-spec
-image: code-my-spec/market_my_spec
+image: market-my-spec
 
 servers:
   web:
@@ -18,10 +18,12 @@ servers:
       app_port: 4000
 
 registry:
-  server: ghcr.io
-  username: johns10
-  password:
-    - KAMAL_REGISTRY_PASSWORD
+  # cms-registry, colocated on the fuellytics box this env shares. Bound to
+  # the box's private IP only (not loopback) — confirmed directly, port-publish
+  # here is `-p 10.0.0.4:5000:5000`.
+  server: 10.0.0.4:5000
+  username: [KAMAL_REGISTRY_USERNAME]
+  password: [KAMAL_REGISTRY_PASSWORD]
 
 builder:
   arch: arm64
