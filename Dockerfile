@@ -117,6 +117,13 @@ RUN chown nobody /app
 
 ENV MIX_ENV="prod"
 
+# kamal's own `push` task normally adds this itself (--label service=...),
+# but the harness builds and pushes this image directly rather than
+# through kamal's build task — without it, kamal's validate_image check
+# on pull fails with "Image ... is missing the 'service' label", even
+# though the image is otherwise correct.
+LABEL service="market-my-spec"
+
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/market_my_spec ./
 
 # The encrypted environments travel inside the image; the key does not —

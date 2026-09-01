@@ -48,7 +48,12 @@ migrate() {
 }
 
 swap() {
-  kamal deploy --config-file "$CONFIG" --version "$VERSION"
+  # --skip-push: the image is already built and pushed (see CMS_IMAGE
+  # above) — without this, `kamal deploy` rebuilds and re-pushes it
+  # itself via build:deliver before pulling, which is redundant with
+  # what already happened and hit buildx's HTTPS-only registry-existence
+  # check on blobs this self-hosted HTTP registry had just received.
+  kamal deploy --config-file "$CONFIG" --version "$VERSION" --skip-push
 }
 
 case "$PHASE" in
