@@ -22,9 +22,10 @@ servers:
 
 registry:
   # cms-registry, colocated on the fuellytics box this env shares. Bound to
-  # the box's private IP only (not loopback) — confirmed directly, port-publish
-  # here is `-p 10.0.0.4:5000:5000`.
-  server: 10.0.0.4:5000
+  # this box's private IP on the market-my-spec-eu-central network (the
+  # box also sits on the older, cross-zone market-my-spec network at
+  # 10.0.0.4 — vestigial, not what the registry listens on).
+  server: 10.1.0.2:5000
   username: [KAMAL_REGISTRY_USERNAME]
   password: [KAMAL_REGISTRY_PASSWORD]
 
