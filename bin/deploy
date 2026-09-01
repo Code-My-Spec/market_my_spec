@@ -44,11 +44,11 @@ migrate() {
   # SOPS_AGE_KEY deadlocked on it: the deploy re-encrypts to the new key,
   # the migration reads the old one off the host, and the deploy that
   # would replace the host's copy is the one that cannot finish.
-  kamal app exec --config "$CONFIG" --version "$VERSION" -e "SOPS_AGE_KEY:${SOPS_AGE_KEY:-}" "bin/migrate"
+  kamal app exec --config-file "$CONFIG" --version "$VERSION" -e "SOPS_AGE_KEY:${SOPS_AGE_KEY:-}" "bin/migrate"
 }
 
 swap() {
-  kamal deploy --config "$CONFIG" --version "$VERSION"
+  kamal deploy --config-file "$CONFIG" --version "$VERSION"
 }
 
 case "$PHASE" in
