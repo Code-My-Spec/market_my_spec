@@ -12,7 +12,7 @@ image: market-my-spec
 servers:
   web:
     hosts:
-      - 46.225.105.88           # UAT box (Hetzner cax11 ARM, Nuremberg)
+      - <%= ENV["CMS_DEPLOY_HOST_IP"] || "2.31.88.67" %>
     options:
       network: db_net
     proxy:
@@ -25,7 +25,7 @@ registry:
   # this box's private IP on the market-my-spec-eu-central network (the
   # box also sits on the older, cross-zone market-my-spec network at
   # 10.0.0.4 — vestigial, not what the registry listens on).
-  server: 10.1.0.2:5000
+  server: <%= ENV["CMS_REGISTRY_SERVER"] || "10.2.0.2:5000" %>
   username: [KAMAL_REGISTRY_USERNAME]
   password: [KAMAL_REGISTRY_PASSWORD]
 
